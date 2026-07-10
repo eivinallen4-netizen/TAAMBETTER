@@ -1,0 +1,15 @@
+/* TAAM — Brand Colors (from the brand board) */
+:root {
+  /* Core palette */
+  --taam-orange:      #F46325; /* primary */
+  --taam-near-black:  #111111;
+  --taam-light-gray:  #F2F2F2;
+  --taam-white:       #FFFFFF;
+
+  /* Orange tint scale */
+  --taam-tint-1: #F46325;
+  --taam-tint-2: #FF7B42;
+  --taam-tint-3: #FF9A66;
+  --taam-tint-4: #FFB38C;
+  --taam-tint-5: #FFD5C2; /* board prints "#FPD5C2" — invalid hex, corrected here */
+}

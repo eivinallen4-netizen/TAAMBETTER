@@ -1,0 +1,130 @@
+{
+  "company": {
+    "name": "TAAM",
+    "tagline": "Creative agency pushing boundaries",
+    "description": "We design and build digital experiences that matter. From brand strategy to digital products, we create work that resonates.",
+    "services": ["Branding", "Web Design", "Digital Development", "Creative Strategy", "Content Creation"]
+  },
+  "hero": {
+    "home": {
+      "title": "TAAM",
+      "subtitle": "We are a creative collective pushing boundaries",
+      "buttonText": "EXPLORE OUR WORK",
+      "videoSrc": "/construction-timelapse.mp4"
+    },
+    "about": {
+      "title": "ABOUT",
+      "subtitle": "Our Story",
+      "buttonText": "LEARN MORE",
+      "videoSrc": ""
+    },
+    "work": {
+      "title": "OUR WORK",
+      "subtitle": "Portfolio & Projects",
+      "buttonText": "VIEW PORTFOLIO",
+      "videoSrc": ""
+    }
+  },
+  "homepage": {
+    "headline": "WE ARE TAAM\nWE DO\nBIG THINGS",
+    "description": "We're a creative collective pushing boundaries and building experiences that matter. Bold ideas, exceptional execution, unforgettable results.",
+    "ctaText": "DO BIG THINGS"
+  },
+  "projects": [
+    {
+      "id": 1,
+      "title": "Project Name Here",
+      "category": "Branding",
+      "description": "Add your project description here",
+      "image": "/placeholder-project.jpg",
+      "color": "red",
+      "size": "large",
+      "challenge": "Define the project challenge",
+      "solution": "Describe your solution",
+      "results": "Share the measurable results",
+      "technologies": "List tools used"
+    },
+    {
+      "id": 2,
+      "title": "Project Name Here",
+      "category": "Web Design",
+      "description": "Add your project description here",
+      "image": "/placeholder-project.jpg",
+      "color": "cyan",
+      "size": "large",
+      "challenge": "Define the project challenge",
+      "solution": "Describe your solution",
+      "results": "Share the measurable results",
+      "technologies": "List tools used"
+    },
+    {
+      "id": 3,
+      "title": "Project Name Here",
+      "category": "Photography",
+      "description": "Add your project description here",
+      "image": "/placeholder-project.jpg",
+      "color": "yellow",
+      "size": "small",
+      "challenge": "Define the project challenge",
+      "solution": "Describe your solution",
+      "results": "Share the measurable results",
+      "technologies": "List tools used"
+    }
+  ],
+  "team": [
+    {
+      "id": 1,
+      "name": "Team Member Name",
+      "role": "Your Role Here",
+      "bio": "Brief bio about this person",
+      "image": "/placeholder-person.jpg"
+    },
+    {
+      "id": 2,
+      "name": "Team Member Name",
+      "role": "Your Role Here",
+      "bio": "Brief bio about this person",
+      "image": "/placeholder-person.jpg"
+    },
+    {
+      "id": 3,
+      "name": "Team Member Name",
+      "role": "Your Role Here",
+      "bio": "Brief bio about this person",
+      "image": "/placeholder-person.jpg"
+    }
+  ],
+  "news": [
+    {
+      "id": 1,
+      "title": "Add Your News Title Here",
+      "description": "Add your news description here",
+      "date": "2026-07-10",
+      "link": "#"
+    },
+    {
+      "id": 2,
+      "title": "Add Your News Title Here",
+      "description": "Add your news description here",
+      "date": "2026-07-09",
+      "link": "#"
+    },
+    {
+      "id": 3,
+      "title": "Add Your News Title Here",
+      "description": "Add your news description here",
+      "date": "2026-07-08",
+      "link": "#"
+    }
+  ],
+  "contact": {
+    "email": "hello@taam.co",
+    "phone": "+1 (555) 123-4567",
+    "address": "City, State",
+    "social": {
+      "instagram": "https://instagram.com/taam",
+      "twitter": "https://twitter.com/taam",
+      "linkedin": "https://linkedin.com/company/taam"
+    }
+  }
+}

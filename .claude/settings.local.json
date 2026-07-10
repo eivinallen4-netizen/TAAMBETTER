@@ -1,0 +1,14 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(curl -s http://localhost:3000)",
+      "mcp__plugin_ecc_playwright__browser_navigate",
+      "Bash(start *)",
+      "Bash(taskkill /PID 18864 /F)",
+      "mcp__plugin_ecc_playwright__browser_take_screenshot",
+      "Bash(npx playwright-cli *)",
+      "Bash(pkill -f \"next dev\")",
+      "Bash(curl -s http://localhost:3000/admin)"
+    ]
+  }
+}

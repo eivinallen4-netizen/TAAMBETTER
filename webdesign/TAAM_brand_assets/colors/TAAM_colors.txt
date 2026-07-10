@@ -1,0 +1,19 @@
+TAAM — BRAND COLORS
+===================
+
+CORE PALETTE
+  Primary Orange   #F46325
+  Near Black       #111111
+  Light Gray       #F2F2F2
+  White            #FFFFFF
+
+ORANGE TINT SCALE
+  Tint 1   #F46325
+  Tint 2   #FF7B42
+  Tint 3   #FF9A66
+  Tint 4   #FFB38C
+  Tint 5   #FFD5C2   (board label reads "#FPD5C2" — a typo; P is not a valid hex digit)
+
+TYPOGRAPHY
+  Headings / Logo   Montserrat Bold
+  Body              Montserrat Regular
