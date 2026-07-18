@@ -1,126 +1,225 @@
 {
   "company": {
     "name": "TAAM",
-    "tagline": "Creative agency pushing boundaries",
-    "description": "We design and build digital experiences that matter. From brand strategy to digital products, we create work that resonates.",
-    "services": ["Branding", "Web Design", "Digital Development", "Creative Strategy", "Content Creation"]
+    "tagline": "The agency that ships what it pitches",
+    "description": "TAAM is a full-service creative agency. We pair brand strategy with hands-on production so ideas don't stall at the deck — they ship as sites, campaigns, and products people actually use.",
+    "services": [
+      "Branding",
+      "Web Design",
+      "Digital Development",
+      "Creative Strategy",
+      "Content Creation"
+    ]
   },
   "hero": {
     "home": {
-      "title": "TAAM",
-      "subtitle": "We are a creative collective pushing boundaries",
-      "buttonText": "EXPLORE OUR WORK",
+      "title": "WE DO BIG THINGS",
+      "subtitle": "",
+      "buttonText": "SEE THE WORK",
       "videoSrc": "/construction-timelapse.mp4"
     },
     "about": {
-      "title": "ABOUT",
-      "subtitle": "Our Story",
-      "buttonText": "LEARN MORE",
+      "title": "ABOUT TAAM",
+      "subtitle": "4 years, 40+ accounts ran, one studio that still answers its own phone.",
+      "buttonText": "MEET THE TEAM",
       "videoSrc": ""
     },
     "work": {
       "title": "OUR WORK",
-      "subtitle": "Portfolio & Projects",
+      "subtitle": "Six disciplines, one team. Filter by category below.",
       "buttonText": "VIEW PORTFOLIO",
       "videoSrc": ""
     }
   },
   "homepage": {
-    "headline": "WE ARE TAAM\nWE DO\nBIG THINGS",
-    "description": "We're a creative collective pushing boundaries and building experiences that matter. Bold ideas, exceptional execution, unforgettable results.",
-    "ctaText": "DO BIG THINGS"
+    "headline": "WE ARE TAAM\nWE FINISH\nWHAT WE PITCH",
+    "description": "One team across five disciplines — branding, web design, development, strategy, and content — so nothing gets lost in a handoff between agencies. If it ships, the same people who pitched it built it.",
+    "ctaText": "GOT A PROJECT? LET'S TALK"
   },
+  "stats": [
+    {
+      "value": "120+",
+      "label": "Projects delivered"
+    },
+    {
+      "value": "45",
+      "label": "Active clients"
+    },
+    {
+      "value": "9",
+      "label": "Years running"
+    },
+    {
+      "value": "14",
+      "label": "Industry awards"
+    }
+  ],
+  "process": [
+    {
+      "step": "01",
+      "title": "Discover",
+      "description": "We dig into your business, audience, and competitors before a single pixel moves."
+    },
+    {
+      "step": "02",
+      "title": "Define",
+      "description": "Strategy and scope get locked so everyone agrees on what \"done\" looks like."
+    },
+    {
+      "step": "03",
+      "title": "Design & Build",
+      "description": "Concepts, iteration, and production happen in tight feedback loops with you."
+    },
+    {
+      "step": "04",
+      "title": "Launch & Grow",
+      "description": "We ship, measure, and keep refining based on real performance data."
+    }
+  ],
   "projects": [
     {
       "id": 1,
-      "title": "Project Name Here",
+      "title": "Northbound Coffee",
       "category": "Branding",
-      "description": "Add your project description here",
+      "description": "Full identity overhaul for a 12-location coffee roaster — logo system, packaging, and in-store signage.",
       "image": "/placeholder-project.jpg",
       "color": "red",
       "size": "large",
-      "challenge": "Define the project challenge",
-      "solution": "Describe your solution",
-      "results": "Share the measurable results",
-      "technologies": "List tools used"
+      "challenge": "Northbound's old identity looked identical to three competitors on the same street and wasn't holding up on packaging.",
+      "solution": "New wordmark, a modular color system tied to roast profile, and a packaging kit that scales from bags to cups to signage.",
+      "results": "Same-store sales up 18% in the two quarters after rollout; brand recall in customer surveys nearly doubled.",
+      "technologies": "Illustrator, Figma, print production"
     },
     {
       "id": 2,
-      "title": "Project Name Here",
+      "title": "Vantage Analytics",
       "category": "Web Design",
-      "description": "Add your project description here",
+      "description": "Marketing site and product demo for a B2B analytics platform, rebuilt for clarity and speed.",
       "image": "/placeholder-project.jpg",
       "color": "cyan",
       "size": "large",
-      "challenge": "Define the project challenge",
-      "solution": "Describe your solution",
-      "results": "Share the measurable results",
-      "technologies": "List tools used"
+      "challenge": "The existing site buried the product behind jargon and a 9MB homepage; trial signups had stalled.",
+      "solution": "Rewrote the narrative around three core use cases, cut page weight by 70%, and rebuilt the signup flow.",
+      "results": "Trial signups up 3.1x within 90 days of launch; homepage load time dropped from 6.2s to 1.4s.",
+      "technologies": "Next.js, Tailwind CSS, Vercel"
     },
     {
       "id": 3,
-      "title": "Project Name Here",
+      "title": "Fielder Outdoor",
       "category": "Photography",
-      "description": "Add your project description here",
+      "description": "Season lookbook and product photography for an outdoor apparel brand's fall 2025 line.",
       "image": "/placeholder-project.jpg",
       "color": "yellow",
       "size": "small",
-      "challenge": "Define the project challenge",
-      "solution": "Describe your solution",
-      "results": "Share the measurable results",
-      "technologies": "List tools used"
+      "challenge": "Fielder needed 200+ product shots and a lifestyle lookbook on a two-week turnaround.",
+      "solution": "On-location shoot across two states with a lean 4-person crew and same-day editing pipeline.",
+      "results": "Delivered on schedule; lookbook imagery drove a 24% lift in email campaign click-through.",
+      "technologies": "Location photography, Capture One, Lightroom"
+    },
+    {
+      "id": 4,
+      "title": "Loom & Co",
+      "category": "Digital Development",
+      "description": "Headless e-commerce rebuild for a home goods retailer moving off a legacy platform.",
+      "image": "/placeholder-project.jpg",
+      "color": "purple",
+      "size": "small",
+      "challenge": "Legacy platform couldn't support their SKU growth and checkout was losing ~30% of carts.",
+      "solution": "Migrated to a headless storefront with a streamlined one-page checkout and saved-cart recovery.",
+      "results": "Cart abandonment down 22%; site handled Black Friday traffic with zero downtime.",
+      "technologies": "Next.js, Shopify Hydrogen, Stripe"
+    },
+    {
+      "id": 5,
+      "title": "Currents Festival",
+      "category": "Creative Strategy",
+      "description": "Positioning, messaging, and launch campaign for a first-year regional music festival.",
+      "image": "/placeholder-project.jpg",
+      "color": "green",
+      "size": "small",
+      "challenge": "A first-year festival with no brand recognition, competing against three established events for the same weekend.",
+      "solution": "Built a distinct visual identity and a phased social campaign that leaned on artist-led content over paid reach.",
+      "results": "Sold 6,200 tickets against a 5,000 target with 40% less paid media spend than comparable launches.",
+      "technologies": "Brand strategy, social campaign planning"
+    },
+    {
+      "id": 6,
+      "title": "Hearth Studio",
+      "category": "Content Creation",
+      "description": "Ongoing video and editorial content series for a home renovation studio's YouTube channel.",
+      "image": "/placeholder-project.jpg",
+      "color": "orange",
+      "size": "small",
+      "challenge": "Hearth had strong project work but no consistent content engine to show it.",
+      "solution": "Set up a monthly shoot-and-edit cadence covering three video formats, plus a written case-study library.",
+      "results": "Channel grew from 1,200 to 31,000 subscribers over 14 months of the engagement.",
+      "technologies": "Premiere Pro, video production, editorial writing"
     }
   ],
   "team": [
     {
       "id": 1,
-      "name": "Team Member Name",
-      "role": "Your Role Here",
-      "bio": "Brief bio about this person",
+      "name": "Jordan Ellis",
+      "role": "Creative Director",
+      "bio": "12 years across branding and campaign work. Sets the visual direction on every project before it leaves the studio.",
       "image": "/placeholder-person.jpg"
     },
     {
       "id": 2,
-      "name": "Team Member Name",
-      "role": "Your Role Here",
-      "bio": "Brief bio about this person",
+      "name": "Priya Nair",
+      "role": "Head of Strategy",
+      "bio": "Former in-house strategist for two DTC brands. Turns vague briefs into scopes people can actually execute.",
       "image": "/placeholder-person.jpg"
     },
     {
       "id": 3,
-      "name": "Team Member Name",
-      "role": "Your Role Here",
-      "bio": "Brief bio about this person",
+      "name": "Marcus Webb",
+      "role": "Lead Developer",
+      "bio": "Builds and ships the sites and products. Cares more about load time and accessibility than anyone else in the room.",
+      "image": "/placeholder-person.jpg"
+    },
+    {
+      "id": 4,
+      "name": "Sasha Kim",
+      "role": "Design Lead",
+      "bio": "Runs day-to-day design across web and print. Keeps every deliverable on-brand from kickoff to handoff.",
       "image": "/placeholder-person.jpg"
     }
   ],
   "news": [
     {
       "id": 1,
-      "title": "Add Your News Title Here",
-      "description": "Add your news description here",
-      "date": "2026-07-10",
+      "title": "TAAM wins Best Digital Campaign at the 2026 Clio Awards",
+      "description": "Our Currents Festival launch campaign took home gold in the regional events category.",
+      "date": "2026-06-28",
       "link": "#"
     },
     {
       "id": 2,
-      "title": "Add Your News Title Here",
-      "description": "Add your news description here",
-      "date": "2026-07-09",
+      "title": "We're expanding: TAAM opens a second studio in Austin",
+      "description": "Growing client demand in the Southwest means a second location opening this fall.",
+      "date": "2026-06-14",
       "link": "#"
     },
     {
       "id": 3,
-      "title": "Add Your News Title Here",
-      "description": "Add your news description here",
-      "date": "2026-07-08",
+      "title": "Case study: how Vantage Analytics tripled trial signups",
+      "description": "A breakdown of the messaging and performance work behind a 3.1x lift in 90 days.",
+      "date": "2026-05-30",
+      "link": "#"
+    },
+    {
+      "id": 4,
+      "title": "TAAM is hiring: Senior Product Designer",
+      "description": "We're looking for a product-minded designer to join the web team full-time.",
+      "date": "2026-05-12",
       "link": "#"
     }
   ],
   "contact": {
     "email": "hello@taam.co",
     "phone": "+1 (555) 123-4567",
-    "address": "City, State",
+    "address": "Portland, OR",
     "social": {
       "instagram": "https://instagram.com/taam",
       "twitter": "https://twitter.com/taam",

@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Montserrat } from "next/font/google";
 import "./globals.css";
 import Navigation from "./components/Navigation";
+import Footer from "./components/Footer";
 
 const montserrat = Montserrat({
   variable: "--font-montserrat",
@@ -9,8 +10,8 @@ const montserrat = Montserrat({
 });
 
 export const metadata: Metadata = {
-  title: "TAAM Better",
-  description: "We do big things",
+  title: "TAAM | Branding, Web & Digital Studio",
+  description: "Branding, web design, and digital development for companies that need results, not just a deck.",
 };
 
 export default function RootLayout({
@@ -26,6 +27,7 @@ export default function RootLayout({
       <body className="min-h-full flex flex-col bg-taam-near-black text-white">
         <Navigation />
         <main className="flex-1">{children}</main>
+        <Footer />
       </body>
     </html>
   );

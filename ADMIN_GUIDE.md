@@ -2,7 +2,7 @@
 
 ## Quick Start
 
-Your site now has an **admin dashboard** where you can manage all content without touching code.
+Your site now has an **admin dashboard** where you can manage all content without touching code. It is not behind any login — anyone with the URL can view and edit it.
 
 ### Access the Admin Dashboard
 Go to: **http://localhost:3000/admin**

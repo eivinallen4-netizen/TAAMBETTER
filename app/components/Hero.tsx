@@ -11,11 +11,14 @@ export default function Hero({ title, subtitle, buttonText = 'GET STARTED', vide
   return (
     <>
       {/* Desktop: Masked Video */}
-      <section className="hidden md:block relative w-full h-screen overflow-hidden bg-[#F46325]">
+      <section className="hidden md:block relative w-full h-[80vh] min-h-[560px] max-h-[760px] overflow-hidden bg-[#F46325]">
+        <div className="absolute inset-0 flex items-center">
+        <div className="max-w-7xl mx-auto px-4 w-full">
+        <div className="aspect-[1461/822] w-full">
         <svg
           viewBox="0 0 1461 822"
           preserveAspectRatio="xMidYMid slice"
-          className="absolute inset-0 w-full h-full"
+          className="w-full h-full"
         >
           <defs>
             <mask id="heroMask">
@@ -51,10 +54,31 @@ export default function Hero({ title, subtitle, buttonText = 'GET STARTED', vide
             </div>
           </foreignObject>
         </svg>
+        </div>
+        </div>
+        </div>
+
+        <div className="absolute inset-x-0 bottom-0 z-10 bg-gradient-to-t from-[#111111] via-[#5c2110]/85 to-transparent pt-32 pb-14">
+          <div className="max-w-7xl mx-auto px-6 flex flex-col items-start">
+            <h1 className="text-4xl lg:text-5xl font-black text-white leading-tight max-w-2xl">
+              {title}
+            </h1>
+            <div className="flex gap-4 mt-5 max-w-xl">
+              <span className="w-1 shrink-0 bg-[#F46325]" />
+              <p className="text-base lg:text-lg text-white/80">
+                {subtitle}
+              </p>
+            </div>
+            <button className="group mt-8 inline-flex items-center gap-2 px-8 py-4 bg-[#F46325] text-white font-black text-sm tracking-wide hover:bg-[#E55A1A] transition">
+              {buttonText}
+              <span className="transition-transform group-hover:translate-x-1">↗</span>
+            </button>
+          </div>
+        </div>
       </section>
 
       {/* Mobile: Video Background with Text Overlay */}
-      <section className="md:hidden relative w-full h-screen overflow-hidden bg-[#F46325]">
+      <section className="md:hidden relative w-full h-[70vh] min-h-[480px] overflow-hidden bg-[#F46325]">
         {videoSrc && (
           <video
             autoPlay
@@ -70,14 +94,18 @@ export default function Hero({ title, subtitle, buttonText = 'GET STARTED', vide
         <div className="absolute inset-0 bg-black/40" />
 
         <div className="relative z-10 w-full h-full flex flex-col items-center justify-center px-6 text-center">
-          <h1 className="text-5xl font-black mb-4 text-white leading-tight">
+          <h1 className="text-4xl font-black mb-5 text-white leading-tight">
             {title}
           </h1>
-          <p className="text-lg text-white/90 mb-8 max-w-xs">
-            {subtitle}
-          </p>
-          <button className="px-8 py-4 bg-[#F46325] text-white font-black text-lg hover:bg-[#E55A1A] transition">
+          <div className="flex gap-3 mb-8 max-w-xs text-left">
+            <span className="w-1 shrink-0 bg-[#F46325]" />
+            <p className="text-base text-white/90">
+              {subtitle}
+            </p>
+          </div>
+          <button className="group inline-flex items-center gap-2 px-8 py-4 bg-[#F46325] text-white font-black text-lg hover:bg-[#E55A1A] transition">
             {buttonText}
+            <span className="transition-transform group-hover:translate-x-1">↗</span>
           </button>
         </div>
       </section>
