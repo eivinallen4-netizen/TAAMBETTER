@@ -1,6 +1,8 @@
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import siteContent from '../../content/siteContent.json';
+import ContactCTA from '../../components/ContactCTA';
+import { getCtaCopy, getServicesForCategory } from '../../lib/cta';
 
 const colorClasses: Record<string, string> = {
   red: 'from-red-900 to-red-700 border-red-500',
@@ -25,7 +27,9 @@ const textColorClasses: Record<string, string> = {
 };
 
 export async function generateStaticParams() {
-  return siteContent.projects.map((project) => ({ id: String(project.id) }));
+  return siteContent.projects
+    .filter((project) => project.published !== false)
+    .map((project) => ({ id: String(project.id) }));
 }
 
 export default async function ProjectPage({
@@ -36,7 +40,7 @@ export default async function ProjectPage({
   const { id } = await params;
   const project = siteContent.projects.find((p) => String(p.id) === id);
 
-  if (!project) {
+  if (!project || project.published === false) {
     notFound();
   }
 
@@ -99,12 +103,12 @@ export default async function ProjectPage({
           <p className="text-base mb-8 text-black/80 max-w-2xl mx-auto">
             Tell us the problem you&apos;re trying to solve. We&apos;ll tell you straight whether we&apos;re the right team to solve it.
           </p>
-          <a
-            href={`mailto:${siteContent.contact.email}`}
+          <ContactCTA
+            services={getServicesForCategory(project.category)}
             className="inline-block px-8 py-4 bg-black text-[#F46325] font-black text-lg hover:bg-gray-900 transition"
           >
-            GET IN TOUCH
-          </a>
+            {getCtaCopy(project.category)}
+          </ContactCTA>
         </div>
       </section>
     </div>

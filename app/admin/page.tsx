@@ -3,12 +3,50 @@
 import { useState, useEffect } from 'react';
 import siteContent from '../content/siteContent.json';
 
-type Tab = 'messaging' | 'hero' | 'projects' | 'team' | 'news' | 'contact';
+type Tab = 'messaging' | 'hero' | 'projects' | 'team' | 'news' | 'contact' | 'leads';
+
+interface Lead {
+  id: string;
+  biggest_challenge: string;
+  services_interested: string[];
+  name: string;
+  email: string;
+  phone: string;
+  business_name: string;
+  source_page: string;
+  timestamp: string;
+  crmStatus: 'sent' | 'failed' | 'not_configured';
+  crmError?: string;
+}
 
 export default function AdminDashboard() {
   const [activeTab, setActiveTab] = useState<Tab>('messaging');
   const [content, setContent] = useState(siteContent);
   const [saved, setSaved] = useState(false);
+  const [leads, setLeads] = useState<Lead[] | null>(null);
+
+  useEffect(() => {
+    if (activeTab !== 'leads' || leads !== null) return;
+    fetch('/api/leads')
+      .then((res) => res.json())
+      .then((data) => setLeads(data))
+      .catch((error) => console.error('Failed to load leads:', error));
+  }, [activeTab, leads]);
+
+  const deleteLead = async (id: string) => {
+    try {
+      const response = await fetch('/api/leads', {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id }),
+      });
+      if (response.ok) {
+        setLeads((prev) => (prev ?? []).filter((lead) => lead.id !== id));
+      }
+    } catch (error) {
+      console.error('Failed to delete lead:', error);
+    }
+  };
 
   const saveContent = async () => {
     try {
@@ -36,7 +74,7 @@ export default function AdminDashboard() {
 
         {/* Tabs */}
         <div className="flex gap-4 mb-8 border-b border-gray-700 overflow-x-auto">
-          {(['messaging', 'hero', 'projects', 'team', 'news', 'contact'] as Tab[]).map((tab) => (
+          {(['messaging', 'hero', 'projects', 'team', 'news', 'contact', 'leads'] as Tab[]).map((tab) => (
             <button
               key={tab}
               onClick={() => setActiveTab(tab)}
@@ -233,6 +271,28 @@ export default function AdminDashboard() {
                         />
                       </div>
                     )}
+
+                    <div>
+                      <label className="block text-sm font-bold mb-2">
+                        IMAGE URL{page === 'home' ? ' (video poster / fallback)' : ''}
+                      </label>
+                      <input
+                        type="text"
+                        value={content.hero[page as keyof typeof content.hero].imageSrc}
+                        onChange={(e) => {
+                          const heroData = content.hero[page as keyof typeof content.hero];
+                          setContent({
+                            ...content,
+                            hero: {
+                              ...content.hero,
+                              [page]: { ...heroData, imageSrc: e.target.value },
+                            },
+                          });
+                        }}
+                        className="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded text-white"
+                        placeholder="/your-image.jpg"
+                      />
+                    </div>
                   </div>
                 </div>
               ))}
@@ -246,15 +306,29 @@ export default function AdminDashboard() {
                 <div key={project.id} className="border-t border-gray-700 pt-8 first:border-0 first:pt-0">
                   <div className="flex items-center justify-between mb-4">
                     <h3 className="text-lg font-bold text-[#F46325]">PROJECT {idx + 1}</h3>
-                    <button
-                      onClick={() => {
-                        const updated = content.projects.filter((_, i) => i !== idx);
-                        setContent({ ...content, projects: updated });
-                      }}
-                      className="px-3 py-1 bg-red-600 text-white text-sm rounded hover:bg-red-700"
-                    >
-                      DELETE
-                    </button>
+                    <div className="flex items-center gap-4">
+                      <label className="flex items-center gap-2 text-sm font-bold">
+                        <input
+                          type="checkbox"
+                          checked={project.published !== false}
+                          onChange={(e) => {
+                            const updated = [...content.projects];
+                            updated[idx].published = e.target.checked;
+                            setContent({ ...content, projects: updated });
+                          }}
+                        />
+                        PUBLISHED
+                      </label>
+                      <button
+                        onClick={() => {
+                          const updated = content.projects.filter((_, i) => i !== idx);
+                          setContent({ ...content, projects: updated });
+                        }}
+                        className="px-3 py-1 bg-red-600 text-white text-sm rounded hover:bg-red-700"
+                      >
+                        DELETE
+                      </button>
+                    </div>
                   </div>
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -313,13 +387,15 @@ export default function AdminDashboard() {
                       value={project.size}
                       onChange={(e) => {
                         const updated = [...content.projects];
-                        updated[idx].size = e.target.value as 'small' | 'large';
+                        updated[idx].size = e.target.value as 'small' | 'wide' | 'tall' | 'large';
                         setContent({ ...content, projects: updated });
                       }}
                       className="px-4 py-2 bg-gray-700 border border-gray-600 rounded text-white"
                     >
-                      <option value="small">Small</option>
-                      <option value="large">Large</option>
+                      <option value="small">Small (1×1)</option>
+                      <option value="wide">Wide (2×1)</option>
+                      <option value="tall">Tall (1×2)</option>
+                      <option value="large">Large (2×2)</option>
                     </select>
                   </div>
 
@@ -387,7 +463,8 @@ export default function AdminDashboard() {
               <button
                 onClick={() => {
                   const newProject = {
-                    id: Math.max(...content.projects.map((p) => p.id)) + 1,
+                    id: Math.max(0, ...content.projects.map((p) => p.id)) + 1,
+                    published: true,
                     title: 'New Project',
                     category: 'Category',
                     description: '',
@@ -680,6 +757,74 @@ export default function AdminDashboard() {
                   className="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded text-white"
                 />
               </div>
+            </div>
+          )}
+
+          {/* LEADS TAB */}
+          {activeTab === 'leads' && (
+            <div className="space-y-4">
+              <p className="text-gray-400 text-sm mb-4">
+                Contact form submissions, newest first. This tab is read-only and separate from the
+                content you edit above — nothing here is affected by &quot;Save Changes&quot;.
+              </p>
+              {leads === null && <p className="text-gray-400">Loading…</p>}
+              {leads !== null && leads.length === 0 && (
+                <p className="text-gray-500">No submissions yet.</p>
+              )}
+              {(leads ?? []).map((lead) => (
+                <div key={lead.id} className="border border-gray-700 rounded-lg p-5">
+                  <div className="flex items-start justify-between gap-4 mb-3">
+                    <div>
+                      <h3 className="text-lg font-bold">{lead.name}</h3>
+                      <p className="text-sm text-gray-400">
+                        {new Date(lead.timestamp).toLocaleString()} &middot; from {lead.source_page || 'unknown page'}
+                      </p>
+                    </div>
+                    <div className="flex items-center gap-3 shrink-0">
+                      <span
+                        className={`text-xs font-bold uppercase px-2 py-1 rounded ${
+                          lead.crmStatus === 'sent'
+                            ? 'bg-green-900 text-green-300'
+                            : lead.crmStatus === 'failed'
+                            ? 'bg-red-900 text-red-300'
+                            : 'bg-gray-700 text-gray-300'
+                        }`}
+                        title={lead.crmError}
+                      >
+                        CRM: {lead.crmStatus.replace('_', ' ')}
+                      </span>
+                      <button
+                        onClick={() => deleteLead(lead.id)}
+                        className="px-3 py-1 bg-red-600 text-white text-sm rounded hover:bg-red-700"
+                      >
+                        DELETE
+                      </button>
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-sm text-gray-300">
+                    <div>
+                      <span className="text-gray-500">Email: </span>
+                      {lead.email}
+                    </div>
+                    <div>
+                      <span className="text-gray-500">Phone: </span>
+                      {lead.phone}
+                    </div>
+                    <div>
+                      <span className="text-gray-500">Business: </span>
+                      {lead.business_name || '—'}
+                    </div>
+                    <div>
+                      <span className="text-gray-500">Biggest challenge: </span>
+                      {lead.biggest_challenge}
+                    </div>
+                    <div className="md:col-span-2">
+                      <span className="text-gray-500">Services interested: </span>
+                      {lead.services_interested.join(', ') || '—'}
+                    </div>
+                  </div>
+                </div>
+              ))}
             </div>
           )}
         </div>

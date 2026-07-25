@@ -3,6 +3,7 @@
 import { useMemo, useState } from 'react';
 import Link from 'next/link';
 import Hero from '../components/Hero';
+import ContactCTA from '../components/ContactCTA';
 import siteContent from '../content/siteContent.json';
 
 export default function Work() {
@@ -31,17 +32,29 @@ export default function Work() {
     pink: 'text-pink-400',
   };
 
-  const categories = useMemo(
-    () => ['All', ...Array.from(new Set(content.projects.map((p) => p.category)))],
+  const sizeSpanClasses: Record<string, string> = {
+    small: 'col-span-1 row-span-1',
+    wide: 'col-span-2 row-span-1',
+    tall: 'col-span-1 row-span-2',
+    large: 'col-span-2 row-span-2',
+  };
+
+  const publishedProjects = useMemo(
+    () => content.projects.filter((p) => p.published !== false),
     [content.projects]
+  );
+
+  const categories = useMemo(
+    () => ['All', ...Array.from(new Set(publishedProjects.map((p) => p.category)))],
+    [publishedProjects]
   );
 
   const filteredProjects = useMemo(
     () =>
       activeCategory === 'All'
-        ? content.projects
-        : content.projects.filter((p) => p.category === activeCategory),
-    [content.projects, activeCategory]
+        ? publishedProjects
+        : publishedProjects.filter((p) => p.category === activeCategory),
+    [publishedProjects, activeCategory]
   );
 
   return (
@@ -50,6 +63,8 @@ export default function Work() {
         title={content.hero.work.title}
         subtitle={content.hero.work.subtitle}
         buttonText={content.hero.work.buttonText}
+        videoSrc={content.hero.work.videoSrc}
+        imageSrc={content.hero.work.imageSrc}
       />
 
       {/* Filters + count */}
@@ -82,8 +97,7 @@ export default function Work() {
           {filteredProjects.map((project) => {
             const colorClass = colorClasses[project.color as keyof typeof colorClasses] || colorClasses.red;
             const textColorClass = textColorClasses[project.color as keyof typeof textColorClasses] || textColorClasses.red;
-            const spanClass =
-              project.size === 'large' ? 'col-span-2 md:col-span-2 row-span-2' : 'col-span-1';
+            const spanClass = sizeSpanClasses[project.size] || sizeSpanClasses.small;
 
             return (
               <Link
@@ -102,7 +116,7 @@ export default function Work() {
                   <h3 className="text-base md:text-xl font-black text-white leading-tight">
                     {project.title}
                   </h3>
-                  {project.size === 'large' && (
+                  {(project.size === 'large' || project.size === 'wide') && (
                     <p className="text-sm text-white/70 mt-2 line-clamp-2 max-w-md">{project.description}</p>
                   )}
                   <div className={`text-xs mt-2 font-semibold ${textColorClass} opacity-0 group-hover:opacity-100 transition`}>
@@ -122,9 +136,9 @@ export default function Work() {
           <p className="text-base mb-8 text-black/80 max-w-2xl mx-auto">
             Tell us the problem you&apos;re trying to solve. We&apos;ll tell you straight whether we&apos;re the right team to solve it.
           </p>
-          <a href={`mailto:${content.contact.email}`} className="inline-block px-8 py-4 bg-black text-[#F46325] font-black text-lg hover:bg-gray-900 transition">
-            GET IN TOUCH
-          </a>
+          <ContactCTA className="inline-block px-8 py-4 bg-black text-[#F46325] font-black text-lg hover:bg-gray-900 transition">
+            Get Free Recommendations
+          </ContactCTA>
         </div>
       </section>
     </div>

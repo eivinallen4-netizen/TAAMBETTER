@@ -1,5 +1,6 @@
 import Hero from '../components/Hero';
 import StatsBar from '../components/StatsBar';
+import ContactCTA from '../components/ContactCTA';
 import siteContent from '../content/siteContent.json';
 import { getServiceInfo } from '../lib/services';
 
@@ -11,6 +12,8 @@ export default function About() {
         title={content.hero.about.title}
         subtitle={content.hero.about.subtitle}
         buttonText={content.hero.about.buttonText}
+        videoSrc={content.hero.about.videoSrc}
+        imageSrc={content.hero.about.imageSrc}
       />
 
       <StatsBar stats={content.stats} />
@@ -106,9 +109,9 @@ export default function About() {
       <section className="bg-[#F46325] py-16">
         <div className="max-w-7xl mx-auto px-6 flex flex-col md:flex-row items-center justify-between gap-6">
           <h2 className="text-3xl md:text-4xl font-black text-center md:text-left">READY TO DO BIG THINGS?</h2>
-          <a href={`mailto:${content.contact.email}`} className="inline-block px-8 py-4 bg-black text-[#F46325] font-black text-lg hover:bg-gray-900 transition shrink-0">
-            LET&apos;S TALK
-          </a>
+          <ContactCTA className="inline-block px-8 py-4 bg-black text-[#F46325] font-black text-lg hover:bg-gray-900 transition shrink-0">
+            Get Free Recommendations
+          </ContactCTA>
         </div>
       </section>
     </div>

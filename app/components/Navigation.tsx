@@ -5,6 +5,7 @@ import Image from 'next/image';
 import { usePathname } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import siteContent from '../content/siteContent.json';
+import ContactCTA from './ContactCTA';
 
 const links = [
   { href: '/', label: 'Home' },
@@ -17,6 +18,15 @@ export default function Navigation() {
   const [scrolled, setScrolled] = useState(false);
   const pathname = usePathname();
   const content = siteContent;
+
+  // Nav sits transparent over the orange hero until scrolled (or dark once the mobile
+  // menu is open). Hover/focus needs to read against both: black over the orange hero
+  // (that's the fix — orange-on-orange was invisible), white + a border cue once the
+  // navbar itself goes dark (black-on-near-black would be just as unreadable).
+  const navIsDark = scrolled || isOpen;
+  const desktopLinkClass = navIsDark
+    ? 'text-white border-transparent hover:border-white focus-visible:border-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white'
+    : 'text-white border-transparent hover:text-black focus-visible:text-black focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-black';
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 40);
@@ -79,22 +89,19 @@ export default function Navigation() {
                   <Link
                     key={link.href}
                     href={link.href}
-                    className={`transition font-semibold uppercase text-sm tracking-wide pb-1 border-b-2 ${
-                      active
-                        ? 'text-[#F46325] border-[#F46325]'
-                        : 'text-white border-transparent hover:text-[#F46325]'
+                    className={`transition font-semibold uppercase text-sm tracking-wide pb-1 border-b-2 outline-none ${
+                      active ? 'text-[#F46325] border-[#F46325]' : desktopLinkClass
                     }`}
                   >
                     {link.label}
                   </Link>
                 );
               })}
-            <a
-              href={`mailto:${content.contact.email}`}
-              className="transition font-semibold uppercase text-sm tracking-wide pb-1 border-b-2 text-white border-transparent hover:text-[#F46325]"
+            <ContactCTA
+              className={`transition font-semibold uppercase text-sm tracking-wide pb-1 border-b-2 outline-none ${desktopLinkClass}`}
             >
               Contact
-            </a>
+            </ContactCTA>
             <Link
               href="/work"
               className="group inline-flex items-center gap-1.5 px-4 py-2 bg-[#111111] text-white text-sm font-bold uppercase tracking-wide hover:bg-black transition"
@@ -131,19 +138,21 @@ export default function Navigation() {
                 key={link.href}
                 href={link.href}
                 onClick={() => setIsOpen(false)}
-                className={`transition font-black uppercase text-4xl tracking-wide ${
-                  pathname === link.href ? 'text-[#F46325]' : 'text-white hover:text-[#F46325]'
+                className={`transition font-black uppercase text-4xl tracking-wide outline-none ${
+                  pathname === link.href
+                    ? 'text-[#F46325]'
+                    : 'text-white hover:underline focus-visible:underline decoration-2 underline-offset-8 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-white'
                 }`}
               >
                 {link.label}
               </Link>
             ))}
-            <a
-              href={`mailto:${content.contact.email}`}
-              className="text-white hover:text-[#F46325] transition font-semibold uppercase text-lg tracking-wide"
+            <ContactCTA
+              onOpen={() => setIsOpen(false)}
+              className="text-white hover:underline focus-visible:underline decoration-2 underline-offset-4 outline-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-white transition font-semibold uppercase text-lg tracking-wide"
             >
               {content.contact.email}
-            </a>
+            </ContactCTA>
           </div>
         </div>
       </nav>

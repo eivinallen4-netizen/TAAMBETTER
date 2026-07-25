@@ -3,6 +3,7 @@ import { Montserrat } from "next/font/google";
 import "./globals.css";
 import Navigation from "./components/Navigation";
 import Footer from "./components/Footer";
+import ContactFormProvider from "./components/ContactForm/ContactFormProvider";
 
 const montserrat = Montserrat({
   variable: "--font-montserrat",
@@ -25,9 +26,11 @@ export default function RootLayout({
       className={`${montserrat.variable} h-full antialiased scroll-smooth`}
     >
       <body className="min-h-full flex flex-col bg-taam-near-black text-white">
-        <Navigation />
-        <main className="flex-1">{children}</main>
-        <Footer />
+        <ContactFormProvider>
+          <Navigation />
+          <main className="flex-1">{children}</main>
+          <Footer />
+        </ContactFormProvider>
       </body>
     </html>
   );

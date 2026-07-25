@@ -1,10 +1,12 @@
 import Hero from './components/Hero';
 import StatsBar from './components/StatsBar';
+import ContactCTA from './components/ContactCTA';
 import siteContent from './content/siteContent.json';
 import { getServiceInfo } from './lib/services';
 
 export default function Home() {
   const content = siteContent;
+  const publishedProjects = content.projects.filter((p) => p.published !== false);
 
   return (
     <div className="bg-[#111111] text-white">
@@ -13,6 +15,7 @@ export default function Home() {
         subtitle={content.hero.home.subtitle}
         buttonText={content.hero.home.buttonText}
         videoSrc={content.hero.home.videoSrc}
+        imageSrc={content.hero.home.imageSrc}
       />
 
       <StatsBar stats={content.stats} />
@@ -56,6 +59,7 @@ export default function Home() {
       </section>
 
       {/* Work Grid Section */}
+      {publishedProjects.length > 0 && (
       <section className="bg-[#111111]">
         <div className="max-w-7xl mx-auto px-6 py-16">
           <div className="flex items-baseline justify-between mb-8">
@@ -66,7 +70,7 @@ export default function Home() {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-            {content.projects.slice(0, 2).map((project) => (
+            {publishedProjects.slice(0, 2).map((project) => (
               <a
                 key={project.id}
                 href="/work"
@@ -85,7 +89,7 @@ export default function Home() {
           </div>
 
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            {content.projects.slice(2, 6).map((project) => (
+            {publishedProjects.slice(2, 6).map((project) => (
               <a
                 key={project.id}
                 href="/work"
@@ -103,6 +107,7 @@ export default function Home() {
           </div>
         </div>
       </section>
+      )}
 
       {/* Process Section */}
       <section className="bg-black border-t border-gray-800">
@@ -157,9 +162,9 @@ export default function Home() {
             <a href={`mailto:${content.contact.email}`} className="text-sm font-semibold text-black/80 hover:text-black transition">
               {content.contact.email}
             </a>
-            <a href={`mailto:${content.contact.email}`} className="inline-block px-8 py-4 bg-[#111111] text-[#F46325] font-black text-lg hover:bg-gray-900 transition">
-              GET IN TOUCH
-            </a>
+            <ContactCTA className="inline-block px-8 py-4 bg-[#111111] text-[#F46325] font-black text-lg hover:bg-gray-900 transition">
+              Get Free Recommendations
+            </ContactCTA>
           </div>
         </div>
       </section>

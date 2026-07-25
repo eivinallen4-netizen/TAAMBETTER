@@ -5,9 +5,10 @@ interface HeroProps {
   subtitle: string;
   buttonText?: string;
   videoSrc?: string;
+  imageSrc?: string;
 }
 
-export default function Hero({ title, subtitle, buttonText = 'GET STARTED', videoSrc }: HeroProps) {
+export default function Hero({ title, subtitle, buttonText = 'GET STARTED', videoSrc, imageSrc }: HeroProps) {
   return (
     <>
       {/* Desktop: Masked Video */}
@@ -40,17 +41,21 @@ export default function Hero({ title, subtitle, buttonText = 'GET STARTED', vide
             mask="url(#heroMask)"
           >
             <div className="w-full h-full relative">
-              {videoSrc && (
+              {videoSrc ? (
                 <video
                   autoPlay
                   muted
                   loop
                   playsInline
+                  poster={imageSrc || undefined}
                   className="w-full h-full object-cover"
                 >
                   <source src={videoSrc} type="video/mp4" />
                 </video>
-              )}
+              ) : imageSrc ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img src={imageSrc} alt="" className="w-full h-full object-cover" />
+              ) : null}
             </div>
           </foreignObject>
         </svg>
@@ -79,17 +84,21 @@ export default function Hero({ title, subtitle, buttonText = 'GET STARTED', vide
 
       {/* Mobile: Video Background with Text Overlay */}
       <section className="md:hidden relative w-full h-[70vh] min-h-[480px] overflow-hidden bg-[#F46325]">
-        {videoSrc && (
+        {videoSrc ? (
           <video
             autoPlay
             muted
             loop
             playsInline
+            poster={imageSrc || undefined}
             className="absolute inset-0 w-full h-full object-cover"
           >
             <source src={videoSrc} type="video/mp4" />
           </video>
-        )}
+        ) : imageSrc ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img src={imageSrc} alt="" className="absolute inset-0 w-full h-full object-cover" />
+        ) : null}
 
         <div className="absolute inset-0 bg-black/40" />
 
