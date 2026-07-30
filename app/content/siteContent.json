@@ -82,7 +82,7 @@
   "projects": [
     {
       "id": 1,
-      "published": false,
+      "published": true,
       "title": "Northbound Coffee",
       "category": "Branding",
       "description": "Full identity overhaul for a 12-location coffee roaster — logo system, packaging, and in-store signage.",
@@ -96,7 +96,7 @@
     },
     {
       "id": 2,
-      "published": false,
+      "published": true,
       "title": "Vantage Analytics",
       "category": "Web Design",
       "description": "Marketing site and product demo for a B2B analytics platform, rebuilt for clarity and speed.",
@@ -110,7 +110,7 @@
     },
     {
       "id": 3,
-      "published": false,
+      "published": true,
       "title": "Fielder Outdoor",
       "category": "Photography",
       "description": "Season lookbook and product photography for an outdoor apparel brand's fall 2025 line.",
@@ -124,7 +124,7 @@
     },
     {
       "id": 4,
-      "published": false,
+      "published": true,
       "title": "Loom & Co",
       "category": "Digital Development",
       "description": "Headless e-commerce rebuild for a home goods retailer moving off a legacy platform.",
@@ -138,7 +138,7 @@
     },
     {
       "id": 5,
-      "published": false,
+      "published": true,
       "title": "Currents Festival",
       "category": "Creative Strategy",
       "description": "Positioning, messaging, and launch campaign for a first-year regional music festival.",
@@ -152,7 +152,7 @@
     },
     {
       "id": 6,
-      "published": false,
+      "published": true,
       "title": "Hearth Studio",
       "category": "Content Creation",
       "description": "Ongoing video and editorial content series for a home renovation studio's YouTube channel.",
