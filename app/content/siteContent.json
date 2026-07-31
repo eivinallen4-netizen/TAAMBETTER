@@ -13,9 +13,9 @@
   },
   "hero": {
     "home": {
-      "title": "WE DO BIG THINGS",
+      "title": "Better marketing\nfor the best\nbusinesses",
       "subtitle": "",
-      "buttonText": "SEE THE WORK",
+      "buttonText": "",
       "videoSrc": "/construction-timelapse.mp4",
       "imageSrc": ""
     },
@@ -83,152 +83,63 @@
     {
       "id": 1,
       "published": true,
-      "title": "Northbound Coffee",
-      "category": "Branding",
-      "description": "Full identity overhaul for a 12-location coffee roaster — logo system, packaging, and in-store signage.",
-      "image": "/placeholder-project.jpg",
-      "color": "red",
-      "size": "large",
-      "challenge": "Northbound's old identity looked identical to three competitors on the same street and wasn't holding up on packaging.",
-      "solution": "New wordmark, a modular color system tied to roast profile, and a packaging kit that scales from bags to cups to signage.",
-      "results": "Same-store sales up 18% in the two quarters after rollout; brand recall in customer surveys nearly doubled.",
-      "technologies": "Illustrator, Figma, print production"
-    },
-    {
-      "id": 2,
-      "published": true,
-      "title": "Vantage Analytics",
-      "category": "Web Design",
-      "description": "Marketing site and product demo for a B2B analytics platform, rebuilt for clarity and speed.",
-      "image": "/placeholder-project.jpg",
-      "color": "cyan",
-      "size": "large",
-      "challenge": "The existing site buried the product behind jargon and a 9MB homepage; trial signups had stalled.",
-      "solution": "Rewrote the narrative around three core use cases, cut page weight by 70%, and rebuilt the signup flow.",
-      "results": "Trial signups up 3.1x within 90 days of launch; homepage load time dropped from 6.2s to 1.4s.",
-      "technologies": "Next.js, Tailwind CSS, Vercel"
-    },
-    {
-      "id": 3,
-      "published": true,
-      "title": "Fielder Outdoor",
-      "category": "Photography",
-      "description": "Season lookbook and product photography for an outdoor apparel brand's fall 2025 line.",
-      "image": "/placeholder-project.jpg",
-      "color": "yellow",
-      "size": "small",
-      "challenge": "Fielder needed 200+ product shots and a lifestyle lookbook on a two-week turnaround.",
-      "solution": "On-location shoot across two states with a lean 4-person crew and same-day editing pipeline.",
-      "results": "Delivered on schedule; lookbook imagery drove a 24% lift in email campaign click-through.",
-      "technologies": "Location photography, Capture One, Lightroom"
-    },
-    {
-      "id": 4,
-      "published": true,
-      "title": "Loom & Co",
-      "category": "Digital Development",
-      "description": "Headless e-commerce rebuild for a home goods retailer moving off a legacy platform.",
-      "image": "/placeholder-project.jpg",
-      "color": "purple",
-      "size": "small",
-      "challenge": "Legacy platform couldn't support their SKU growth and checkout was losing ~30% of carts.",
-      "solution": "Migrated to a headless storefront with a streamlined one-page checkout and saved-cart recovery.",
-      "results": "Cart abandonment down 22%; site handled Black Friday traffic with zero downtime.",
-      "technologies": "Next.js, Shopify Hydrogen, Stripe"
-    },
-    {
-      "id": 5,
-      "published": true,
-      "title": "Currents Festival",
-      "category": "Creative Strategy",
-      "description": "Positioning, messaging, and launch campaign for a first-year regional music festival.",
-      "image": "/placeholder-project.jpg",
-      "color": "green",
-      "size": "small",
-      "challenge": "A first-year festival with no brand recognition, competing against three established events for the same weekend.",
-      "solution": "Built a distinct visual identity and a phased social campaign that leaned on artist-led content over paid reach.",
-      "results": "Sold 6,200 tickets against a 5,000 target with 40% less paid media spend than comparable launches.",
-      "technologies": "Brand strategy, social campaign planning"
-    },
-    {
-      "id": 6,
-      "published": true,
-      "title": "Hearth Studio",
+      "title": "Discount Drain Cleaning",
       "category": "Content Creation",
-      "description": "Ongoing video and editorial content series for a home renovation studio's YouTube channel.",
-      "image": "/placeholder-project.jpg",
+      "description": "<h3>The Challenge</h3><p>When Discount Drain Cleaning came to us, their growth was <strong>clogged</strong> — <strong>no leads, no engagement, no direction on social</strong>. They had the skills and the crew, but zero digital presence.</p><h3>The Solution</h3><p>We rebuilt their presence from the pipes up: a <strong>full-funnel content engine</strong> featuring laugh-out-loud skits, real-trade education, and service-driven posts. We orchestrated <strong>30 reels a month</strong> and <strong>weekly on-location shoots</strong> with the crew, turning the plumbers themselves into personalities people wanted to follow.</p><h3>The Results</h3><ul><li><strong>Views:</strong> Exploded from under 30K to <strong>2M+</strong></li><li><strong>Likes:</strong> Surged from 2K to <strong>200K</strong></li><li><strong>TikTok:</strong> Built from 0 to <strong>3,500 followers</strong> — <strong>100% organic, ZERO ad spend</strong></li></ul><p><strong>The tagline:</strong> \"They called for a plumber. The whole internet showed up. Vegas is FLOWING.\"</p><h3>Impact</h3><p>From clogged growth to unstoppable momentum. Discount Drain went from a local service business to a viral content phenomenon, proving that authenticity, humor, and strategic consistency can turn any industry into entertainment.</p>",
+      "image": "/screenshot.png",
+      "videos": [
+        {
+          "type": "showcase",
+          "src": "/Discount-drain/video-showcase/1.mp4",
+          "title": "Reel 1"
+        },
+        {
+          "type": "showcase",
+          "src": "/Discount-drain/video-showcase/2.mp4",
+          "title": "Reel 2"
+        },
+        {
+          "type": "showcase",
+          "src": "/Discount-drain/video-showcase/3.mp4",
+          "title": "Reel 3"
+        },
+        {
+          "type": "showcase",
+          "src": "/Discount-drain/video-showcase/4.mp4",
+          "title": "Reel 4"
+        },
+        {
+          "type": "showcase",
+          "src": "/Discount-drain/video-showcase/5.mp4",
+          "title": "Reel 5"
+        }
+      ],
+      "images": [
+        {
+          "src": "/screenshot.png",
+          "alt": "Discount Drain Cleaning social media content showcase",
+          "order": 1
+        }
+      ],
       "color": "orange",
-      "size": "small",
-      "challenge": "Hearth had strong project work but no consistent content engine to show it.",
-      "solution": "Set up a monthly shoot-and-edit cadence covering three video formats, plus a written case-study library.",
-      "results": "Channel grew from 1,200 to 31,000 subscribers over 14 months of the engagement.",
-      "technologies": "Premiere Pro, video production, editorial writing"
+      "size": "large",
+      "technologies": "Social Strategy, Content Production, Video Editing, Community Management"
     }
-  ],
-  "team": [
-    {
-      "id": 1,
-      "name": "Jordan Ellis",
-      "role": "Creative Director",
-      "bio": "12 years across branding and campaign work. Sets the visual direction on every project before it leaves the studio.",
-      "image": "/placeholder-person.jpg"
-    },
-    {
-      "id": 2,
-      "name": "Priya Nair",
-      "role": "Head of Strategy",
-      "bio": "Former in-house strategist for two DTC brands. Turns vague briefs into scopes people can actually execute.",
-      "image": "/placeholder-person.jpg"
-    },
-    {
-      "id": 3,
-      "name": "Marcus Webb",
-      "role": "Lead Developer",
-      "bio": "Builds and ships the sites and products. Cares more about load time and accessibility than anyone else in the room.",
-      "image": "/placeholder-person.jpg"
-    },
-    {
-      "id": 4,
-      "name": "Sasha Kim",
-      "role": "Design Lead",
-      "bio": "Runs day-to-day design across web and print. Keeps every deliverable on-brand from kickoff to handoff.",
-      "image": "/placeholder-person.jpg"
-    }
+
   ],
   "news": [
     {
-      "id": 1,
-      "title": "TAAM wins Best Digital Campaign at the 2026 Clio Awards",
-      "description": "Our Currents Festival launch campaign took home gold in the regional events category.",
-      "date": "2026-06-28",
-      "link": "#"
-    },
-    {
-      "id": 2,
-      "title": "We're expanding: TAAM opens a second studio in Austin",
-      "description": "Growing client demand in the Southwest means a second location opening this fall.",
-      "date": "2026-06-14",
-      "link": "#"
-    },
-    {
-      "id": 3,
-      "title": "Case study: how Vantage Analytics tripled trial signups",
-      "description": "A breakdown of the messaging and performance work behind a 3.1x lift in 90 days.",
-      "date": "2026-05-30",
-      "link": "#"
-    },
-    {
-      "id": 4,
-      "title": "TAAM is hiring: Senior Product Designer",
-      "description": "We're looking for a product-minded designer to join the web team full-time.",
-      "date": "2026-05-12",
+      "id": 5,
+      "title": "TAAM expands to Las Vegas: joining local real estate events",
+      "description": "Opening our second Nevada office and hitting the road with free short-form content drops at upcoming real estate events across the region.",
+      "date": "2026-07-31",
       "link": "#"
     }
   ],
   "contact": {
     "email": "contact@taammaking.com",
     "phone": "702-997-6813",
-    "address": "Portland, OR",
+    "address": "LAS VEGAS, NV",
     "social": {
       "instagram": "https://instagram.com/taam",
       "twitter": "https://twitter.com/taam",

@@ -1,6 +1,6 @@
 export interface ChallengeOption {
   value: string;
-  emoji: string;
+  icon: string;
   label: string;
 }
 
@@ -10,13 +10,13 @@ export interface ServiceOption {
 }
 
 export const CHALLENGE_OPTIONS: ChallengeOption[] = [
-  { value: 'leads', emoji: '📉', label: 'Not Getting Enough Leads or Sales' },
-  { value: 'social', emoji: '📱', label: 'Struggling to Keep Up with Social Media' },
-  { value: 'content', emoji: '🎥', label: 'Need Better Photo & Video Content' },
-  { value: 'website', emoji: '🌐', label: 'Need a New Website or Website Redesign' },
-  { value: 'marketing', emoji: '📊', label: "My Marketing Isn't Producing Results" },
-  { value: 'grow', emoji: '🚀', label: 'I Want to Grow My Business Online' },
-  { value: 'unsure', emoji: '🤔', label: "I'm Not Sure — I'd Like Expert Advice" },
+  { value: 'leads', icon: 'TrendingDown', label: 'Not Getting Enough Leads or Sales' },
+  { value: 'social', icon: 'Smartphone', label: 'Struggling to Keep Up with Social Media' },
+  { value: 'content', icon: 'Video', label: 'Need Better Photo & Video Content' },
+  { value: 'website', icon: 'Globe', label: 'Need a New Website or Website Redesign' },
+  { value: 'marketing', icon: 'BarChart3', label: "My Marketing Isn't Producing Results" },
+  { value: 'grow', icon: 'Rocket', label: 'I Want to Grow My Business Online' },
+  { value: 'unsure', icon: 'HelpCircle', label: "I'm Not Sure — I'd Like Expert Advice" },
 ];
 
 export const SERVICE_OPTIONS: ServiceOption[] = [

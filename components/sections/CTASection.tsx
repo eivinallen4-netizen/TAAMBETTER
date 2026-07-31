@@ -5,6 +5,8 @@ import Title from '../ui/Title';
 import Text from '../ui/Text';
 import Button from '../ui/Button';
 import ContactCTA from '@/app/components/ContactCTA';
+import { motion } from 'motion/react';
+import { slideInDown, fadeIn, slideInUp, slideInLeft, slideInRight } from '@/lib/motion-animations';
 
 interface CTASectionProps {
   title: string;
@@ -21,20 +23,44 @@ export default function CTASection({
 }: CTASectionProps) {
   if (variant === 'work') {
     return (
-      <section className="bg-taam-orange py-16">
+      <section className="relative bg-taam-orange py-16 overflow-hidden">
+        <div className="absolute inset-0 bg-[linear-gradient(135deg,transparent_30%,rgba(0,0,0,.02)_31%,rgba(0,0,0,.02)_32%,transparent_33%)] bg-[length:60px_60px]" />
+        <div className="absolute top-0 left-1/4 w-96 h-96 bg-orange-600/20 rounded-full blur-3xl" />
+
         <Container>
-          <div className="text-center">
-            <Title as="h2" color="white">
-              {title}
-            </Title>
+          <div className="text-center relative z-10">
+            <motion.div variants={slideInDown} initial="initial" animate="animate">
+              <Title as="h2" color="white">
+                {title}
+              </Title>
+            </motion.div>
             {description && (
-              <Text size="base" color="white" className="text-black/80 max-w-2xl mx-auto mb-8 mt-4">
-                {description}
-              </Text>
+              <motion.div
+                variants={fadeIn}
+                initial="initial"
+                animate="animate"
+                transition={{ delay: 0.2 }}
+              >
+                <Text
+                  size="base"
+                  color="white"
+                  className="text-black/80 max-w-2xl mx-auto mb-8 mt-4"
+                >
+                  {description}
+                </Text>
+              </motion.div>
             )}
-            <ContactCTA className="inline-block px-8 py-4 bg-black text-taam-orange font-black text-lg hover:bg-gray-900 transition">
-              Get Free Recommendations
-            </ContactCTA>
+            <motion.div
+              variants={slideInUp}
+              initial="initial"
+              animate="animate"
+              transition={{ delay: 0.3 }}
+            >
+              <ContactCTA className="inline-block px-8 py-4 bg-black text-taam-orange font-black text-lg hover:bg-gray-900 transition relative overflow-hidden group">
+                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent group-hover:translate-x-full transition-transform duration-500 -translate-x-full" />
+                <span className="relative">Get Free Recommendations</span>
+              </ContactCTA>
+            </motion.div>
           </div>
         </Container>
       </section>
@@ -42,22 +68,33 @@ export default function CTASection({
   }
 
   return (
-    <section className="bg-taam-orange py-16">
+    <section className="relative bg-taam-orange py-16 overflow-hidden">
+      <div className="absolute inset-0 bg-[linear-gradient(135deg,transparent_30%,rgba(0,0,0,.02)_31%,rgba(0,0,0,.02)_32%,transparent_33%)] bg-[length:60px_60px]" />
+      <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-orange-600/20 rounded-full blur-3xl" />
+
       <Container>
-        <div className="flex flex-col md:flex-row items-center justify-between gap-6">
-          <Title as="h2" color="white" className="text-center md:text-left">
-            {title}
-          </Title>
-          <div className="flex flex-col sm:flex-row items-center gap-4 shrink-0">
+        <div className="flex flex-col md:flex-row items-center justify-between gap-6 relative z-10">
+          <motion.div variants={slideInLeft} initial="initial" animate="animate">
+            <Title as="h2" color="white" className="text-center md:text-left">
+              {title}
+            </Title>
+          </motion.div>
+          <motion.div
+            variants={slideInRight}
+            initial="initial"
+            animate="animate"
+            className="flex flex-col sm:flex-row items-center gap-4 shrink-0"
+          >
             {email && (
               <a href={`mailto:${email}`} className="text-sm font-semibold text-black/80 hover:text-black transition">
                 {email}
               </a>
             )}
-            <ContactCTA className="inline-block px-8 py-4 bg-taam-near-black text-taam-orange font-black text-lg hover:bg-gray-900 transition">
-              Get Free Recommendations
+            <ContactCTA className="inline-block px-8 py-4 bg-taam-near-black text-taam-orange font-black text-lg hover:bg-gray-900 transition relative overflow-hidden group">
+              <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent group-hover:translate-x-full transition-transform duration-500 -translate-x-full" />
+              <span className="relative">Get Free Recommendations</span>
             </ContactCTA>
-          </div>
+          </motion.div>
         </div>
       </Container>
     </section>

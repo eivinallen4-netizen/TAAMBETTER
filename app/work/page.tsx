@@ -3,8 +3,14 @@
 import { useMemo, useState } from 'react';
 import Link from 'next/link';
 import Hero from '../components/Hero';
-import ContactCTA from '../components/ContactCTA';
 import siteContent from '../content/siteContent.json';
+import Container from '@/components/ui/Container';
+import Text from '@/components/ui/Text';
+import Badge from '@/components/ui/Badge';
+import Card from '@/components/ui/Card';
+import CTASection from '@/components/sections/CTASection';
+import Title from '@/components/ui/Title';
+import { stripHtml } from '@/lib/text-utils';
 
 export default function Work() {
   const content = siteContent;
@@ -59,13 +65,7 @@ export default function Work() {
 
   return (
     <div className="bg-black text-white">
-      <Hero
-        title={content.hero.work.title}
-        subtitle={content.hero.work.subtitle}
-        buttonText={content.hero.work.buttonText}
-        videoSrc={content.hero.work.videoSrc}
-        imageSrc={content.hero.work.imageSrc}
-      />
+     
 
       {/* Filters + count */}
       <section className="max-w-7xl mx-auto px-6 pt-14">
@@ -94,53 +94,47 @@ export default function Work() {
       {/* Portfolio Grid */}
       <section className="max-w-7xl mx-auto px-6 pb-20">
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 auto-rows-[220px] md:auto-rows-[260px]">
-          {filteredProjects.map((project) => {
+          {filteredProjects.map((project, index) => {
             const colorClass = colorClasses[project.color as keyof typeof colorClasses] || colorClasses.red;
             const textColorClass = textColorClasses[project.color as keyof typeof textColorClasses] || textColorClasses.red;
             const spanClass = sizeSpanClasses[project.size] || sizeSpanClasses.small;
+            const direction = index % 2 === 0 ? 'left' : 'right';
 
             return (
-              <Link
+              <Card
                 key={project.id}
                 href={`/work/${project.id}`}
-                className={`${spanClass} text-left bg-gradient-to-br ${colorClass} rounded-lg flex flex-col justify-end p-4 cursor-pointer group hover:shadow-2xl transition-all duration-300 border-2 relative overflow-hidden`}
+                className={`${spanClass} bg-gradient-to-br ${colorClass} hover:shadow-2xl`}
               >
                 {project.image && project.image !== '/placeholder-project.jpg' ? (
-                  <img src={project.image} alt={project.title} className="absolute inset-0 w-full h-full object-cover" />
+                  <img src={project.image} alt={project.title} data-scroll-animate={direction} className="absolute inset-0 w-full h-full object-cover" />
                 ) : null}
                 <div className="absolute inset-0 bg-black/10 group-hover:bg-black/30 transition duration-300" />
-                <div className="relative z-10">
-                  <div className={`text-xs font-bold mb-1 ${textColorClass}`}>
-                    {project.category}
-                  </div>
-                  <h3 className="text-base md:text-xl font-black text-white leading-tight">
+                <div className="relative z-10 p-4">
+                  <Badge className={textColorClass}>{project.category}</Badge>
+                  <Title as="h3" color="white" className="text-base md:text-xl mt-1">
                     {project.title}
-                  </h3>
+                  </Title>
                   {(project.size === 'large' || project.size === 'wide') && (
-                    <p className="text-sm text-white/70 mt-2 line-clamp-2 max-w-md">{project.description}</p>
+                    <Text size="sm" color="white" className="text-white/70 mt-2 line-clamp-2 max-w-md">
+                      {stripHtml(project.description)}
+                    </Text>
                   )}
                   <div className={`text-xs mt-2 font-semibold ${textColorClass} opacity-0 group-hover:opacity-100 transition`}>
                     VIEW DETAILS →
                   </div>
                 </div>
-              </Link>
+              </Card>
             );
           })}
         </div>
       </section>
 
-      {/* CTA Section */}
-      <section className="bg-[#F46325] py-16">
-        <div className="max-w-7xl mx-auto px-6 text-center">
-          <h2 className="text-3xl md:text-4xl font-black mb-4">START YOUR PROJECT</h2>
-          <p className="text-base mb-8 text-black/80 max-w-2xl mx-auto">
-            Tell us the problem you&apos;re trying to solve. We&apos;ll tell you straight whether we&apos;re the right team to solve it.
-          </p>
-          <ContactCTA className="inline-block px-8 py-4 bg-black text-[#F46325] font-black text-lg hover:bg-gray-900 transition">
-            Get Free Recommendations
-          </ContactCTA>
-        </div>
-      </section>
+      <CTASection
+        title="START YOUR PROJECT"
+        description="Tell us the problem you're trying to solve. We'll tell you straight whether we're the right team to solve it."
+        variant="work"
+      />
     </div>
   );
 }

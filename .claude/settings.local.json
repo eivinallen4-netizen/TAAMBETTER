@@ -44,7 +44,17 @@
       "Bash(kill 107107)",
       "Bash(rm /workspaces/TAAMBETTER/auth.ts /workspaces/TAAMBETTER/proxy.ts /workspaces/TAAMBETTER/app/admin/actions.ts)",
       "Bash(rm -rf /workspaces/TAAMBETTER/app/api/auth /workspaces/TAAMBETTER/app/admin/login)",
-      "Bash(npm uninstall *)"
+      "Bash(npm uninstall *)",
+      "Bash(git add *)",
+      "Bash(git commit -m ' *)",
+      "Bash(xargs cat *)",
+      "Bash(grep -E \"^[a-z].*\\\\.mjs$\")",
+      "Bash(grep -iE \"^\\(image|briefcase|users?|message|circle|github\\)\\\\.mjs$\")",
+      "Bash(npm list *)",
+      "Bash(grep -E \"\\\\.\\(png|jpg|jpeg\\)$\")",
+      "Bash(open http://localhost:3000)",
+      "Bash(taskkill /PID 16176 /F)",
+      "PowerShell(Stop-Process *)"
     ]
   }
 }

@@ -1,8 +1,13 @@
 import Hero from '../components/Hero';
-import StatsBar from '../components/StatsBar';
-import ContactCTA from '../components/ContactCTA';
 import siteContent from '../content/siteContent.json';
 import { getServiceInfo } from '../lib/services';
+import StatsBarSection from '@/components/sections/StatsBarSection';
+import Container from '@/components/ui/Container';
+import Title from '@/components/ui/Title';
+import Heading from '@/components/ui/Heading';
+import Text from '@/components/ui/Text';
+import Badge from '@/components/ui/Badge';
+import CTASection from '@/components/sections/CTASection';
 
 export default function About() {
   const content = siteContent;
@@ -16,104 +21,120 @@ export default function About() {
         imageSrc={content.hero.about.imageSrc}
       />
 
-      <StatsBar stats={content.stats} />
+      <StatsBarSection stats={content.stats} />
 
-      {/* Bold Headline */}
       <section className="bg-[#F46325]">
-        <div className="max-w-7xl mx-auto px-6 py-14">
-          <h1 className="text-4xl md:text-6xl font-black leading-tight">
+        <Container className="py-14">
+          <Title as="h1" color="white">
             {content.company.tagline.toUpperCase()}
-          </h1>
-        </div>
+          </Title>
+        </Container>
       </section>
 
-      {/* About Content */}
       <section className="bg-black">
-        <div className="max-w-7xl mx-auto px-6 py-16">
+        <Container className="py-16">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-12 mb-16">
             <div>
-              <h2 className="text-2xl font-black mb-4">Who We Are</h2>
-              <p className="text-gray-300 leading-relaxed">
+              <Heading as="h2" color="white" className="mb-4">
+                Who We Are
+              </Heading>
+              <Text color="gray-400" className="leading-relaxed">
                 {content.company.description}
-              </p>
+              </Text>
             </div>
             <div>
-              <h2 className="text-2xl font-black mb-4">What We Do</h2>
-              <p className="text-gray-300 leading-relaxed mb-4">
+              <Heading as="h2" color="white" className="mb-4">
+                What We Do
+              </Heading>
+              <Text color="gray-400" className="leading-relaxed mb-4">
                 We specialize in {content.company.services.join(', ').toLowerCase()}.
-              </p>
-              <p className="text-gray-300 leading-relaxed">
+              </Text>
+              <Text color="gray-400" className="leading-relaxed">
                 Every project is scoped with a clear challenge, a specific solution, and a way to
                 measure whether it worked — no vague "brand awareness" hand-waving.
-              </p>
+              </Text>
             </div>
           </div>
 
-          {/* Process */}
           <div className="mb-16">
-            <h2 className="text-2xl font-black mb-8">How We Work</h2>
+            <Heading as="h2" color="white" className="mb-8">
+              How We Work
+            </Heading>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
               {content.process.map((step) => (
                 <div key={step.step} className="border-t-2 border-[#F46325] pt-4">
-                  <div className="text-sm font-black text-[#F46325] mb-2">{step.step}</div>
-                  <h3 className="text-lg font-bold mb-2">{step.title}</h3>
-                  <p className="text-sm text-gray-400 leading-relaxed">{step.description}</p>
+                  <Badge>{step.step}</Badge>
+                  <Heading as="h3" color="white" className="text-lg mt-2 mb-2">
+                    {step.title}
+                  </Heading>
+                  <Text size="sm" color="gray-400" className="leading-relaxed">
+                    {step.description}
+                  </Text>
                 </div>
               ))}
             </div>
           </div>
 
-          {/* Team Section */}
+          {/* Team section - commented out until team data is added to siteContent.json
           <div className="mb-16">
-            <h2 className="text-2xl font-black mb-8">Our Team</h2>
+            <Heading as="h2" color="white" className="mb-8">
+              Our Team
+            </Heading>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-              {content.team.map((member) => (
+              {content.team?.map((member, index) => {
+                const direction = index % 2 === 0 ? 'left' : 'right';
+                return (
                 <div key={member.id}>
                   <div className="aspect-square bg-gradient-to-br from-gray-800 to-gray-900 rounded-lg flex items-center justify-center border-2 border-gray-700 mb-3 overflow-hidden">
                     {member.image && member.image !== '/placeholder-person.jpg' ? (
-                      <img src={member.image} alt={member.name} className="w-full h-full object-cover" />
+                      <img src={member.image} alt={member.name} data-scroll-animate={direction} className="w-full h-full object-cover" />
                     ) : (
-                      <div className="text-gray-600 text-sm">{member.name}</div>
+                      <Text size="sm" color="gray-600">{member.name}</Text>
                     )}
                   </div>
-                  <h3 className="text-lg font-bold">{member.name}</h3>
-                  <p className="text-[#F46325] font-semibold text-sm mb-2">{member.role}</p>
-                  <p className="text-gray-400 text-sm leading-relaxed">{member.bio}</p>
+                  <Heading as="h3" color="white" className="text-lg">
+                    {member.name}
+                  </Heading>
+                  <Text size="sm" color="white" className="text-[#F46325] font-semibold mb-2">
+                    {member.role}
+                  </Text>
+                  <Text size="sm" color="gray-400" className="leading-relaxed">
+                    {member.bio}
+                  </Text>
                 </div>
-              ))}
+              );
+              })}
             </div>
           </div>
+          */}
 
-          {/* Services Section */}
           <div className="bg-gray-900 rounded-lg p-8 md:p-10">
-            <h2 className="text-2xl font-black mb-8">Our Services</h2>
+            <Heading as="h2" color="white" className="mb-8">
+              Our Services
+            </Heading>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-x-10 gap-y-8">
               {content.company.services.map((service, idx) => {
                 const info = getServiceInfo(service);
                 return (
                   <div key={service} className="flex gap-4">
-                    <div className="text-sm font-black text-[#F46325] shrink-0">{String(idx + 1).padStart(2, '0')}</div>
+                    <Badge className="shrink-0">{String(idx + 1).padStart(2, '0')}</Badge>
                     <div>
-                      <h3 className="text-lg font-black text-[#F46325] mb-1">{info.name}</h3>
-                      <p className="text-gray-400 text-sm leading-relaxed">{info.description}</p>
+                      <Heading as="h3" color="orange" className="text-lg mb-1">
+                        {info.name}
+                      </Heading>
+                      <Text size="sm" color="gray-400" className="leading-relaxed">
+                        {info.description}
+                      </Text>
                     </div>
                   </div>
                 );
               })}
             </div>
           </div>
-        </div>
+        </Container>
       </section>
 
-      {/* CTA Section */}
-      <section className="bg-[#F46325] py-16">
-        <div className="max-w-7xl mx-auto px-6 flex flex-col md:flex-row items-center justify-between gap-6">
-          <h2 className="text-3xl md:text-4xl font-black text-center md:text-left">READY TO DO BIG THINGS?</h2>
-          <ContactCTA className="inline-block px-8 py-4 bg-black text-[#F46325] font-black text-lg hover:bg-gray-900 transition shrink-0">
-            Get Free Recommendations
-          </ContactCTA>
-        </div>
-      </section>
+      <CTASection title="READY TO DO BIG THINGS?" variant="default" />
     </div>
   );
 }

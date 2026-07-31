@@ -2,6 +2,15 @@
 
 import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
+import {
+  TrendingDown,
+  Smartphone,
+  Video,
+  Globe,
+  BarChart3,
+  Rocket,
+  HelpCircle,
+} from 'lucide-react';
 import siteContent from '../../content/siteContent.json';
 import {
   CHALLENGE_OPTIONS,
@@ -16,6 +25,16 @@ interface ContactFormModalProps {
   prefill?: ContactFormPrefill;
   onClose: () => void;
 }
+
+const iconMap: Record<string, React.ComponentType<{ size: number; className: string }>> = {
+  TrendingDown,
+  Smartphone,
+  Video,
+  Globe,
+  BarChart3,
+  Rocket,
+  HelpCircle,
+};
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -292,6 +311,7 @@ function StepChallenge({ value, onSelect }: { value: string; onSelect: (v: strin
       <div className="space-y-3" role="radiogroup" aria-label="Biggest challenge">
         {CHALLENGE_OPTIONS.map((opt) => {
           const selected = value === opt.value;
+          const Icon = iconMap[opt.icon];
           return (
             <label
               key={opt.value}
@@ -307,7 +327,7 @@ function StepChallenge({ value, onSelect }: { value: string; onSelect: (v: strin
                 onChange={() => onSelect(opt.value)}
                 className="accent-[#F46325] w-5 h-5 shrink-0"
               />
-              <span className="text-2xl shrink-0">{opt.emoji}</span>
+              {Icon && <Icon size={24} className="shrink-0 text-[#F46325]" />}
               <span className="font-semibold">{opt.label}</span>
             </label>
           );
