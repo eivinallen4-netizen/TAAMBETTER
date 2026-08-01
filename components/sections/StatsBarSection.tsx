@@ -3,7 +3,8 @@
 import Container from '../ui/Container';
 import Text from '../ui/Text';
 import { motion } from 'motion/react';
-import { staggerContainer, staggerItem } from '@/lib/motion-animations';
+import { staggerContainerScroll, staggerItemScroll } from '@/lib/motion-animations';
+import { ParallaxLayer } from '../motion/ParallaxLayer';
 
 interface Stat {
   value: string;
@@ -17,32 +18,35 @@ interface StatsBarSectionProps {
 export default function StatsBarSection({ stats }: StatsBarSectionProps) {
   return (
     <section className="relative bg-[#111111] border-y border-gray-800 overflow-hidden">
-      {/* Video background */}
-      <div className="absolute inset-0 z-0">
-        <video
-          autoPlay
-          muted
-          loop
-          playsInline
-          className="absolute inset-0 w-full h-full object-cover opacity-30"
-        >
-          <source src="/construction-timelapse.mp4" type="video/mp4" />
-        </video>
-        <div className="absolute inset-0 bg-gradient-to-r from-black/85 via-black/70 to-black/85" />
-        <div className="absolute inset-0 bg-[linear-gradient(90deg,transparent_24%,rgba(244,99,37,.03)_25%,rgba(244,99,37,.03)_26%,transparent_27%,transparent_74%,rgba(244,99,37,.03)_75%,rgba(244,99,37,.03)_76%,transparent_77%,transparent)] bg-[length:80px_100%]" />
-      </div>
+      {/* Video background with Parallax */}
+      <ParallaxLayer offset={0} speed={0.3}>
+        <div className="absolute inset-0 z-0">
+          <video
+            autoPlay
+            muted
+            loop
+            playsInline
+            className="absolute inset-0 w-full h-full object-cover opacity-30"
+          >
+            <source src="/construction-timelapse.mp4" type="video/mp4" />
+          </video>
+          <div className="absolute inset-0 bg-gradient-to-r from-black/85 via-black/70 to-black/85" />
+        </div>
+      </ParallaxLayer>
+      <div className="absolute inset-0 bg-[linear-gradient(90deg,transparent_24%,rgba(244,99,37,.03)_25%,rgba(244,99,37,.03)_26%,transparent_27%,transparent_74%,rgba(244,99,37,.03)_75%,rgba(244,99,37,.03)_76%,transparent_77%,transparent)] bg-[length:80px_100%]" />
 
       {/* Stats content */}
       <motion.div
-        variants={staggerContainer}
-        initial="initial"
-        animate="animate"
+        variants={staggerContainerScroll}
+        initial="hidden"
+        whileInView="visible"
+        viewport={{ once: false, amount: 0.2 }}
         className="relative z-10 max-w-7xl mx-auto px-6 grid grid-cols-2 md:grid-cols-4 divide-x divide-y md:divide-y-0 divide-gray-800/50"
       >
         {stats.map((stat, index) => (
           <motion.div
             key={stat.label}
-            variants={staggerItem}
+            variants={staggerItemScroll}
             className="py-8 px-4 first:pl-0 group cursor-pointer relative"
             whileHover={{ scale: 1.05 }}
           >

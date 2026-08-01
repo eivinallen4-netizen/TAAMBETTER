@@ -54,7 +54,9 @@
       "Bash(grep -E \"\\\\.\\(png|jpg|jpeg\\)$\")",
       "Bash(open http://localhost:3000)",
       "Bash(taskkill /PID 16176 /F)",
-      "PowerShell(Stop-Process *)"
+      "PowerShell(Stop-Process *)",
+      "Bash(taskkill /PID 16044 /F)",
+      "Bash(cd C:\\\\\\\\Users\\\\\\\\Theo\\\\\\\\Desktop\\\\\\\\k\\\\\\\\TAAMBETTER)"
     ]
   }
 }

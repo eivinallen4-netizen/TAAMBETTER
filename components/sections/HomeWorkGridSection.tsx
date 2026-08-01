@@ -6,7 +6,8 @@ import Card from '../ui/Card';
 import Link from 'next/link';
 import { ArrowUpRight } from 'lucide-react';
 import { motion } from 'motion/react';
-import { staggerContainer, staggerItem } from '@/lib/motion-animations';
+import { staggerContainerScroll, staggerItemScroll } from '@/lib/motion-animations';
+import { ScrollReveal, ParallaxLayer } from '../motion';
 
 interface Project {
   id: number;
@@ -36,11 +37,13 @@ export default function HomeWorkGridSection({ projects }: HomeWorkGridSectionPro
 
   return (
     <section className="bg-taam-near-black relative overflow-hidden">
-      <div className="absolute top-0 right-0 w-96 h-96 bg-orange-500/5 rounded-full blur-3xl" />
+      <ParallaxLayer offset={0} speed={0.4}>
+        <div className="absolute top-0 right-0 w-96 h-96 bg-orange-500/5 rounded-full blur-3xl" />
+      </ParallaxLayer>
 
       <Container>
         <div className="py-14 md:py-16 relative z-10">
-          <div className="flex items-baseline justify-between mb-12">
+          <ScrollReveal className="flex items-baseline justify-between mb-12">
             <Title as="h2" color="orange">
               SELECTED WORK
             </Title>
@@ -51,30 +54,31 @@ export default function HomeWorkGridSection({ projects }: HomeWorkGridSectionPro
               ALL PROJECTS
               <ArrowUpRight className="w-4 h-4 group-hover:translate-x-1 group-hover:-translate-y-1 transition" />
             </Link>
-          </div>
+          </ScrollReveal>
 
           {/* Large cards grid */}
           <motion.div
-            variants={staggerContainer}
-            initial="initial"
-            animate="animate"
+            variants={staggerContainerScroll}
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: false, amount: 0.2 }}
             className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6"
           >
             {projects.slice(0, 2).map((project, index) => {
               const categoryStyle = getCategoryStyle(project.category);
               const direction = index % 2 === 0 ? 'left' : 'right';
               return (
-                <motion.div key={project.id} variants={staggerItem}>
+                <motion.div key={project.id} variants={staggerItemScroll}>
                   <Card
                     href={`/work/${project.id}`}
                     className="aspect-video group relative overflow-hidden"
                   >
                   {project.image && project.image !== '/placeholder-project.jpg' && (
-                    <img
-                      src={project.image}
-                      alt={project.title}
-                      data-scroll-animate={direction}
-                      className="absolute inset-0 w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                    <div
+                      className="absolute inset-0 bg-cover bg-center group-hover:scale-110 transition-transform duration-500"
+                      style={{
+                        backgroundImage: `url('${project.image}')`,
+                      }}
                     />
                   )}
 
@@ -88,9 +92,15 @@ export default function HomeWorkGridSection({ projects }: HomeWorkGridSectionPro
 
                   <div className="absolute inset-0 group-hover:border-2 group-hover:border-taam-orange/50 transition duration-300" />
 
-                  <div className="absolute bottom-4 right-4 z-20 opacity-0 group-hover:opacity-100 transition duration-300 transform translate-x-4 group-hover:translate-x-0">
-                    <div className="bg-taam-orange rounded-full p-2">
-                      <ArrowUpRight className="w-5 h-5 text-black" />
+                  <div className="absolute bottom-4 right-4 z-20 flex flex-col items-end gap-3">
+                    <div className="flex items-center gap-2">
+                      <div className="text-right">
+                        <div className="text-xs font-semibold text-white/70">TAAM</div>
+                        <div className="text-sm font-bold text-white">{project.title}</div>
+                      </div>
+                      <div className="bg-taam-orange rounded-full p-2 group-hover:scale-110 transition-transform">
+                        <ArrowUpRight className="w-5 h-5 text-black" />
+                      </div>
                     </div>
                   </div>
                   </Card>
@@ -101,26 +111,27 @@ export default function HomeWorkGridSection({ projects }: HomeWorkGridSectionPro
 
           {/* Small cards grid */}
           <motion.div
-            variants={staggerContainer}
-            initial="initial"
-            animate="animate"
+            variants={staggerContainerScroll}
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: false, amount: 0.2 }}
             className="grid grid-cols-2 md:grid-cols-4 gap-6"
           >
             {projects.slice(2, 6).map((project, index) => {
               const categoryStyle = getCategoryStyle(project.category);
               const direction = index % 2 === 0 ? 'left' : 'right';
               return (
-                <motion.div key={project.id} variants={staggerItem}>
+                <motion.div key={project.id} variants={staggerItemScroll}>
                   <Card
                     href={`/work/${project.id}`}
                     className="aspect-square group relative overflow-hidden"
                   >
                   {project.image && project.image !== '/placeholder-project.jpg' && (
-                    <img
-                      src={project.image}
-                      alt={project.title}
-                      data-scroll-animate={direction}
-                      className="absolute inset-0 w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                    <div
+                      className="absolute inset-0 bg-cover bg-center group-hover:scale-110 transition-transform duration-500"
+                      style={{
+                        backgroundImage: `url('${project.image}')`,
+                      }}
                     />
                   )}
 
@@ -130,6 +141,16 @@ export default function HomeWorkGridSection({ projects }: HomeWorkGridSectionPro
                     <span className={`px-2 py-1 rounded text-xs font-semibold backdrop-blur-sm ${categoryStyle.bg} ${categoryStyle.text}`}>
                       {project.category}
                     </span>
+                  </div>
+
+                  <div className="absolute bottom-3 right-3 z-20 flex flex-col items-end gap-2">
+                    <div className="text-right">
+                      <div className="text-xs font-semibold text-white/70">TAAM</div>
+                      <div className="text-xs font-bold text-white line-clamp-2">{project.title}</div>
+                    </div>
+                    <div className="bg-taam-orange rounded-full p-1 group-hover:scale-110 transition-transform">
+                      <ArrowUpRight className="w-3 h-3 text-black" />
+                    </div>
                   </div>
 
                   <div className="absolute inset-0 group-hover:border-2 group-hover:border-taam-orange/50 transition duration-300" />

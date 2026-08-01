@@ -8,6 +8,7 @@ import HomeWorkGridSection from '@/components/sections/HomeWorkGridSection';
 import ProcessSection from '@/components/sections/ProcessSection';
 import NewsSection from '@/components/sections/NewsSection';
 import CTASection from '@/components/sections/CTASection';
+import { ScrollProgress } from '@/components/motion';
 
 export default function Home() {
   const content = siteContent;
@@ -15,6 +16,7 @@ export default function Home() {
 
   return (
     <div className="bg-[#111111] text-white">
+      <ScrollProgress />
       <Hero
         title={content.hero.home.title}
         subtitle={content.hero.home.subtitle}

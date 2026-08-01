@@ -2,6 +2,7 @@
 
 import { useEffect, useRef } from 'react';
 import Image from 'next/image';
+import { motion, useScroll, useTransform } from 'motion/react';
 
 interface HeroProps {
   title?: string;
@@ -14,6 +15,13 @@ interface HeroProps {
 export default function Hero({ videoSrc }: HeroProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
+  const { scrollYProgress } = useScroll({
+    target: containerRef,
+    offset: ['start start', 'end start'],
+  });
+
+  const videoY = useTransform(scrollYProgress, [0, 1], [0, 50]);
+  const overlayY = useTransform(scrollYProgress, [0, 1], [0, 30]);
 
   useEffect(() => {
     if (videoRef.current) {
@@ -25,22 +33,24 @@ export default function Hero({ videoSrc }: HeroProps) {
 
   return (
     <div ref={containerRef} className="relative w-full h-screen bg-black overflow-hidden">
-      {/* Video Background */}
+      {/* Video Background with Parallax */}
       {videoSrc && (
-        <video
-          ref={videoRef}
-          autoPlay
-          muted
-          loop
-          playsInline
-          className="absolute inset-0 w-full h-full object-cover opacity-60"
-        >
-          <source src={videoSrc} type="video/mp4" />
-        </video>
+        <motion.div style={{ y: videoY }} className="absolute inset-0">
+          <video
+            ref={videoRef}
+            autoPlay
+            muted
+            loop
+            playsInline
+            className="w-full h-full object-cover opacity-60"
+          >
+            <source src={videoSrc} type="video/mp4" />
+          </video>
+        </motion.div>
       )}
 
-      {/* Animated Gradient Overlay */}
-      <div className="absolute inset-0 bg-gradient-to-br from-black via-black/40 to-black/20" />
+      {/* Animated Gradient Overlay with Parallax */}
+      <motion.div style={{ y: overlayY }} className="absolute inset-0 bg-gradient-to-br from-black via-black/40 to-black/20" />
 
       {/* Grid Pattern Background */}
       <div
@@ -83,6 +93,20 @@ export default function Hero({ videoSrc }: HeroProps) {
         </div>
       </div>
 
+      {/* Scroll Down Indicator */}
+      <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 flex flex-col items-center gap-2 animate-bounce pointer-events-none">
+        <span className="text-white/60 text-sm font-light tracking-widest uppercase">Scroll</span>
+        <svg
+          className="w-6 h-6 text-orange-500 animate-scroll-arrow"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2"
+          viewBox="0 0 24 24"
+        >
+          <path strokeLinecap="round" strokeLinejoin="round" d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+        </svg>
+      </div>
+
       <style jsx>{`
         @keyframes float {
           0%, 100% {
@@ -102,8 +126,26 @@ export default function Hero({ videoSrc }: HeroProps) {
           }
         }
 
+        @keyframes scroll-arrow {
+          0%, 20% {
+            transform: translateY(0);
+            opacity: 1;
+          }
+          50% {
+            opacity: 0.7;
+          }
+          100% {
+            transform: translateY(8px);
+            opacity: 0;
+          }
+        }
+
         .animate-pulse-glow {
           animation: float 6s ease-in-out infinite, glow 3s ease-in-out infinite;
+        }
+
+        .animate-scroll-arrow {
+          animation: scroll-arrow 2s ease-in-out infinite;
         }
       `}</style>
     </div>

@@ -8,7 +8,8 @@ import Link from 'next/link';
 import { getServiceInfo } from '@/app/lib/services';
 import { Palette, Globe, Zap, Lightbulb, FileText } from 'lucide-react';
 import { motion } from 'motion/react';
-import { staggerContainer, staggerItem } from '@/lib/motion-animations';
+import { staggerContainerScroll, staggerItemScroll } from '@/lib/motion-animations';
+import { ScrollReveal } from '../motion/ScrollReveal';
 
 interface ServicesSectionProps {
   services: string[];
@@ -30,7 +31,7 @@ export default function ServicesSection({ services, showMoreLink = true }: Servi
 
       <Container>
         <div className="py-14 md:py-16 relative z-10">
-          <div className="flex items-baseline justify-between mb-12">
+          <ScrollReveal className="flex items-baseline justify-between mb-12">
             <Title as="h2" color="white">
               WHAT WE DO
             </Title>
@@ -39,12 +40,13 @@ export default function ServicesSection({ services, showMoreLink = true }: Servi
                 MORE ABOUT US →
               </Link>
             )}
-          </div>
+          </ScrollReveal>
 
           <motion.div
-            variants={staggerContainer}
-            initial="initial"
-            animate="animate"
+            variants={staggerContainerScroll}
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: false, amount: 0.2 }}
             className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-px bg-gray-800"
           >
             {services.map((service, idx) => {
@@ -53,7 +55,7 @@ export default function ServicesSection({ services, showMoreLink = true }: Servi
               return (
                 <motion.div
                   key={service}
-                  variants={staggerItem}
+                  variants={staggerItemScroll}
                   className="bg-taam-near-black p-6 hover:bg-gray-900/80 transition duration-300 group relative overflow-hidden"
                   whileHover={{ scale: 1.02 }}
                   transition={{ type: 'spring', stiffness: 300 }}

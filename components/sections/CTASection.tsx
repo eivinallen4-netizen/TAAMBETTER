@@ -6,7 +6,8 @@ import Text from '../ui/Text';
 import Button from '../ui/Button';
 import ContactCTA from '@/app/components/ContactCTA';
 import { motion } from 'motion/react';
-import { slideInDown, fadeIn, slideInUp, slideInLeft, slideInRight } from '@/lib/motion-animations';
+import { slideInDown, fadeIn, slideInUp, slideInLeft, slideInRight, slideInLeftScroll, slideInRightScroll } from '@/lib/motion-animations';
+import { ParallaxLayer } from '../motion';
 
 interface CTASectionProps {
   title: string;
@@ -25,7 +26,9 @@ export default function CTASection({
     return (
       <section className="relative bg-taam-orange py-16 overflow-hidden">
         <div className="absolute inset-0 bg-[linear-gradient(135deg,transparent_30%,rgba(0,0,0,.02)_31%,rgba(0,0,0,.02)_32%,transparent_33%)] bg-[length:60px_60px]" />
-        <div className="absolute top-0 left-1/4 w-96 h-96 bg-orange-600/20 rounded-full blur-3xl" />
+        <ParallaxLayer offset={0} speed={0.4}>
+          <div className="absolute top-0 left-1/4 w-96 h-96 bg-orange-600/20 rounded-full blur-3xl" />
+        </ParallaxLayer>
 
         <Container>
           <div className="text-center relative z-10">
@@ -70,19 +73,22 @@ export default function CTASection({
   return (
     <section className="relative bg-taam-orange py-16 overflow-hidden">
       <div className="absolute inset-0 bg-[linear-gradient(135deg,transparent_30%,rgba(0,0,0,.02)_31%,rgba(0,0,0,.02)_32%,transparent_33%)] bg-[length:60px_60px]" />
-      <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-orange-600/20 rounded-full blur-3xl" />
+      <ParallaxLayer offset={0} speed={0.3}>
+        <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-orange-600/20 rounded-full blur-3xl" />
+      </ParallaxLayer>
 
       <Container>
         <div className="flex flex-col md:flex-row items-center justify-between gap-6 relative z-10">
-          <motion.div variants={slideInLeft} initial="initial" animate="animate">
+          <motion.div variants={slideInLeftScroll} initial="initial" whileInView="whileInView" viewport={{ once: false, amount: 0.3 }}>
             <Title as="h2" color="white" className="text-center md:text-left">
               {title}
             </Title>
           </motion.div>
           <motion.div
-            variants={slideInRight}
+            variants={slideInRightScroll}
             initial="initial"
-            animate="animate"
+            whileInView="whileInView"
+            viewport={{ once: false, amount: 0.3 }}
             className="flex flex-col sm:flex-row items-center gap-4 shrink-0"
           >
             {email && (

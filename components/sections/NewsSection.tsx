@@ -6,7 +6,8 @@ import Text from '../ui/Text';
 import Link from 'next/link';
 import { ArrowUpRight } from 'lucide-react';
 import { motion } from 'motion/react';
-import { staggerContainer, staggerItem } from '@/lib/motion-animations';
+import { staggerContainerScroll, staggerItemScroll } from '@/lib/motion-animations';
+import { ScrollReveal, ParallaxLayer } from '../motion';
 
 interface NewsItem {
   id: number;
@@ -31,18 +32,23 @@ const getCategoryTag = (title: string) => {
 export default function NewsSection({ items }: NewsSectionProps) {
   return (
     <section className="bg-taam-near-black relative overflow-hidden">
-      <div className="absolute -bottom-20 -right-20 w-80 h-80 bg-orange-500/5 rounded-full blur-3xl" />
+      <ParallaxLayer offset={0} speed={0.3}>
+        <div className="absolute -bottom-20 -right-20 w-80 h-80 bg-orange-500/5 rounded-full blur-3xl" />
+      </ParallaxLayer>
 
       <Container>
         <div className="py-14 md:py-16 relative z-10">
-          <Title as="h2" color="white" className="mb-12">
-            NEWS &amp; UPDATES
-          </Title>
+          <ScrollReveal className="mb-12">
+            <Title as="h2" color="white">
+              NEWS &amp; UPDATES
+            </Title>
+          </ScrollReveal>
 
           <motion.div
-            variants={staggerContainer}
-            initial="initial"
-            animate="animate"
+            variants={staggerContainerScroll}
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: false, amount: 0.2 }}
             className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-8"
           >
             {items.map((item, idx) => {
@@ -54,7 +60,7 @@ export default function NewsSection({ items }: NewsSectionProps) {
               });
 
               return (
-                <motion.div key={item.id} variants={staggerItem}>
+                <motion.div key={item.id} variants={staggerItemScroll}>
                   <Link
                     href={item.link}
                     target="_blank"
