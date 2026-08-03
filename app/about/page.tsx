@@ -1,4 +1,3 @@
-import Hero from '../components/Hero';
 import siteContent from '../content/siteContent.json';
 import { getServiceInfo } from '../lib/services';
 import StatsBarSection from '@/components/sections/StatsBarSection';
@@ -13,13 +12,16 @@ export default function About() {
   const content = siteContent;
   return (
     <div className="bg-black text-white">
-      <Hero
-        title={content.hero.about.title}
-        subtitle={content.hero.about.subtitle}
-        buttonText={content.hero.about.buttonText}
-        videoSrc={content.hero.about.videoSrc}
-        imageSrc={content.hero.about.imageSrc}
-      />
+      <section className="border-b border-gray-800">
+        <Container className="py-20 md:py-28">
+          <h1 className="text-5xl md:text-6xl font-black leading-tight mb-6">
+            {content.hero.about.title}
+          </h1>
+          <p className="text-lg md:text-xl text-gray-400 max-w-2xl">
+            {content.hero.about.subtitle}
+          </p>
+        </Container>
+      </section>
 
       <StatsBarSection stats={content.stats} />
 
@@ -36,7 +38,7 @@ export default function About() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-12 mb-16">
             <div>
               <Heading as="h2" color="white" className="mb-4">
-                Who We Are
+                What Drives Us
               </Heading>
               <Text color="gray-400" className="leading-relaxed">
                 {content.company.description}
@@ -44,14 +46,13 @@ export default function About() {
             </div>
             <div>
               <Heading as="h2" color="white" className="mb-4">
-                What We Do
+                How We Work
               </Heading>
               <Text color="gray-400" className="leading-relaxed mb-4">
-                We specialize in {content.company.services.join(', ').toLowerCase()}.
+                We handle {content.company.services.join(', ').toLowerCase()}—and we do it all under one roof.
               </Text>
               <Text color="gray-400" className="leading-relaxed">
-                Every project is scoped with a clear challenge, a specific solution, and a way to
-                measure whether it worked — no vague "brand awareness" hand-waving.
+                No handoffs between freelancers. No vague deliverables. Every project starts with a clear problem, includes a specific solution, and ends with measurable results. We prove it worked.
               </Text>
             </div>
           </div>
@@ -134,7 +135,7 @@ export default function About() {
         </Container>
       </section>
 
-      <CTASection title="READY TO DO BIG THINGS?" variant="default" />
+      <CTASection title="LET'S BUILD SOMETHING THAT GROWS" description="No generic templates. No empty promises. Just a partner committed to your success." variant="default" />
     </div>
   );
 }

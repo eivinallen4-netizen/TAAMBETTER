@@ -4,11 +4,11 @@ export interface ServiceInfo {
 }
 
 const DESCRIPTIONS: Record<string, string> = {
-  branding: 'Identity systems, naming, and guidelines built to survive contact with the real world.',
-  'web design': 'Marketing sites and product interfaces designed around what visitors are actually trying to do.',
-  'digital development': 'Front-to-back build — from static marketing sites to headless e-commerce and internal tools.',
-  'creative strategy': 'Positioning, messaging, and campaign planning that gives every deliverable a reason to exist.',
-  'content creation': 'Photography, video, and copy produced on a schedule you can actually plan around.',
+  branding: 'Identity systems and messaging that stop people in their tracks and make them remember you.',
+  'web design': 'Sites built around what your customers actually need—designed to convert, not just to look good.',
+  'digital development': 'Front-to-back build—from marketing sites that sell to headless platforms that scale.',
+  'creative strategy': 'The foundation of everything. We lock in positioning and messaging so every dollar you spend matters.',
+  'content creation': 'Stories, video, and copy that prove your expertise and earn customer trust. Produced on a schedule that fits your business.',
 };
 
 export function getServiceInfo(name: string): ServiceInfo {

@@ -2,7 +2,6 @@
 
 import { useMemo, useState } from 'react';
 import Link from 'next/link';
-import Hero from '../components/Hero';
 import siteContent from '../content/siteContent.json';
 import Container from '@/components/ui/Container';
 import Text from '@/components/ui/Text';
@@ -65,7 +64,16 @@ export default function Work() {
 
   return (
     <div className="bg-black text-white">
-     
+      <section className="border-b border-gray-800">
+        <Container className="py-20 md:py-28">
+          <h1 className="text-5xl md:text-6xl font-black leading-tight mb-6">
+            {content.hero.work.title}
+          </h1>
+          <p className="text-lg md:text-xl text-gray-400 max-w-2xl">
+            {content.hero.work.subtitle}
+          </p>
+        </Container>
+      </section>
 
       {/* Filters + count */}
       <section className="max-w-7xl mx-auto px-6 pt-14">
@@ -131,8 +139,8 @@ export default function Work() {
       </section>
 
       <CTASection
-        title="START YOUR PROJECT"
-        description="Tell us the problem you're trying to solve. We'll tell you straight whether we're the right team to solve it."
+        title="READY TO GROW?"
+        description="Tell us the problem you're trying to solve. We'll be straight with you about whether we're the right team to solve it—and what success actually looks like."
         variant="work"
       />
     </div>

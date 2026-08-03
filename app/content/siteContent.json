@@ -1,8 +1,8 @@
 {
   "company": {
     "name": "TAAM",
-    "tagline": "The agency that ships what it pitches",
-    "description": "TAAM is a full-service creative agency. We pair brand strategy with hands-on production so ideas don't stall at the deck — they ship as sites, campaigns, and products people actually use.",
+    "tagline": "The partner that understands your business and grows it",
+    "description": "Great marketing shouldn't just look good—it should grow your business. We create content that makes your customers stop, pay attention, and take action. One team across strategy, design, development, and content, so nothing gets lost in handoffs. When you work with TAAM, you're not hiring an agency—you're gaining a partner dedicated to your growth.",
     "services": [
       "Branding",
       "Web Design",
@@ -13,7 +13,7 @@
   },
   "hero": {
     "home": {
-      "title": "Better marketing\nfor the best\nbusinesses",
+      "title": "Marketing that makes\nyour business impossible\nto ignore",
       "subtitle": "",
       "buttonText": "",
       "videoSrc": "/construction-timelapse.mp4",
@@ -21,23 +21,23 @@
     },
     "about": {
       "title": "ABOUT TAAM",
-      "subtitle": "4 years, 40+ accounts ran, one studio that still answers its own phone.",
+      "subtitle": "We create content that captures attention, builds trust, and drives measurable growth for businesses that deserve better.",
       "buttonText": "MEET THE TEAM",
       "videoSrc": "",
       "imageSrc": ""
     },
     "work": {
       "title": "OUR WORK",
-      "subtitle": "Six disciplines, one team. Filter by category below.",
+      "subtitle": "Strategies, campaigns, and products that grew real businesses. Every project includes a clear challenge, a specific solution, and proof it worked.",
       "buttonText": "VIEW PORTFOLIO",
       "videoSrc": "",
       "imageSrc": ""
     }
   },
   "homepage": {
-    "headline": "WE ARE TAAM\nWE FINISH\nWHAT WE PITCH",
-    "description": "One team across five disciplines — branding, web design, development, strategy, and content — so nothing gets lost in a handoff between agencies. If it ships, the same people who pitched it built it.",
-    "ctaText": "GOT A PROJECT? LET'S TALK"
+    "headline": "STOP PAYING FOR\nEXCUSES.\nSTART SEEING RESULTS.",
+    "description": "Whether you're relying on an employee who isn't equipped, or paying an agency that talks a big game—you deserve a partner committed to growing your business. We don't do one-size-fits-all. We understand your goals, identify what's holding you back, and build strategies that work.",
+    "ctaText": "TELL US YOUR CHALLENGE"
   },
   "stats": [
     {
@@ -45,7 +45,7 @@
       "label": "Projects delivered"
     },
     {
-      "value": "45",
+      "value": "30",
       "label": "Active clients"
     },
     {
@@ -60,23 +60,23 @@
   "process": [
     {
       "step": "01",
-      "title": "Discover",
-      "description": "We dig into your business, audience, and competitors before a single pixel moves."
+      "title": "Understand Your Challenge",
+      "description": "We don't start with templates. We dig into what's actually holding your business back—your goals, your audience, your constraints—so we can solve the real problem, not a generic one."
     },
     {
       "step": "02",
-      "title": "Define",
-      "description": "Strategy and scope get locked so everyone agrees on what \"done\" looks like."
+      "title": "Build a Strategy That Works",
+      "description": "Clear strategy means measurable outcomes. We lock in what success looks like before we write a line of code or design a pixel, so there's no guesswork."
     },
     {
       "step": "03",
-      "title": "Design & Build",
-      "description": "Concepts, iteration, and production happen in tight feedback loops with you."
+      "title": "Create Content That Converts",
+      "description": "Strategy means nothing if execution stumbles. Our team builds it all—strategy, design, code, content—in tight loops with you, iterating toward something great."
     },
     {
       "step": "04",
-      "title": "Launch & Grow",
-      "description": "We ship, measure, and keep refining based on real performance data."
+      "title": "Launch, Measure, Grow",
+      "description": "We ship, we measure real results, and we keep refining. If something isn't working, we fix it. If it's working, we scale it."
     }
   ],
   "projects": [
