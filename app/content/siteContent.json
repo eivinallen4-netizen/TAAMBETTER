@@ -1,9 +1,10 @@
 {
   "company": {
     "name": "TAAM",
-    "tagline": "The partner that understands your business and grows it",
-    "description": "Great marketing shouldn't just look good—it should grow your business. We create content that makes your customers stop, pay attention, and take action. One team across strategy, design, development, and content, so nothing gets lost in handoffs. When you work with TAAM, you're not hiring an agency—you're gaining a partner dedicated to your growth.",
+    "tagline": "Your content marketing partner that understands your business and grows it",
+    "description": "content marketing agency specializing in content strategy, creation, and brand storytelling. We create content that makes your customers stop, pay attention, and take action. One team across content marketing strategy, design, development, and production, so nothing gets lost in handoffs. When you work with TAAM, you're not hiring an agency—you're gaining a partner dedicated to your growth.",
     "services": [
+      "Content Marketing",
       "Branding",
       "Web Design",
       "Digital Development",
@@ -21,7 +22,7 @@
     },
     "about": {
       "title": "ABOUT TAAM",
-      "subtitle": "We create content that captures attention, builds trust, and drives measurable growth for businesses that deserve better.",
+      "subtitle": "content marketing agency. We create content strategies and campaigns that capture attention, build trust, and drive measurable growth for businesses that deserve better.",
       "buttonText": "MEET THE TEAM",
       "videoSrc": "",
       "imageSrc": ""
@@ -32,11 +33,18 @@
       "buttonText": "VIEW PORTFOLIO",
       "videoSrc": "",
       "imageSrc": ""
+    },
+    "blog": {
+      "title": "INSIGHTS & IDEAS",
+      "subtitle": "Stories, strategies, and lessons learned from growing real businesses. Get the insights that actually move the needle.",
+      "buttonText": "READ MORE",
+      "videoSrc": "",
+      "imageSrc": ""
     }
   },
   "homepage": {
     "headline": "STOP PAYING FOR\nEXCUSES.\nSTART SEEING RESULTS.",
-    "description": "Whether you're relying on an employee who isn't equipped, or paying an agency that talks a big game—you deserve a partner committed to growing your business. We don't do one-size-fits-all. We understand your goals, identify what's holding you back, and build strategies that work.",
+    "description": "Award-winning content marketing agency. Whether you're relying on an employee who isn't equipped, or paying an agency that talks a big game—you deserve a partner committed to growing your business. We build content strategies and campaigns that convert. One team handles everything: content strategy, creation, design, development. We don't do one-size-fits-all. We understand your goals, identify what's holding you back, and build content marketing strategies that work.",
     "ctaText": "TELL US YOUR CHALLENGE"
   },
   "stats": [
@@ -49,12 +57,12 @@
       "label": "Active clients"
     },
     {
-      "value": "9",
+      "value": "5",
       "label": "Years running"
     },
     {
-      "value": "14",
-      "label": "Industry awards"
+      "value": "3M",
+      "label": "Likes Generated"
     }
   ],
   "process": [
@@ -136,14 +144,29 @@
       "link": "#"
     }
   ],
+  "blogs": [
+    {
+      "id": 1,
+      "slug": "is-your-agency-holding-you-back",
+      "title": "Is Your Agency Holding You Back?",
+      "excerpt": "Most agencies work in isolation. They hand off work and disappear. We work differently — as an integrated partner committed to your growth.",
+      "googleDocId": "15AfuN73SPLqhX3ZN1r6pF4ZsmeBnrf0ewa2QA9Ty5Dw",
+      "thumbnail": "/blogs/is-your-agency-holding-you-back.png",
+      "author": "TAAM Team",
+      "date": "2026-08-03",
+      "readTime": "5 min read",
+      "category": "Strategy",
+      "published": true
+    }
+  ],
   "contact": {
-    "email": "contact@taammaking.com",
+    "email": "contact@taammarketing.com",
     "phone": "702-997-6813",
     "address": "LAS VEGAS, NV",
     "social": {
-      "instagram": "https://instagram.com/taam",
+      "instagram": "https://instagram.com/taammarketing",
       "twitter": "https://twitter.com/taam",
-      "linkedin": "https://linkedin.com/company/taam"
+      "linkedin": "https://linkedin.com/company/taammarketing"
     }
   }
 }

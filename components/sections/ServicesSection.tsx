@@ -6,7 +6,7 @@ import Text from '../ui/Text';
 import Badge from '../ui/Badge';
 import Link from 'next/link';
 import { getServiceInfo } from '@/app/lib/services';
-import { Palette, Globe, Zap, Lightbulb, FileText } from 'lucide-react';
+import { Palette, Globe, Zap, Lightbulb, FileText, Pen } from 'lucide-react';
 import { motion } from 'motion/react';
 import { staggerContainerScroll, staggerItemScroll } from '@/lib/motion-animations';
 import { ScrollReveal } from '../motion/ScrollReveal';
@@ -17,6 +17,7 @@ interface ServicesSectionProps {
 }
 
 const serviceIcons: Record<string, typeof Palette> = {
+  'content marketing': Pen,
   branding: Palette,
   'web design': Globe,
   'digital development': Zap,

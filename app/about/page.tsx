@@ -1,3 +1,4 @@
+import type { Metadata } from 'next';
 import siteContent from '../content/siteContent.json';
 import { getServiceInfo } from '../lib/services';
 import StatsBarSection from '@/components/sections/StatsBarSection';
@@ -7,6 +8,11 @@ import Heading from '@/components/ui/Heading';
 import Text from '@/components/ui/Text';
 import Badge from '@/components/ui/Badge';
 import CTASection from '@/components/sections/CTASection';
+
+export const metadata: Metadata = {
+  title: 'About TAAM | Award-Winning Content Marketing Agency',
+  description: 'Learn about TAAM, an award-winning content marketing agency with 9+ years of experience. We specialize in content strategy, creation, and digital growth for ambitious brands.',
+};
 
 export default function About() {
   const content = siteContent;

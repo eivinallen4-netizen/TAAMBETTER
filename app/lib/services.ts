@@ -4,6 +4,7 @@ export interface ServiceInfo {
 }
 
 const DESCRIPTIONS: Record<string, string> = {
+  'content marketing': 'Full-funnel content strategies that position you as the authority in your industry. From planning to production to performance tracking—we build content engines that attract, engage, and convert your ideal customers.',
   branding: 'Identity systems and messaging that stop people in their tracks and make them remember you.',
   'web design': 'Sites built around what your customers actually need—designed to convert, not just to look good.',
   'digital development': 'Front-to-back build—from marketing sites that sell to headless platforms that scale.',

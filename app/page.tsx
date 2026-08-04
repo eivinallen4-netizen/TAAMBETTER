@@ -7,6 +7,7 @@ import ServicesSection from '@/components/sections/ServicesSection';
 import HomeWorkGridSection from '@/components/sections/HomeWorkGridSection';
 import ProcessSection from '@/components/sections/ProcessSection';
 import NewsSection from '@/components/sections/NewsSection';
+// import BlogSection from '@/components/sections/BlogSection'; // Disabled temporarily
 import CTASection from '@/components/sections/CTASection';
 import { ScrollProgress } from '@/components/motion';
 
@@ -41,6 +42,8 @@ export default function Home() {
       <ProcessSection steps={content.process} />
 
       <NewsSection items={content.news} />
+
+      {/* <BlogSection blogs={content.blogs} limit={3} /> */}
 
       <CTASection
         title={content.homepage.ctaText}
