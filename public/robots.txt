@@ -1,0 +1,22 @@
+# robots.txt for TAAM
+# Generated automatically - Allow all bots to crawl
+
+User-agent: *
+Allow: /
+Disallow: /admin
+Disallow: /*.json$
+Disallow: /__*
+Disallow: /.next/
+
+# Specific rules for Google
+User-agent: Googlebot
+Allow: /
+Crawl-delay: 0
+
+# Specific rules for Bing
+User-agent: Bingbot
+Allow: /
+Crawl-delay: 1
+
+# Sitemap location
+Sitemap: https://taambetter.com/sitemap.xml

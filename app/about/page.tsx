@@ -1,3 +1,4 @@
+import type { Metadata } from 'next';
 import Hero from '../components/Hero';
 import siteContent from '../content/siteContent.json';
 import { getServiceInfo } from '../lib/services';
@@ -8,6 +9,27 @@ import Heading from '@/components/ui/Heading';
 import Text from '@/components/ui/Text';
 import Badge from '@/components/ui/Badge';
 import CTASection from '@/components/sections/CTASection';
+
+export const metadata: Metadata = {
+  title: "About TAAM | Content Marketing Agency",
+  description: "Learn about TAAM's unified team approach to content marketing. 9+ years delivering real results for high-performance businesses with 120+ projects delivered.",
+  openGraph: {
+    title: "About TAAM | Our Story & Team",
+    description: "Discover how TAAM's unified content marketing team delivers real results for high-performance businesses.",
+    type: "website",
+    images: [
+      {
+        url: "/og-about.png",
+        width: 1200,
+        height: 630,
+        alt: "About TAAM",
+      },
+    ],
+  },
+  alternates: {
+    canonical: "https://taambetter.com/about",
+  },
+};
 
 export default function About() {
   const content = siteContent;
@@ -134,7 +156,7 @@ export default function About() {
         </Container>
       </section>
 
-      <CTASection title="READY TO DO BIG THINGS?" variant="default" />
+      <CTASection title="READY TO STOP PAYING FOR EXCUSES?" variant="default" />
     </div>
   );
 }

@@ -1,3 +1,4 @@
+import type { Metadata } from 'next';
 import Hero from './components/Hero';
 import ContactCTA from './components/ContactCTA';
 import siteContent from './content/siteContent.json';
@@ -9,6 +10,27 @@ import ProcessSection from '@/components/sections/ProcessSection';
 import NewsSection from '@/components/sections/NewsSection';
 import CTASection from '@/components/sections/CTASection';
 import { ScrollProgress } from '@/components/motion';
+
+export const metadata: Metadata = {
+  title: "TAAM | Content Marketing Agency",
+  description: "Stop paying for excuses. Start seeing results. A unified content marketing agency delivering real results through strategy, creation, development, and optimization.",
+  openGraph: {
+    title: "TAAM | Stop Paying for Excuses",
+    description: "Start seeing results with TAAM's unified content marketing agency.",
+    type: "website",
+    images: [
+      {
+        url: "/og-home.png",
+        width: 1200,
+        height: 630,
+        alt: "TAAM - Content Marketing Agency",
+      },
+    ],
+  },
+  alternates: {
+    canonical: "https://taambetter.com",
+  },
+};
 
 export default function Home() {
   const content = siteContent;

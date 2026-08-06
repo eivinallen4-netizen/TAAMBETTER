@@ -9,6 +9,7 @@
     "lint": "eslint"
   },
   "dependencies": {
+    "@libsql/client": "^0.17.4",
     "@uploadthing/react": "^7.3.3",
     "gsap": "^3.12.5",
     "lucide-react": "^1.28.0",

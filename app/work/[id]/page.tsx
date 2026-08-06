@@ -1,3 +1,4 @@
+import type { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import siteContent from '../../content/siteContent.json';
@@ -6,6 +7,44 @@ import { getCtaCopy, getServicesForCategory } from '../../lib/cta';
 import ScrollAnimations from '../../components/ScrollAnimations';
 import VideoCarousel from '../../components/VideoCarousel';
 import { ProjectHeroAnimated, ProjectBackLinkAnimated, ProjectLeftSectionAnimated, ProjectRightSectionAnimated, ProjectScrollAnimatedImage } from '../../components/ProjectAnimatedContent';
+
+export async function generateMetadata({ params }: { params: Promise<{ id: string }> }): Promise<Metadata> {
+  const { id } = await params;
+  const project = siteContent.projects.find((p) => String(p.id) === id);
+
+  if (!project) {
+    return {
+      title: "Project Not Found",
+    };
+  }
+
+  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://taambetter.com";
+
+  return {
+    title: `${project.title} | TAAM Portfolio`,
+    description: project.description
+      .replace(/<[^>]*>/g, "")
+      .substring(0, 160),
+    openGraph: {
+      title: `${project.title} | TAAM`,
+      description: project.description.replace(/<[^>]*>/g, "").substring(0, 160),
+      type: "website",
+      images: project.image
+        ? [
+            {
+              url: project.image,
+              width: 1200,
+              height: 630,
+              alt: project.title,
+            },
+          ]
+        : [],
+    },
+    alternates: {
+      canonical: `${baseUrl}/work/${id}`,
+    },
+  };
+}
 
 const colorClasses: Record<string, string> = {
   red: 'from-red-900 to-red-700 border-red-500',

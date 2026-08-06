@@ -67,6 +67,7 @@ export default function ContactFormModal({ prefill, onClose }: ContactFormModalP
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
   const dialogRef = useRef<HTMLDivElement>(null);
+  const [partialSubmitSent, setPartialSubmitSent] = useState(false);
 
   useEffect(() => {
     document.body.style.overflow = 'hidden';
@@ -90,6 +91,32 @@ export default function ContactFormModal({ prefill, onClose }: ContactFormModalP
   useEffect(() => {
     dialogRef.current?.focus();
   }, []);
+
+  useEffect(() => {
+    const hasName = form.name.trim() !== '';
+    const hasEmail = form.email.trim() !== '' && EMAIL_RE.test(form.email.trim());
+    const shouldSendPartial = (hasName || hasEmail) && !partialSubmitSent && step === 3;
+
+    if (shouldSendPartial) {
+      setPartialSubmitSent(true);
+      const partialData = {
+        name: form.name.trim(),
+        email: form.email.trim(),
+        phone: form.phone.trim(),
+        business_name: form.businessName.trim(),
+        biggest_challenge: form.biggestChallenge,
+        services_interested: form.services,
+        source_page: sourcePage,
+      };
+      fetch('/api/contact', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(partialData),
+      }).catch((err) => {
+        console.error('Partial submission failed:', err);
+      });
+    }
+  }, [form.name, form.email, partialSubmitSent, step]);
 
   function requestClose() {
     if (dirty) {

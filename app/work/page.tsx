@@ -65,7 +65,13 @@ export default function Work() {
 
   return (
     <div className="bg-black text-white">
-     
+      <Hero
+        title={content.hero.work.title}
+        subtitle={content.hero.work.subtitle}
+        buttonText={content.hero.work.buttonText}
+        videoSrc={content.hero.work.videoSrc}
+        imageSrc={content.hero.work.imageSrc}
+      />
 
       {/* Filters + count */}
       <section className="max-w-7xl mx-auto px-6 pt-14">
@@ -131,8 +137,8 @@ export default function Work() {
       </section>
 
       <CTASection
-        title="START YOUR PROJECT"
-        description="Tell us the problem you're trying to solve. We'll tell you straight whether we're the right team to solve it."
+        title="READY TO STOP SETTLING?"
+        description="Tell us the challenge. We'll tell you straight whether we're the right team to dismantle it."
         variant="work"
       />
     </div>

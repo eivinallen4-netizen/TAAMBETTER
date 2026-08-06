@@ -1,109 +1,98 @@
-import { readFile, writeFile } from 'fs/promises';
-import { join } from 'path';
 import { randomUUID } from 'crypto';
-
-const LEADS_FILE = join(process.cwd(), 'app', 'content', 'leads.json');
+import { createClient } from '@libsql/client';
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-type CrmStatus = 'sent' | 'failed' | 'not_configured';
-
-interface Lead {
+interface Contact {
   id: string;
-  biggest_challenge: string;
-  services_interested: string[];
   name: string;
   email: string;
   phone: string;
-  business_name: string;
-  source_page: string;
+  message: string;
+  completion_status: 'partial' | 'complete';
   timestamp: string;
-  crmStatus: CrmStatus;
-  crmError?: string;
+  source_page: string;
+  biggest_challenge?: string;
+  services_interested?: string | string[];
+  business_name?: string;
 }
 
-async function readLeads(): Promise<Lead[]> {
-  try {
-    const data = await readFile(LEADS_FILE, 'utf-8');
-    return JSON.parse(data);
-  } catch {
-    return [];
-  }
-}
+let db: ReturnType<typeof createClient> | null = null;
 
-async function writeLeads(leads: Lead[]) {
-  await writeFile(LEADS_FILE, JSON.stringify(leads, null, 2));
-}
+function getDb() {
+  if (!db) {
+    const TURSO_URL = process.env.TURSO_URL;
+    const TURSO_TOKEN = process.env.TURSO_TOKEN;
 
-async function pushToZoho(lead: Lead): Promise<{ status: CrmStatus; error?: string }> {
-  const { ZOHO_CLIENT_ID, ZOHO_CLIENT_SECRET, ZOHO_REFRESH_TOKEN } = process.env;
-  if (!ZOHO_CLIENT_ID || !ZOHO_CLIENT_SECRET || !ZOHO_REFRESH_TOKEN) {
-    return { status: 'not_configured' };
-  }
-
-  const accountsDomain = process.env.ZOHO_ACCOUNTS_DOMAIN || 'https://accounts.zoho.com';
-  const apiDomain = process.env.ZOHO_API_DOMAIN || 'https://www.zohoapis.com';
-  const leadsModule = process.env.ZOHO_LEADS_MODULE || 'Leads';
-
-  try {
-    const tokenRes = await fetch(`${accountsDomain}/oauth/v2/token`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-      body: new URLSearchParams({
-        grant_type: 'refresh_token',
-        client_id: ZOHO_CLIENT_ID,
-        client_secret: ZOHO_CLIENT_SECRET,
-        refresh_token: ZOHO_REFRESH_TOKEN,
-      }),
-    });
-    const tokenData = await tokenRes.json();
-    if (!tokenRes.ok || !tokenData.access_token) {
-      return { status: 'failed', error: tokenData.error || 'Failed to obtain Zoho access token' };
+    if (!TURSO_URL || !TURSO_TOKEN) {
+      throw new Error('Turso not configured');
     }
 
-    const nameParts = lead.name.trim().split(/\s+/);
-    const firstName = nameParts.length > 1 ? nameParts[0] : '';
-    const lastName = nameParts.length > 1 ? nameParts.slice(1).join(' ') : nameParts[0];
-
-    const description = [
-      `Biggest challenge: ${lead.biggest_challenge}`,
-      `Services interested: ${lead.services_interested.join(', ')}`,
-      `Source page: ${lead.source_page || 'unknown'}`,
-      `Submitted: ${lead.timestamp}`,
-    ].join('\n');
-
-    const crmRes = await fetch(`${apiDomain}/crm/v8/${leadsModule}`, {
-      method: 'POST',
-      headers: {
-        Authorization: `Zoho-oauthtoken ${tokenData.access_token}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        data: [
-          {
-            Last_Name: lastName || 'Website Lead',
-            ...(firstName ? { First_Name: firstName } : {}),
-            Email: lead.email,
-            Phone: lead.phone,
-            Company: lead.business_name || 'Unknown',
-            Lead_Source: 'Website',
-            Description: description,
-          },
-        ],
-      }),
+    db = createClient({
+      url: TURSO_URL,
+      authToken: TURSO_TOKEN,
     });
-    const crmData = await crmRes.json();
-    const record = crmData?.data?.[0];
-    if (!crmRes.ok || record?.status !== 'success') {
-      return { status: 'failed', error: record?.message || 'Zoho CRM rejected the record' };
-    }
-    return { status: 'sent' };
+  }
+  return db;
+}
+
+async function initializeTursoTable(): Promise<void> {
+  try {
+    const database = getDb();
+    await database.execute(`
+      CREATE TABLE IF NOT EXISTS contacts (
+        id TEXT PRIMARY KEY,
+        name TEXT NOT NULL,
+        email TEXT NOT NULL,
+        phone TEXT,
+        message TEXT,
+        completion_status TEXT NOT NULL,
+        timestamp TEXT NOT NULL,
+        source_page TEXT,
+        biggest_challenge TEXT,
+        services_interested TEXT,
+        business_name TEXT
+      )
+    `);
   } catch (err) {
-    return { status: 'failed', error: err instanceof Error ? err.message : 'Unknown error contacting Zoho' };
+    console.error('Failed to initialize Turso table:', err);
+  }
+}
+
+async function writeToTurso(contact: Contact): Promise<{ success: boolean; error?: string }> {
+  try {
+    const database = getDb();
+    const servicesStr = Array.isArray(contact.services_interested)
+      ? contact.services_interested.join(', ')
+      : (contact.services_interested || '');
+
+    await database.execute({
+      sql: `INSERT INTO contacts (id, name, email, phone, message, completion_status, timestamp, source_page, biggest_challenge, services_interested, business_name)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      args: [
+        contact.id,
+        contact.name,
+        contact.email,
+        contact.phone,
+        contact.message,
+        contact.completion_status,
+        contact.timestamp,
+        contact.source_page,
+        contact.biggest_challenge || '',
+        servicesStr,
+        contact.business_name || '',
+      ],
+    });
+
+    return { success: true };
+  } catch (err) {
+    return { success: false, error: err instanceof Error ? err.message : 'Unknown Turso error' };
   }
 }
 
 export async function POST(request: Request) {
+  await initializeTursoTable();
+
   let body: Record<string, unknown>;
   try {
     body = await request.json();
@@ -120,44 +109,42 @@ export async function POST(request: Request) {
     ? body.services_interested.filter((s): s is string => typeof s === 'string')
     : [];
   const sourcePage = typeof body.source_page === 'string' ? body.source_page : '';
+  const message = typeof body.message === 'string' ? body.message.trim() : '';
 
-  if (!name || !email || !phone || !biggestChallenge || servicesInterested.length === 0) {
-    return Response.json({ error: 'Missing required fields' }, { status: 400 });
-  }
-  if (!EMAIL_RE.test(email)) {
-    return Response.json({ error: 'Invalid email' }, { status: 400 });
-  }
-  if (phone.replace(/\D/g, '').length < 10) {
-    return Response.json({ error: 'Invalid phone' }, { status: 400 });
+  // Trigger capture on name OR email (partial submission)
+  const hasMinimalInfo = name.trim() !== '' || (email.trim() !== '' && EMAIL_RE.test(email));
+  if (!hasMinimalInfo) {
+    return Response.json({ error: 'At least name or valid email required' }, { status: 400 });
   }
 
-  const lead: Lead = {
+  // Determine completion status
+  const isComplete =
+    name.trim() !== '' &&
+    email.trim() !== '' &&
+    EMAIL_RE.test(email) &&
+    phone.replace(/\D/g, '').length >= 10 &&
+    biggestChallenge !== '' &&
+    servicesInterested.length > 0;
+
+  const contact: Contact = {
     id: randomUUID(),
-    biggest_challenge: biggestChallenge,
-    services_interested: servicesInterested,
     name,
     email,
     phone,
-    business_name: businessName,
-    source_page: sourcePage,
+    message,
+    completion_status: isComplete ? 'complete' : 'partial',
     timestamp: new Date().toISOString(),
-    crmStatus: 'not_configured',
+    source_page: sourcePage,
+    ...(biggestChallenge && { biggest_challenge: biggestChallenge }),
+    ...(servicesInterested.length > 0 && { services_interested: servicesInterested }),
+    ...(businessName && { business_name: businessName }),
   };
 
-  const zohoResult = await pushToZoho(lead);
-  lead.crmStatus = zohoResult.status;
-  if (zohoResult.error) {
-    lead.crmError = zohoResult.error;
-    console.error('Zoho CRM push failed:', zohoResult.error);
+  // Write to Turso - don't block on failure
+  const tursoResult = await writeToTurso(contact);
+  if (!tursoResult.success) {
+    console.error('Turso write failed:', tursoResult.error);
   }
 
-  try {
-    const leads = await readLeads();
-    leads.push(lead);
-    await writeLeads(leads);
-  } catch (err) {
-    console.error('Failed to persist lead to leads.json', err);
-  }
-
-  return Response.json({ success: true });
+  return Response.json({ success: true, completion_status: contact.completion_status });
 }

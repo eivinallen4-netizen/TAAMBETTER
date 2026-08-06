@@ -1,0 +1,149 @@
+{
+  "company": {
+    "name": "TAAM",
+    "tagline": "Stop paying for excuses. Start seeing results.",
+    "description": "We are a unified content marketing agency built for high-performance businesses. We identify what's holding you back—the friction points, the missed opportunities—and we dismantle them. One team. One strategy. Real results.",
+    "services": [
+      "Content Strategy",
+      "Creation & Design",
+      "Development",
+      "Campaign Execution",
+      "Performance Optimization"
+    ]
+  },
+  "hero": {
+    "home": {
+      "title": "Stop paying for excuses.\nStart seeing results.",
+      "subtitle": "You've heard the pitch before. Now it's time for the proof.",
+      "buttonText": "Let's Talk",
+      "videoSrc": "/construction-timelapse.mp4",
+      "imageSrc": ""
+    },
+    "about": {
+      "title": "We've dismantled excuses for years.",
+      "subtitle": "One unified team across content strategy, design, and development. No agency BS. No templates. Just results.",
+      "buttonText": "MEET THE TEAM",
+      "videoSrc": "",
+      "imageSrc": ""
+    },
+    "work": {
+      "title": "THIS IS WHAT UNIFIED EXECUTION LOOKS LIKE",
+      "subtitle": "From content strategy to design to development—one team, one vision, real results.",
+      "buttonText": "VIEW PORTFOLIO",
+      "videoSrc": "",
+      "imageSrc": ""
+    }
+  },
+  "homepage": {
+    "headline": "STOP PAYING FOR EXCUSES. START SEEING RESULTS.",
+    "description": "Most agencies operate like assembly lines. They push templated content because it's easier for them, not because it works for you. At TAAM, we identify exactly what is holding you back and we dismantle those barriers. One unified team. Real accountability. Content that converts.",
+    "ctaText": "Ready for a change? Let's talk."
+  },
+  "stats": [
+    {
+      "value": "120+",
+      "label": "Projects delivered"
+    },
+    {
+      "value": "45",
+      "label": "Active clients"
+    },
+    {
+      "value": "5",
+      "label": "Years running"
+    },
+    {
+      "value": "5M",
+      "label": "Likes generated "
+    }
+  ],
+  "process": [
+    {
+      "step": "01",
+      "title": "Identify the Friction",
+      "description": "We audit your current strategy, audience gaps, and competitive landscape. No assumptions—just facts about what's actually holding you back."
+    },
+    {
+      "step": "02",
+      "title": "Build the Strategy",
+      "description": "Custom approach built for your specific goals, not a template pulled from a playbook. Everyone agrees on what success looks like in metrics, not vanity."
+    },
+    {
+      "step": "03",
+      "title": "Create & Execute",
+      "description": "One unified team handles strategy, design, and development. No handoffs. No excuses. No disjointed teams pointing fingers."
+    },
+    {
+      "step": "04",
+      "title": "Deliver Real Results",
+      "description": "We ship, measure, and optimize based on conversion data. Accountability. Growth. Proof that your marketing actually works."
+    }
+  ],
+  "projects": [
+    {
+      "id": 1,
+      "published": true,
+      "title": "Discount Drain Cleaning",
+      "category": "Content Creation",
+      "description": "<h3>The Challenge</h3><p>When Discount Drain Cleaning came to us, their growth was <strong>clogged</strong> — <strong>no leads, no engagement, no direction on social</strong>. They had the skills and the crew, but zero digital presence.</p><h3>The Solution</h3><p>We rebuilt their presence from the pipes up: a <strong>full-funnel content engine</strong> featuring laugh-out-loud skits, real-trade education, and service-driven posts. We orchestrated <strong>30 reels a month</strong> and <strong>weekly on-location shoots</strong> with the crew, turning the plumbers themselves into personalities people wanted to follow.</p><h3>The Results</h3><ul><li><strong>Views:</strong> Exploded from under 30K to <strong>2M+</strong></li><li><strong>Likes:</strong> Surged from 2K to <strong>200K</strong></li><li><strong>TikTok:</strong> Built from 0 to <strong>3,500 followers</strong> — <strong>100% organic, ZERO ad spend</strong></li></ul><p><strong>The tagline:</strong> \"They called for a plumber. The whole internet showed up. Vegas is FLOWING.\"</p><h3>Impact</h3><p>From clogged growth to unstoppable momentum. Discount Drain went from a local service business to a viral content phenomenon, proving that authenticity, humor, and strategic consistency can turn any industry into entertainment.</p>",
+      "image": "/Discount-drain/thumbnail.png",
+      "videos": [
+        {
+          "type": "showcase",
+          "src": "/Discount-drain/video-showcase/1.mp4",
+          "title": "Reel 1"
+        },
+        {
+          "type": "showcase",
+          "src": "/Discount-drain/video-showcase/2.mp4",
+          "title": "Reel 2"
+        },
+        {
+          "type": "showcase",
+          "src": "/Discount-drain/video-showcase/3.mp4",
+          "title": "Reel 3"
+        },
+        {
+          "type": "showcase",
+          "src": "/Discount-drain/video-showcase/4.mp4",
+          "title": "Reel 4"
+        },
+        {
+          "type": "showcase",
+          "src": "/Discount-drain/video-showcase/5.mp4",
+          "title": "Reel 5"
+        }
+      ],
+      "images": [
+        {
+          "src": "/Discount-drain/image1.png",
+          "alt": "Discount Drain Cleaning social media content showcase",
+          "order": 1
+        }
+      ],
+      "color": "orange",
+      "size": "large",
+      "technologies": "Social Strategy, Content Production, Video Editing, Community Management"
+    }
+
+  ],
+  "news": [
+    {
+      "id": 5,
+      "title": "TAAM expands to Las Vegas: joining local real estate events",
+      "description": "Opening our second Nevada office and hitting the road with free short-form content drops at upcoming real estate events across the region.",
+      "date": "2026-07-31",
+      "link": "#"
+    }
+  ],
+  "contact": {
+    "email": "contact@taammaking.com",
+    "phone": "702-997-6813",
+    "address": "LAS VEGAS, NV",
+    "social": {
+      "instagram": "https://instagram.com/taam",
+      "twitter": "https://twitter.com/taam",
+      "linkedin": "https://linkedin.com/company/taam"
+    }
+  }
+}
