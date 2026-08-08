@@ -219,36 +219,43 @@
   .animate-pulse-glow {
     animation: pulse-glow 3s infinite;
     will-change: box-shadow;
+    contain: layout style paint;
   }
 
   .animate-rotate-slow {
     animation: rotate-slow 20s linear infinite;
     will-change: transform;
+    contain: layout style paint;
   }
 
   .animate-shimmer {
     animation: shimmer 2.5s infinite;
     will-change: background-position;
+    contain: layout style paint;
   }
 
   .animate-glow-pulse {
     animation: glow-pulse 4s ease-in-out infinite;
     will-change: box-shadow;
+    contain: layout style paint;
   }
 
   .animate-gradient-shift {
     animation: gradient-shift 8s ease-in-out infinite;
     will-change: background-position;
+    contain: layout style paint;
   }
 
   .animate-border-glow {
     animation: border-glow 4s ease-in-out infinite;
     will-change: border-color, box-shadow;
+    contain: layout style paint;
   }
 
   .animate-text-glow {
     animation: text-glow 5s ease-in-out infinite;
     will-change: text-shadow;
+    contain: layout style paint;
   }
 
   /* Scroll-triggered animations */

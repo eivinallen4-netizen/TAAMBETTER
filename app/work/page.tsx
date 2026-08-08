@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import SimpleHeader from '../components/SimpleHeader';
 import siteContent from '../content/siteContent.json';
 import Container from '@/components/ui/Container';
@@ -110,7 +111,14 @@ export default function Work() {
                 className={`${spanClass} bg-gradient-to-br ${colorClass} hover:shadow-2xl`}
               >
                 {project.image && project.image !== '/placeholder-project.jpg' ? (
-                  <img src={project.image} alt={project.title} data-scroll-animate={direction} className="absolute inset-0 w-full h-full object-cover" />
+                  <Image
+                    src={project.image}
+                    alt={project.title}
+                    fill
+                    className="absolute inset-0 w-full h-full object-cover"
+                    data-scroll-animate={direction}
+                    sizes="(max-width: 768px) 50vw, 25vw"
+                  />
                 ) : null}
                 <div className="absolute inset-0 bg-black/10 group-hover:bg-black/30 transition duration-300" />
                 <div className="relative z-10 p-4">

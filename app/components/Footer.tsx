@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import Image from 'next/image';
 import siteContent from '../content/siteContent.json';
 import SocialLink from './SocialLink';
 
@@ -11,9 +12,11 @@ export default function Footer() {
 
       <div className="relative z-10 max-w-7xl mx-auto px-6 py-14 grid grid-cols-1 md:grid-cols-4 gap-10">
         <div className="md:col-span-1">
-          <img
+          <Image
             src="/brand-assets/logos/transparent/TAAM_logo_white_transparent.png"
             alt="TAAM"
+            width={710}
+            height={297}
             className="h-8 w-auto mb-4 hover:drop-shadow-[0_0_15px_rgba(244,99,37,0.3)] transition"
           />
           <p className="text-sm text-gray-400 leading-relaxed">{content.company.description}</p>

@@ -42,6 +42,7 @@ export default function Hero({ videoSrc }: HeroProps) {
             muted
             loop
             playsInline
+            preload="auto"
             className="w-full h-full object-cover opacity-60"
           >
             <source src={videoSrc} type="video/mp4" />

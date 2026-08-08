@@ -6,6 +6,13 @@ const nextConfig: NextConfig = {
       allowedOrigins: ["*.app.github.dev"],
     },
   },
+  // Image optimization for WebP/AVIF
+  images: {
+    formats: ['image/avif', 'image/webp'],
+    remotePatterns: [],
+    deviceSizes: [640, 750, 828, 1080, 1200, 1920, 2048, 3840],
+    imageSizes: [16, 32, 48, 64, 96, 128, 256, 384],
+  },
   // SEO-friendly configuration
   compress: true,
   poweredByHeader: false,
@@ -30,7 +37,7 @@ const nextConfig: NextConfig = {
       },
     ];
   },
-  // Security and SEO headers
+  // Security and SEO headers with performance optimization
   async headers() {
     return [
       {
@@ -61,6 +68,26 @@ const nextConfig: NextConfig = {
           {
             key: "Cache-Control",
             value: "public, max-age=31536000, immutable",
+          },
+        ],
+      },
+      // Cache brand assets aggressively
+      {
+        source: "/brand-assets/:path(.*)",
+        headers: [
+          {
+            key: "Cache-Control",
+            value: "public, max-age=31536000, immutable",
+          },
+        ],
+      },
+      // Preload critical resources
+      {
+        source: "/:path(.*)",
+        headers: [
+          {
+            key: "Link",
+            value: "</brand-assets/logos/transparent/TAAM_logo_white_transparent.png>; rel=preload; as=image; nopush",
           },
         ],
       },

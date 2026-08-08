@@ -29,8 +29,9 @@ export default function Navigation() {
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 40);
     onScroll();
-    window.addEventListener('scroll', onScroll, { passive: true });
-    return () => window.removeEventListener('scroll', onScroll);
+    const scrollHandler = () => requestAnimationFrame(onScroll);
+    window.addEventListener('scroll', scrollHandler, { passive: true });
+    return () => window.removeEventListener('scroll', scrollHandler);
   }, []);
 
   useEffect(() => {

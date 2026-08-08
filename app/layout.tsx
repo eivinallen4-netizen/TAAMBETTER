@@ -124,6 +124,10 @@ export default function RootLayout({
         <link rel="icon" type="image/png" sizes="16x16" href="/brand-assets/app-icon/favicons/favicon-16.png" />
         <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
         <link rel="manifest" href="/manifest.json" />
+        <link rel="preload" as="video" href="/construction-timelapse.mp4" />
+        <link rel="preload" as="image" href="/brand-assets/logos/transparent/TAAM_logo_white_transparent.png" />
+        <link rel="dns-prefetch" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
       </head>
       <body className="min-h-full flex flex-col bg-taam-near-black text-white">
         <ContactFormProvider>
