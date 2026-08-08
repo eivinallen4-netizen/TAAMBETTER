@@ -1,7 +1,7 @@
 import type { MetadataRoute } from 'next';
 import siteContent from './content/siteContent.json';
 
-const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://taambetter.com';
+const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://taammarketing.com';
 
 export default function sitemap(): MetadataRoute.Sitemap {
   const publishedProjects = siteContent.projects.filter((p) => p.published !== false);

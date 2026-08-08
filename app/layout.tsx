@@ -10,7 +10,7 @@ const montserrat = Montserrat({
   subsets: ["latin"],
 });
 
-const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://taambetter.com";
+const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://taammarketing.com";
 
 export const metadata: Metadata = {
   metadataBase: new URL(baseUrl),
@@ -95,7 +95,7 @@ export default function RootLayout({
     contactPoint: {
       "@type": "ContactPoint",
       contactType: "Customer Service",
-      email: "hello@taambetter.com",
+      email: "info@taammarketing.com",
     },
     address: {
       "@type": "PostalAddress",

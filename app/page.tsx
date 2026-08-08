@@ -28,7 +28,7 @@ export const metadata: Metadata = {
     ],
   },
   alternates: {
-    canonical: "https://taambetter.com",
+    canonical: "https://taammarketing.com",
   },
 };
 

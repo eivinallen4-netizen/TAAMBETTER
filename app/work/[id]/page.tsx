@@ -18,7 +18,7 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
     };
   }
 
-  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://taambetter.com";
+  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://taammarketing.com";
 
   return {
     title: `${project.title} | TAAM Portfolio`,
