@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from 'react';
 import Link from 'next/link';
-import Hero from '../components/Hero';
+import SimpleHeader from '../components/SimpleHeader';
 import siteContent from '../content/siteContent.json';
 import Container from '@/components/ui/Container';
 import Text from '@/components/ui/Text';
@@ -65,12 +65,9 @@ export default function Work() {
 
   return (
     <div className="bg-black text-white">
-      <Hero
+      <SimpleHeader
         title={content.hero.work.title}
         subtitle={content.hero.work.subtitle}
-        buttonText={content.hero.work.buttonText}
-        videoSrc={content.hero.work.videoSrc}
-        imageSrc={content.hero.work.imageSrc}
       />
 
       {/* Filters + count */}

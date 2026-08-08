@@ -68,8 +68,7 @@ export default function Hero({ videoSrc }: HeroProps) {
             viewBox="0 0 1461 822"
             className="w-4/5 h-4/5 max-w-6xl animate-pulse-glow"
             style={{
-              filter: 'drop-shadow(0 0 30px rgba(244, 99, 37, 0.4))',
-              animation: 'float 6s ease-in-out infinite, glow 3s ease-in-out infinite',
+              filter: 'drop-shadow(0 0 20px rgba(244, 99, 37, 0.3))',
             }}
           >
             <defs>

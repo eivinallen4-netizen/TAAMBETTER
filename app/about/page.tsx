@@ -1,5 +1,5 @@
 import type { Metadata } from 'next';
-import Hero from '../components/Hero';
+import SimpleHeader from '../components/SimpleHeader';
 import siteContent from '../content/siteContent.json';
 import { getServiceInfo } from '../lib/services';
 import StatsBarSection from '@/components/sections/StatsBarSection';
@@ -35,12 +35,9 @@ export default function About() {
   const content = siteContent;
   return (
     <div className="bg-black text-white">
-      <Hero
+      <SimpleHeader
         title={content.hero.about.title}
         subtitle={content.hero.about.subtitle}
-        buttonText={content.hero.about.buttonText}
-        videoSrc={content.hero.about.videoSrc}
-        imageSrc={content.hero.about.imageSrc}
       />
 
       <StatsBarSection stats={content.stats} />
