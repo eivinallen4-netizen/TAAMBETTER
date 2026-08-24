@@ -84,7 +84,7 @@ export default function FreeVideoOfferPage() {
     setSubmitting(true);
     setSubmitError(null);
     try {
-      const res = await fetch('/api/contact', {
+      const res = await fetch('/api/free-video-offers', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -92,8 +92,6 @@ export default function FreeVideoOfferPage() {
           phone: form.phone.trim(),
           business_name: form.businessName.trim(),
           sales_range: form.salesRange,
-          source_page: '/free-video-offer',
-          type: 'free_video_offer',
         }),
       });
       if (!res.ok) throw new Error('Submission failed');
@@ -189,7 +187,7 @@ export default function FreeVideoOfferPage() {
                 onClick={handleSubmit}
                 className="px-8 py-4 bg-[#F46325] text-white font-black text-sm md:text-base uppercase tracking-wide hover:bg-[#E55A1A] transition disabled:opacity-40 disabled:cursor-not-allowed"
               >
-                {submitting ? 'Sending…' : 'Continue'}
+                {submitting ? 'Sending…' : 'Last Step'}
               </button>
             ) : (
               <button
@@ -325,8 +323,9 @@ function StepSalesRange({
       <p className="text-gray-400 mb-8">How many sales have you made this year?</p>
       <div className="space-y-3" role="radiogroup" aria-label="Sales range">
         {[
-          { value: '01-55', label: '01-55' },
-          { value: '10-20', label: '10-20' },
+          { value: '0', label: '0' },
+          { value: '1-5', label: '1-5' },
+          { value: '5-15', label: '5-15' },
           { value: '45+', label: '45+' },
         ].map((opt) => {
           const selected = value === opt.value;
@@ -358,8 +357,8 @@ function StepSalesRange({
 function Confirmation({ name }: { name: string }) {
   return (
     <div className="text-center py-10">
-      <h2 className="text-4xl md:text-5xl font-black mb-4">LAST STEP</h2>
-      <p className="text-gray-300 text-lg max-w-lg mx-auto mb-10">Thanks for attending! We will reach out shortly.</p>
+      <h2 className="text-4xl md:text-5xl font-black mb-4">Thanks for Attending</h2>
+      <p className="text-gray-300 text-lg max-w-lg mx-auto mb-10">We will reach out shortly.</p>
       <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
         <Link
           href="/"
