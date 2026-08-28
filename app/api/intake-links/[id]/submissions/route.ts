@@ -5,7 +5,7 @@ import { AppError, handleError, ErrorCodes } from '@/lib/errors';
 import { logger, getClientIp } from '@/lib/logger';
 import { addSecurityHeaders } from '@/lib/security-headers';
 
-export async function GET(request: NextRequest, { params }: { params: { id: string } }) {
+export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const clientIp = getClientIp(request.headers);
 
   try {
@@ -14,7 +14,7 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
       throw new AppError(401, 'Unauthorized', ErrorCodes.UNAUTHORIZED);
     }
 
-    const { id } = params;
+    const { id } = await params;
 
     if (!id || typeof id !== 'string') {
       throw new AppError(400, 'Invalid intake link ID', ErrorCodes.VALIDATION_ERROR);

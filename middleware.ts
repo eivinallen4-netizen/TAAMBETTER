@@ -3,6 +3,7 @@ import { createClient } from '@libsql/client';
 
 // Routes that require authentication
 const PROTECTED_ROUTES = ['/social-media-onboarding', '/api/social-media-onboarding'];
+const ADMIN_PROTECTED_ROUTES = ['/admin', '/api/admin'];
 
 function getDb() {
   if (!process.env.TURSO_URL || !process.env.TURSO_TOKEN) {
@@ -17,7 +18,28 @@ function getDb() {
 export async function middleware(request: NextRequest) {
   const pathname = request.nextUrl.pathname;
 
-  // Check if route needs protection
+  // Admin routes - checked first
+  const isAdminRoute = ADMIN_PROTECTED_ROUTES.some((route) => pathname.startsWith(route));
+  if (isAdminRoute) {
+    // Allow login page and login API without authentication
+    if (pathname.startsWith('/admin/login') || pathname === '/api/admin/auth/login') {
+      return NextResponse.next();
+    }
+
+    // Check for admin session cookie
+    const adminSessionCookie = request.cookies.get('admin_session');
+    if (!adminSessionCookie) {
+      if (pathname.startsWith('/api/')) {
+        return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+      }
+      return NextResponse.redirect(new URL('/admin/login', request.url));
+    }
+
+    // Cookie existence check only - full HMAC verification happens in route handlers
+    return NextResponse.next();
+  }
+
+  // Existing user authentication routes
   const needsAuth = PROTECTED_ROUTES.some((route) => pathname.startsWith(route));
 
   if (!needsAuth) {
@@ -75,5 +97,10 @@ export async function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ['/social-media-onboarding/:path*', '/api/social-media-onboarding/:path*'],
+  matcher: [
+    '/social-media-onboarding/:path*',
+    '/api/social-media-onboarding/:path*',
+    '/admin/:path*',
+    '/api/admin/:path*',
+  ],
 };

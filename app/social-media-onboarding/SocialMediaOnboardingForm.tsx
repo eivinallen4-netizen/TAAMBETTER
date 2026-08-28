@@ -2,11 +2,11 @@
 
 import { useState, useEffect } from 'react';
 import {
-  Instagram,
+  Camera,
   Users,
   Music2,
-  Youtube,
-  Linkedin,
+  Play,
+  Link2,
   Share2,
   Mail,
   Lock,
@@ -23,11 +23,11 @@ interface SocialAccount {
 }
 
 const PLATFORMS = [
-  { id: 'instagram', name: 'Instagram', icon: Instagram, color: 'from-pink-500 to-purple-500' },
+  { id: 'instagram', name: 'Instagram', icon: Camera, color: 'from-pink-500 to-purple-500' },
   { id: 'facebook', name: 'Facebook', icon: Users, color: 'from-blue-600 to-blue-400' },
   { id: 'tiktok', name: 'TikTok', icon: Music2, color: 'from-black to-gray-800' },
-  { id: 'youtube', name: 'YouTube', icon: Youtube, color: 'from-red-600 to-red-400' },
-  { id: 'linkedin', name: 'LinkedIn', icon: Linkedin, color: 'from-blue-500 to-cyan-500' },
+  { id: 'youtube', name: 'YouTube', icon: Play, color: 'from-red-600 to-red-400' },
+  { id: 'linkedin', name: 'LinkedIn', icon: Link2, color: 'from-blue-500 to-cyan-500' },
   { id: 'twitter', name: 'Twitter', icon: Share2, color: 'from-cyan-400 to-blue-500' },
 ];
 
@@ -466,7 +466,7 @@ function StepCredentials({
   errors?: Record<string, string>;
 }) {
   const platform = platforms.find((p) => p.id === account.platform);
-  const Icon = platform?.icon || Instagram;
+  const Icon = platform?.icon || Camera;
   const inputClass =
     'w-full px-4 py-3 bg-gray-900 border border-gray-700 focus:border-[#F46325] outline-none text-white placeholder-gray-500 rounded transition';
 
@@ -554,7 +554,7 @@ function StepReview({
     <div className="space-y-4">
       {accounts.map((account, idx) => {
         const platform = platforms.find((p) => p.id === account.platform);
-        const Icon = platform?.icon || Instagram;
+        const Icon = platform?.icon || Camera;
         return (
           <div
             key={idx}

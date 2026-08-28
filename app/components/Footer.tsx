@@ -1,10 +1,19 @@
+'use client';
+
 import Link from 'next/link';
 import Image from 'next/image';
+import { usePathname } from 'next/navigation';
 import siteContent from '../content/siteContent.json';
 import SocialLink from './SocialLink';
 
 export default function Footer() {
+  const pathname = usePathname();
   const content = siteContent;
+
+  // Hide footer on admin routes
+  if (pathname.startsWith('/admin')) {
+    return null;
+  }
 
   return (
     <footer className="relative bg-black border-t border-gray-800/50 overflow-hidden">

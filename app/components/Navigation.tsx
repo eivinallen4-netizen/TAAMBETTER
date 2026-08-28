@@ -21,6 +21,11 @@ export default function Navigation() {
   const pathname = usePathname();
   const content = siteContent;
 
+  // Hide navigation on admin routes
+  if (pathname.startsWith('/admin')) {
+    return null;
+  }
+
   const navIsDark = scrolled || isOpen;
   const desktopLinkClass = navIsDark
     ? 'text-white border-transparent hover:border-white focus-visible:border-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white'

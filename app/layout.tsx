@@ -4,6 +4,7 @@ import "./globals.css";
 import Navigation from "./components/Navigation";
 import Footer from "./components/Footer";
 import ContactFormProvider from "./components/ContactForm/ContactFormProvider";
+import { Analytics } from "@vercel/analytics/next"
 
 const montserrat = Montserrat({
   variable: "--font-montserrat",
@@ -135,6 +136,7 @@ export default function RootLayout({
           <main className="flex-1">{children}</main>
           <Footer />
         </ContactFormProvider>
+        <Analytics />
       </body>
     </html>
   );

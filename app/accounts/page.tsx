@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Instagram, Users, Music2, Youtube, Linkedin, Share2, Trash2, Plus } from 'lucide-react';
+import { Camera, Users, Music2, Play, Link2, Share2, Trash2, Plus } from 'lucide-react';
 
 interface ConnectedAccount {
   id: string;
@@ -12,11 +12,11 @@ interface ConnectedAccount {
 }
 
 const PLATFORM_ICONS: Record<string, any> = {
-  instagram: Instagram,
+  instagram: Camera,
   facebook: Users,
   tiktok: Music2,
-  youtube: Youtube,
-  linkedin: Linkedin,
+  youtube: Play,
+  linkedin: Link2,
   twitter: Share2,
 };
 
@@ -122,7 +122,7 @@ export default function AccountsPage() {
         ) : (
           <div className="grid gap-4">
             {accounts.map((account) => {
-              const Icon = PLATFORM_ICONS[account.platform] || Instagram;
+              const Icon = PLATFORM_ICONS[account.platform] || Camera;
               const color = PLATFORM_COLORS[account.platform] || 'from-gray-600 to-gray-400';
               const platformName = account.platform.charAt(0).toUpperCase() + account.platform.slice(1);
               const createdDate = new Date(account.created_at).toLocaleDateString();
