@@ -1,5 +1,6 @@
 import type { MetadataRoute } from 'next';
 import siteContent from './content/siteContent.json';
+import { FREE_TOOLS } from './lib/tools';
 
 const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://taammarketing.com';
 
@@ -32,6 +33,18 @@ export default function sitemap(): MetadataRoute.Sitemap {
       changeFrequency: 'weekly' as const,
       priority: 0.9,
     },
+    {
+      url: `${baseUrl}/tools`,
+      lastModified: new Date().toISOString(),
+      changeFrequency: 'monthly' as const,
+      priority: 0.9,
+    },
+    ...FREE_TOOLS.map((tool) => ({
+      url: `${baseUrl}/tools/${tool.slug}`,
+      lastModified: new Date().toISOString(),
+      changeFrequency: 'monthly' as const,
+      priority: 0.8,
+    })),
     ...projectUrls,
   ];
 }

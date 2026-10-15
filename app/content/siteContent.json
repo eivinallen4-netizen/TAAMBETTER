@@ -1,8 +1,8 @@
 {
   "company": {
     "name": "TAAM",
-    "tagline": "Stop paying for excuses. Start seeing results.",
-    "description": "TAAM is a unified content marketing agency built for businesses that expect their marketing to pull its weight. We find what's getting in the way, fix it, and execute the work under one roof. One team. One strategy. Real accountability. Real results.",
+    "tagline": "Better marketing for the best businesses.",
+    "description": "TAAM makes creative that makes your customers say WOW. You already got good at what you do. We show it to the people who need to see it. We're a proven team that's always hungry for the next big problem, and if we're not the right fit, we'll tell you and refer you to someone who is.",
     "services": [
       "Content Strategy",
       "Creation & Design",
@@ -13,31 +13,32 @@
   },
   "hero": {
     "home": {
-      "title": "STOP PAYING FOR EXCUSES.\nSTART SEEING RESULTS.",
-      "subtitle": "You've heard the pitch. You've seen the promises. Now it's time for the proof.",
+      "title": "BETTER\nMARKETING\nFOR THE BEST\nBUSINESSES.",
+      "subtitle": "You already got good at what you do. We make the creative that shows it to the people who need to see it, and makes them say WOW. Video, social and web from a proven team that's hungry for your next big problem.",
       "buttonText": "LET'S TALK",
-      "videoSrc": "/construction-timelapse.mp4",
-      "imageSrc": ""
+      "videoSrc": "/media/cc-recap.mp4",
+      "imageSrc": "/media/cc-recap.jpg"
     },
     "about": {
-      "title": "WE DON'T DO MARKETING FOR MARKETING'S SAKE.",
-      "subtitle": "Your business already works. Our job is to make more of the right people notice it. One team across strategy, content, design, and development. No agency BS. No excuses.",
+      "title": "HUNGRY FOR\nTHE NEXT\nBIG PROBLEM.",
+      "subtitle": "We're a proven team, and we're never done proving it. Every new business is a new problem to solve and a new chance to prove ourselves again. That's the part we love.",
       "buttonText": "MEET THE TEAM",
-      "videoSrc": "",
-      "imageSrc": ""
+      "videoSrc": "/media/cc-recap.mp4",
+      "imageSrc": "/media/cc-recap.jpg"
     },
     "work": {
-      "title": "GOOD MARKETING ISN'T A PRESENTATION. IT'S EXECUTION.",
-      "subtitle": "Strategy means little if nobody can execute it. We bring strategy, content, design, and development together so the work actually gets done—and gets results.",
+      "title": "WE PROVED IT.\nWE'LL PROVE\nIT AGAIN.",
+      "subtitle": "Real businesses with real customers saying WOW. Every one of these started as a new problem, and we were hungry for every one.",
       "buttonText": "VIEW PORTFOLIO",
       "videoSrc": "",
       "imageSrc": ""
     }
   },
   "homepage": {
-    "headline": "STOP PAYING FOR EXCUSES. START SEEING RESULTS.",
-    "description": "Most agencies make marketing complicated because complicated sounds impressive. More meetings. More handoffs. More people explaining why something didn't work. We prefer a simpler approach. Find the problem. Build the right strategy. Make something people care about. Measure what happens. Then do more of what works. One unified team. One standard: results.",
-    "ctaText": "Ready to see what your marketing can actually do? Let's talk."
+    "headline": "BETTER MARKETING FOR THE BEST BUSINESSES.",
+    "description": "Your product is great. The problem is that the people who need to see it haven't yet. That's our job: creative that stops the scroll and makes your customers say WOW. We're a proven team, and we're always hungry for the next big problem to prove ourselves on.",
+    "ctaText": "Give us a call.",
+    "statement": "WE CAN'T MAKE\nYOU GOOD.\nYOU ALREADY\nDID THAT."
   },
   "stats": [
     {
@@ -61,22 +62,22 @@
     {
       "step": "01",
       "title": "FIND THE PROBLEM",
-      "description": "We start with facts, not assumptions. We look at your marketing, your audience, your competition, and the opportunities you're missing. Before we make anything, we figure out what needs fixing."
+      "description": "We love a hard problem. We dig into your marketing, your audience and your competition until we know exactly why the right people aren't seeing you yet."
     },
     {
       "step": "02",
       "title": "BUILD THE PLAN",
-      "description": "No templates. No strategy pulled from a presentation deck. We build around your business, your customers, and the result you're actually trying to achieve. Success gets defined in numbers, not buzzwords."
+      "description": "Built around your business and the goals you've set, not a template. We decide what winning looks like in real numbers before we make a thing."
     },
     {
       "step": "03",
-      "title": "MAKE THE WORK",
-      "description": "Strategy is worthless without execution. Our strategists, designers, creators, and developers work together under one roof. No endless handoffs. No waiting for another department. No one to blame."
+      "title": "MAKE THE WOW",
+      "description": "Strategists, creators, editors and developers on one team, making work your customers actually stop for. No handoffs. No one else to blame."
     },
     {
       "step": "04",
-      "title": "PROVE IT WORKS",
-      "description": "We launch, measure, learn, and improve. If something works, we do more of it. If it doesn't, we change it. We don't hide behind vanity metrics or excuses. The work has to earn its keep."
+      "title": "PROVE IT AGAIN",
+      "description": "We launch, measure and keep improving. What works gets more. What doesn't gets changed. Every month we prove ourselves again, and we like it that way."
     }
   ],
   "projects": [
@@ -123,7 +124,30 @@
       ],
       "color": "orange",
       "size": "large",
-      "technologies": "Social Strategy, Content Production, Video Editing, Community Management"
+      "technologies": "Social Strategy, Content Production, Video Editing, Community Management",
+      "results": [
+        {
+          "value": "2M+",
+          "label": "Views",
+          "from": "from under 30K"
+        },
+        {
+          "value": "200K",
+          "label": "Likes",
+          "from": "from 2K"
+        },
+        {
+          "value": "3.5K",
+          "label": "TikTok followers",
+          "from": "from 0"
+        },
+        {
+          "value": "$0",
+          "label": "Ad spend",
+          "from": "all organic"
+        }
+      ],
+      "tagline": "They called for a plumber. The whole internet showed up."
     }
   ],
   "news": [
@@ -132,7 +156,8 @@
       "title": "TAAM EXPANDS TO LAS VEGAS",
       "description": "We're opening our second Nevada office and taking the work directly to the people. Catch us at upcoming real estate events across the region, where we'll be handing out free short-form content and showing businesses what better marketing looks like.",
       "date": "2026-07-31",
-      "link": "#"
+      "link": "#",
+      "image": "/media/cc-promo.jpg"
     }
   ],
   "contact": {

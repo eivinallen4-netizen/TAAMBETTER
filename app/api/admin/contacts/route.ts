@@ -3,7 +3,7 @@ import { requireAdmin } from '@/lib/admin-auth';
 import { getAdminDb } from '@/lib/admin-db';
 import { initializeTables } from '@/lib/init-tables';
 
-const VALID_SORT_COLUMNS = ['timestamp', 'name', 'email', 'business_name'];
+const VALID_SORT_COLUMNS = ['timestamp', 'name', 'email', 'business_name', 'lead_fit', 'budget'];
 const VALID_DIRECTIONS = ['asc', 'desc'];
 
 export async function GET(request: NextRequest) {
@@ -36,7 +36,7 @@ export async function GET(request: NextRequest) {
 
     // Get paginated results
     const result = await db.execute({
-      sql: `SELECT id, name, email, phone, message, completion_status, timestamp, source_page, biggest_challenge, services_interested, business_name
+      sql: `SELECT id, name, email, phone, message, completion_status, timestamp, source_page, biggest_challenge, services_interested, business_name, industry, business_stage, budget, timeline, website, lead_fit, role
             FROM contacts
             WHERE ? = '' OR name LIKE ? OR email LIKE ? OR business_name LIKE ?
             ORDER BY ${sort} ${dir}

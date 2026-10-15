@@ -16,7 +16,7 @@ export async function GET(request: NextRequest) {
     const searchPattern = `%${search}%`;
 
     const result = await db.execute({
-      sql: `SELECT id, name, email, phone, message, completion_status, timestamp, source_page, biggest_challenge, services_interested, business_name
+      sql: `SELECT id, name, email, phone, message, completion_status, timestamp, source_page, biggest_challenge, services_interested, business_name, industry, business_stage, budget, timeline, website, lead_fit, role
             FROM contacts
             WHERE ? = '' OR name LIKE ? OR email LIKE ? OR business_name LIKE ?
             ORDER BY timestamp DESC`,
@@ -35,6 +35,13 @@ export async function GET(request: NextRequest) {
       { key: 'source_page', header: 'Source Page' },
       { key: 'biggest_challenge', header: 'Biggest Challenge' },
       { key: 'services_interested', header: 'Services Interested' },
+      { key: 'lead_fit', header: 'Lead Fit' },
+      { key: 'role', header: 'Role' },
+      { key: 'industry', header: 'Industry' },
+      { key: 'business_stage', header: 'Time in Business' },
+      { key: 'budget', header: 'Monthly Budget' },
+      { key: 'timeline', header: 'Timeline' },
+      { key: 'website', header: 'Website / Instagram' },
     ]);
 
     const now = new Date().toISOString().split('T')[0];

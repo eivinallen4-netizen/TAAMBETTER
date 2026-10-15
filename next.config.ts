@@ -81,13 +81,13 @@ const nextConfig: NextConfig = {
           },
         ],
       },
-      // Preload critical resources
+      // Cache vector brand assets and icons
       {
-        source: "/:path(.*)",
+        source: "/(brand|icons)/:path(.*)",
         headers: [
           {
-            key: "Link",
-            value: "</brand-assets/logos/transparent/TAAM_logo_white_transparent.png>; rel=preload; as=image; nopush",
+            key: "Cache-Control",
+            value: "public, max-age=604800, stale-while-revalidate=86400",
           },
         ],
       },

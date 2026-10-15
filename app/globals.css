@@ -18,6 +18,12 @@
   --color-text-primary: var(--taam-white);
   --color-border: #1f1f1f;
   --color-border-light: #2d2d2d;
+
+  /* Editorial system */
+  --gutter: clamp(1.25rem, 4vw, 4rem);
+  --radius-card: clamp(1.25rem, 2.2vw, 2.25rem);
+  --section-pad: clamp(6rem, 14vw, 13rem);
+  --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 @theme inline {
@@ -36,255 +42,337 @@
   --color-border: var(--color-border);
   --color-border-light: var(--color-border-light);
   --font-sans: var(--font-montserrat);
-}
-
-@layer base {
-  /* Animation keyframes */
-  @keyframes fadeInUp {
-    from {
-      opacity: 0;
-      transform: translateY(30px);
-    }
-    to {
-      opacity: 1;
-      transform: translateY(0);
-    }
-  }
-
-  @keyframes fadeInDown {
-    from {
-      opacity: 0;
-      transform: translateY(-30px);
-    }
-    to {
-      opacity: 1;
-      transform: translateY(0);
-    }
-  }
-
-  @keyframes fadeIn {
-    from {
-      opacity: 0;
-    }
-    to {
-      opacity: 1;
-    }
-  }
-
-  @keyframes slideInLeft {
-    from {
-      opacity: 0;
-      transform: translateX(-100px);
-    }
-    to {
-      opacity: 1;
-      transform: translateX(0);
-    }
-  }
-
-  @keyframes slideInRight {
-    from {
-      opacity: 0;
-      transform: translateX(100px);
-    }
-    to {
-      opacity: 1;
-      transform: translateX(0);
-    }
-  }
-
-  @keyframes scaleIn {
-    from {
-      opacity: 0;
-      transform: scale(0.95);
-    }
-    to {
-      opacity: 1;
-      transform: scale(1);
-    }
-  }
-
-  @keyframes shimmer {
-    0%, 100% {
-      background-position: -1000px 0;
-    }
-    50% {
-      background-position: 1000px 0;
-    }
-  }
-
-  @supports (animation-timeline: view()) {
-    [data-scroll-animate] {
-      animation-timeline: view();
-    }
-  }
-
-  @keyframes pulse-glow {
-    0%, 100% {
-      box-shadow: 0 0 0 0 rgba(244, 99, 37, 0.4);
-    }
-    50% {
-      box-shadow: 0 0 0 8px rgba(244, 99, 37, 0);
-    }
-  }
-
-  @keyframes float {
-    0%, 100% {
-      transform: translateY(0px);
-    }
-    50% {
-      transform: translateY(-8px);
-    }
-  }
-
-  @keyframes rotate-slow {
-    from {
-      transform: rotate(0deg);
-    }
-    to {
-      transform: rotate(360deg);
-    }
-  }
-
-  @keyframes glow-pulse {
-    0%, 100% {
-      box-shadow: 0 0 10px rgba(244, 99, 37, 0.3);
-    }
-    50% {
-      box-shadow: 0 0 25px rgba(244, 99, 37, 0.6);
-    }
-  }
-
-  @keyframes gradient-shift {
-    0% {
-      background-position: 0% 50%;
-    }
-    50% {
-      background-position: 100% 50%;
-    }
-    100% {
-      background-position: 0% 50%;
-    }
-  }
-
-  @keyframes border-glow {
-    0%, 100% {
-      border-color: rgba(244, 99, 37, 0.2);
-      box-shadow: 0 0 0 0 rgba(244, 99, 37, 0.1);
-    }
-    50% {
-      border-color: rgba(244, 99, 37, 0.6);
-      box-shadow: 0 0 15px rgba(244, 99, 37, 0.2);
-    }
-  }
-
-  @keyframes text-glow {
-    0%, 100% {
-      text-shadow: 0 0 0 rgba(244, 99, 37, 0);
-    }
-    50% {
-      text-shadow: 0 0 20px rgba(244, 99, 37, 0.5);
-    }
-  }
-
-  /* Animation utility classes */
-  .animate-fade-in-up {
-    animation: fadeInUp 0.6s ease-out forwards;
-  }
-
-  .animate-fade-in-down {
-    animation: fadeInDown 0.6s ease-out forwards;
-  }
-
-  .animate-fade-in {
-    animation: fadeIn 0.6s ease-out forwards;
-  }
-
-  .animate-slide-in-left {
-    animation: slideInLeft 0.6s ease-out forwards;
-  }
-
-  .animate-slide-in-right {
-    animation: slideInRight 0.6s ease-out forwards;
-  }
-
-  .animate-scale-in {
-    animation: scaleIn 0.6s ease-out forwards;
-  }
-
-  .animate-float {
-    animation: float 3s ease-in-out infinite;
-  }
-
-  .animate-pulse-glow {
-    animation: pulse-glow 3s infinite;
-    will-change: box-shadow;
-    contain: layout style paint;
-  }
-
-  .animate-rotate-slow {
-    animation: rotate-slow 20s linear infinite;
-    will-change: transform;
-    contain: layout style paint;
-  }
-
-  .animate-shimmer {
-    animation: shimmer 2.5s infinite;
-    will-change: background-position;
-    contain: layout style paint;
-  }
-
-  .animate-glow-pulse {
-    animation: glow-pulse 4s ease-in-out infinite;
-    will-change: box-shadow;
-    contain: layout style paint;
-  }
-
-  .animate-gradient-shift {
-    animation: gradient-shift 8s ease-in-out infinite;
-    will-change: background-position;
-    contain: layout style paint;
-  }
-
-  .animate-border-glow {
-    animation: border-glow 4s ease-in-out infinite;
-    will-change: border-color, box-shadow;
-    contain: layout style paint;
-  }
-
-  .animate-text-glow {
-    animation: text-glow 5s ease-in-out infinite;
-    will-change: text-shadow;
-    contain: layout style paint;
-  }
-
-  /* Scroll-triggered animations */
-  [data-scroll-animate] {
-    opacity: 0;
-  }
-
-  [data-scroll-animate="left"] {
-    transform: translateX(-80px);
-  }
-
-  [data-scroll-animate="right"] {
-    transform: translateX(80px);
-  }
-
-  [data-scroll-animate].animate-in {
-    animation: slideInWithOpacity 0.8s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
-  }
-
-  @keyframes slideInWithOpacity {
-    to {
-      opacity: 1;
-      transform: translateX(0);
-    }
-  }
+  --radius-card: var(--radius-card);
 }
 
 body {
   background: var(--taam-near-black);
   color: var(--taam-white);
   font-family: var(--font-montserrat), 'Montserrat', sans-serif;
+  font-feature-settings: "kern", "liga";
+  -webkit-font-smoothing: antialiased;
+}
+
+::selection {
+  background: var(--taam-white);
+  color: var(--taam-orange);
+}
+
+@layer components {
+  /* ---------- Section tones: whole-section color fields, white type throughout ---------- */
+  .tone-orange {
+    background: var(--taam-orange);
+    color: var(--taam-white);
+    --tone-bg: var(--taam-orange);
+    --tone-muted: rgb(255 255 255 / 0.82);
+    --tone-rule: rgb(255 255 255 / 0.45);
+  }
+  .tone-ink {
+    background: var(--taam-near-black);
+    color: var(--taam-white);
+    --tone-bg: var(--taam-near-black);
+    --tone-muted: rgb(255 255 255 / 0.62);
+    --tone-rule: rgb(255 255 255 / 0.18);
+  }
+
+  .gutter {
+    padding-inline: var(--gutter);
+  }
+
+  .section-pad {
+    padding-block: var(--section-pad);
+  }
+
+  /* ---------- Display type: one geometric sans, oversized, all caps ---------- */
+  .display {
+    font-weight: 900;
+    text-transform: uppercase;
+    letter-spacing: -0.045em;
+    line-height: 0.84;
+    text-wrap: balance;
+  }
+  .display-mega {
+    font-size: clamp(2.75rem, 15vw, 17rem);
+  }
+  .display-xl {
+    font-size: clamp(2.4rem, 10.5vw, 11.5rem);
+  }
+  .display-lg {
+    font-size: clamp(2.1rem, 7.4vw, 7.5rem);
+  }
+  .display-md {
+    font-size: clamp(1.75rem, 4.6vw, 4.5rem);
+    line-height: 0.9;
+  }
+  .display-sm {
+    font-size: clamp(1.5rem, 2.6vw, 2.5rem);
+    line-height: 0.95;
+    letter-spacing: -0.03em;
+  }
+
+  /* Outlined display type for statements.
+     Montserrat's glyphs are built from overlapping contours, so a plain transparent
+     stroke shows lines inside the letters. Instead the stroke is drawn at double width
+     and the section's own background fills over its inner half (paint-order). */
+  .outline-type {
+    color: var(--tone-bg, transparent);
+    -webkit-text-stroke: clamp(2px, 0.28vw, 5px) var(--taam-white);
+    paint-order: stroke fill;
+  }
+
+  /* Hover state that flips solid display type to outline */
+  .hover-outline {
+    transition: color 0.5s, -webkit-text-stroke-color 0.5s;
+    -webkit-text-stroke: clamp(2px, 0.28vw, 5px) transparent;
+    paint-order: stroke fill;
+  }
+  .group:hover .hover-outline {
+    color: var(--tone-bg);
+    -webkit-text-stroke-color: var(--taam-white);
+  }
+
+  /* Vertical, edge-anchored section titles */
+  .vertical-title {
+    writing-mode: vertical-rl;
+    transform: rotate(180deg);
+    white-space: nowrap;
+  }
+
+  /* Small editorial labels */
+  .eyebrow {
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.22em;
+  }
+
+  .lede {
+    font-size: clamp(1.125rem, 1.45vw, 1.4rem);
+    line-height: 1.55;
+    font-weight: 500;
+  }
+
+  .rule {
+    border-color: var(--tone-rule, rgb(255 255 255 / 0.2));
+  }
+
+  /* Soft rounded cinematic media cards */
+  .media-card {
+    position: relative;
+    overflow: hidden;
+    border-radius: var(--radius-card);
+    background: #000;
+    isolation: isolate;
+  }
+  .media-card img,
+  .media-card video {
+    transition: transform 1.4s var(--ease-out-expo);
+  }
+  .group:hover .media-card img,
+  .media-card:hover img {
+    transform: scale(1.035);
+  }
+
+  /* Buttons: blunt, typographic */
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 1.15rem 1.9rem;
+    border-radius: 999px;
+    font-weight: 800;
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 0.14em;
+    white-space: nowrap;
+    transition: background-color 0.3s, color 0.3s, transform 0.3s var(--ease-out-expo);
+    outline: none;
+  }
+  .btn:focus-visible {
+    outline: 2px solid var(--taam-white);
+    outline-offset: 4px;
+  }
+  .btn:active {
+    transform: scale(0.98);
+  }
+  .btn-solid {
+    background: var(--taam-white);
+    color: var(--taam-near-black);
+  }
+  .btn-solid:hover {
+    background: var(--taam-near-black);
+    color: var(--taam-white);
+  }
+  .tone-ink .btn-solid:hover {
+    background: var(--taam-orange);
+  }
+  .btn-ghost {
+    box-shadow: inset 0 0 0 2px var(--taam-white);
+    color: var(--taam-white);
+  }
+  .btn-ghost:hover {
+    background: var(--taam-white);
+    color: var(--taam-near-black);
+  }
+
+  /* Underlined text link that draws in on hover */
+  .link-line {
+    background-image: linear-gradient(currentColor, currentColor);
+    background-size: 0% 2px;
+    background-position: 0 100%;
+    background-repeat: no-repeat;
+    transition: background-size 0.45s var(--ease-out-expo);
+    padding-bottom: 2px;
+  }
+  .link-line:hover,
+  .link-line:focus-visible {
+    background-size: 100% 2px;
+    outline: none;
+  }
+
+  /* ---------- Homepage hero ---------- */
+  /* Sized by whichever runs out first, width or height, so the promise, the ask and the proof share the first screen. */
+  .hero-type {
+    font-size: min(12.4vw, 14.2svh);
+  }
+  .strike-bar {
+    position: absolute;
+    left: -0.04em;
+    right: -0.04em;
+    top: 46%;
+    height: 0.13em;
+    background: var(--taam-near-black);
+    transform-origin: left center;
+    border-radius: 999px;
+  }
+  .hero-pill {
+    position: relative;
+    flex: 1 1 auto;
+    min-width: 0;
+    height: 0.74em;
+    overflow: hidden;
+    border-radius: 999px;
+    background: #000;
+    align-self: center;
+    margin-top: 0.02em;
+  }
+  .hero-pill-label {
+    position: absolute;
+    left: 0.9rem;
+    bottom: 0.7rem;
+    z-index: 1;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.4rem 0.8rem;
+    border-radius: 999px;
+    background: rgb(17 17 17 / 0.7);
+    backdrop-filter: blur(6px);
+    font-size: 0.65rem;
+    font-weight: 700;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    line-height: 1;
+  }
+  .live-dot {
+    width: 0.5rem;
+    height: 0.5rem;
+    border-radius: 999px;
+    background: var(--taam-orange);
+    animation: live-pulse 1.6s ease-in-out infinite;
+  }
+  @keyframes live-pulse {
+    50% {
+      opacity: 0.25;
+    }
+  }
+
+  /* Spinning "let's talk" sticker */
+  .talk-badge {
+    position: relative;
+    display: grid;
+    place-items: center;
+    width: clamp(8.5rem, 11vw, 11.5rem);
+    aspect-ratio: 1;
+    border-radius: 999px;
+    background: var(--taam-near-black);
+    color: var(--taam-white);
+    cursor: pointer;
+    transition: transform 0.5s var(--ease-out-expo), background-color 0.3s;
+  }
+  .talk-badge:hover {
+    transform: scale(1.08);
+    background: var(--taam-white);
+    color: var(--taam-near-black);
+  }
+  .talk-badge:focus-visible {
+    outline: 2px solid var(--taam-white);
+    outline-offset: 6px;
+  }
+  .talk-badge-ring {
+    position: absolute;
+    inset: 0;
+    animation: spin 16s linear infinite;
+  }
+  .talk-badge:hover .talk-badge-ring {
+    animation-duration: 5s;
+  }
+  .talk-badge-core {
+    font-size: clamp(1.75rem, 2.4vw, 2.5rem);
+    font-weight: 900;
+    transition: transform 0.5s var(--ease-out-expo);
+  }
+  .talk-badge:hover .talk-badge-core {
+    transform: rotate(45deg);
+  }
+  @keyframes spin {
+    to {
+      transform: rotate(360deg);
+    }
+  }
+
+  /* Tilted ribbon that crosses the seam between two sections */
+  .ribbon {
+    position: relative;
+    z-index: 5;
+    margin-block: -2.5rem;
+    transform: rotate(-2.5deg) scale(1.04);
+    background: var(--taam-white);
+    color: var(--taam-near-black);
+    padding-block: 1rem;
+    box-shadow: 0 20px 50px rgb(0 0 0 / 0.25);
+  }
+  .ribbon .marquee {
+    animation-duration: 26s;
+  }
+  .ribbon .display-lg {
+    font-size: clamp(1.5rem, 3.6vw, 3.5rem);
+  }
+  .ribbon .outline-type {
+    color: var(--taam-white);
+    -webkit-text-stroke-color: var(--taam-near-black);
+  }
+
+  /* Endless horizontal marquee */
+  .marquee {
+    display: flex;
+    width: max-content;
+    animation: marquee 38s linear infinite;
+  }
+  @keyframes marquee {
+    to {
+      transform: translateX(-50%);
+    }
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .marquee,
+  .talk-badge-ring,
+  .live-dot {
+    animation: none;
+  }
+  html {
+    scroll-behavior: auto;
+  }
 }

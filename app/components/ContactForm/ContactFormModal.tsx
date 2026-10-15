@@ -13,13 +13,23 @@ import {
 } from 'lucide-react';
 import siteContent from '../../content/siteContent.json';
 import {
+  BUDGET_OPTIONS,
   CHALLENGE_OPTIONS,
   CHALLENGE_TO_SERVICE,
-  SERVICE_OPTIONS,
+  INDUSTRY_OPTIONS,
+  ROLE_OPTIONS,
+  STAGE_OPTIONS,
+  TIMELINE_OPTIONS,
+  isDisposableEmail,
+  isPlausiblePhone,
+  scoreLeadFit,
+  type LeadFit,
+  type QualifierOption,
 } from '../../lib/cta';
 import type { ContactFormPrefill } from './ContactFormProvider';
 
-type Step = 1 | 2 | 3 | 'confirmation';
+type Step = 1 | 2 | 3 | 4 | 'confirmation';
+const TOTAL_STEPS = 4;
 
 interface ContactFormModalProps {
   prefill?: ContactFormPrefill;
@@ -38,18 +48,31 @@ const iconMap: Record<string, React.ComponentType<{ size: number; className: str
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-function isValidPhone(phone: string) {
-  return phone.replace(/\D/g, '').length >= 10;
+function emailError(email: string): string | null {
+  const v = email.trim();
+  if (!EMAIL_RE.test(v)) return 'That email doesn’t look right.';
+  if (isDisposableEmail(v)) return 'Use an email you actually check — throwaway inboxes get filtered out.';
+  return null;
 }
 
 const emptyFormState = {
   biggestChallenge: '',
-  services: [] as string[],
+  role: '',
+  industry: '',
+  businessStage: '',
+  budget: '',
+  timeline: '',
   name: '',
   email: '',
   phone: '',
   businessName: '',
+  website: '',
+  message: '',
+  // Honeypot: hidden from people, irresistible to form-filling bots.
+  companyFax: '',
 };
+
+type FormField = keyof typeof emptyFormState;
 
 export default function ContactFormModal({ prefill, onClose }: ContactFormModalProps) {
   // This component is only ever mounted while the form is open (see ContactFormProvider),
@@ -58,21 +81,30 @@ export default function ContactFormModal({ prefill, onClose }: ContactFormModalP
   const [form, setForm] = useState(() => ({
     ...emptyFormState,
     biggestChallenge: prefill?.challenge ?? '',
-    services: prefill?.services ?? [],
   }));
   const [dirty, setDirty] = useState(false);
   const [showExitConfirm, setShowExitConfirm] = useState(false);
-  const [servicesAutoChecked, setServicesAutoChecked] = useState(() => Boolean(prefill?.services?.length));
   const [sourcePage] = useState(() => (typeof window !== 'undefined' ? window.location.pathname : ''));
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
+  const [fit, setFit] = useState<LeadFit>('possible');
   const dialogRef = useRef<HTMLDivElement>(null);
-  const [partialSubmitSent, setPartialSubmitSent] = useState(false);
+  const advanceTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const partialSent = useRef(false);
+  const openedAt = useRef(Date.now());
+
+  // Services come from where the visitor clicked (prefill) or are inferred from their challenge.
+  const services = prefill?.services?.length
+    ? prefill.services
+    : CHALLENGE_TO_SERVICE[form.biggestChallenge]
+      ? [CHALLENGE_TO_SERVICE[form.biggestChallenge]]
+      : [];
 
   useEffect(() => {
     document.body.style.overflow = 'hidden';
     return () => {
       document.body.style.overflow = '';
+      if (advanceTimer.current) clearTimeout(advanceTimer.current);
     };
   }, []);
 
@@ -90,36 +122,46 @@ export default function ContactFormModal({ prefill, onClose }: ContactFormModalP
 
   useEffect(() => {
     dialogRef.current?.focus();
-  }, []);
+    dialogRef.current?.scrollTo({ top: 0 });
+  }, [step]);
 
-  useEffect(() => {
-    const hasName = form.name.trim() !== '';
-    const hasEmail = form.email.trim() !== '' && EMAIL_RE.test(form.email.trim());
-    const shouldSendPartial = (hasName || hasEmail) && !partialSubmitSent && step === 3;
+  function buildPayload(final = false) {
+    return {
+      biggest_challenge: form.biggestChallenge,
+      role: form.role,
+      services_interested: services,
+      industry: form.industry,
+      business_stage: form.businessStage,
+      budget: form.budget,
+      timeline: form.timeline,
+      name: form.name.trim(),
+      email: form.email.trim(),
+      phone: form.phone.trim(),
+      business_name: form.businessName.trim(),
+      website: form.website.trim(),
+      message: form.message.trim(),
+      source_page: sourcePage,
+      company_fax: form.companyFax,
+      elapsed_ms: Date.now() - openedAt.current,
+      final,
+    };
+  }
 
-    if (shouldSendPartial) {
-      setPartialSubmitSent(true);
-      const partialData = {
-        name: form.name.trim(),
-        email: form.email.trim(),
-        phone: form.phone.trim(),
-        business_name: form.businessName.trim(),
-        biggest_challenge: form.biggestChallenge,
-        services_interested: form.services,
-        source_page: sourcePage,
-      };
-      fetch('/api/contact', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(partialData),
-      }).catch((err) => {
-        console.error('Partial submission failed:', err);
-      });
-    }
-  }, [form.name, form.email, partialSubmitSent, step]);
+  // Save a partial lead once there's a real email, so an abandoned final step isn't lost.
+  function savePartial() {
+    if (partialSent.current || emailError(form.email)) return;
+    partialSent.current = true;
+    fetch('/api/contact', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(buildPayload()),
+    }).catch((err) => {
+      console.error('Partial submission failed:', err);
+    });
+  }
 
   function requestClose() {
-    if (dirty) {
+    if (dirty && step !== 'confirmation') {
       setShowExitConfirm(true);
     } else {
       onClose();
@@ -131,76 +173,65 @@ export default function ContactFormModal({ prefill, onClose }: ContactFormModalP
     onClose();
   }
 
-  function selectChallenge(value: string) {
-    setDirty(true);
-    setForm((prev) => ({ ...prev, biggestChallenge: value }));
-  }
-
-  function toggleService(value: string) {
-    setDirty(true);
-    setForm((prev) => ({
-      ...prev,
-      services: prev.services.includes(value)
-        ? prev.services.filter((s) => s !== value)
-        : [...prev.services, value],
-    }));
-  }
-
-  function updateField(field: keyof typeof emptyFormState, value: string) {
+  function updateField(field: FormField, value: string) {
     setDirty(true);
     setForm((prev) => ({ ...prev, [field]: value }));
   }
 
+  function selectChallenge(value: string) {
+    updateField('biggestChallenge', value);
+    // Single-tap question: move on by itself, with a beat so the selection registers.
+    if (advanceTimer.current) clearTimeout(advanceTimer.current);
+    advanceTimer.current = setTimeout(() => setStep(2), 280);
+  }
+
   function goNext() {
-    if (step === 1) {
-      if (!servicesAutoChecked) {
-        const mapped = CHALLENGE_TO_SERVICE[form.biggestChallenge];
-        if (mapped && form.services.length === 0) {
-          setForm((prev) => ({ ...prev, services: [mapped] }));
-        }
-        setServicesAutoChecked(true);
-      }
-      setStep(2);
-    } else if (step === 2) {
-      setStep(3);
-    }
+    if (step === 1) setStep(2);
+    else if (step === 2) setStep(3);
+    else if (step === 3) setStep(4);
   }
 
   function goBack() {
     if (step === 2) setStep(1);
     else if (step === 3) setStep(2);
+    else if (step === 4) setStep(3);
   }
 
-  async function handleSubmit() {
+  async function handleSubmit(e?: React.FormEvent) {
+    e?.preventDefault();
+    if (!step4Valid || submitting) return;
     setSubmitting(true);
     setSubmitError(null);
     try {
       const res = await fetch('/api/contact', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          biggest_challenge: form.biggestChallenge,
-          services_interested: form.services,
-          name: form.name.trim(),
-          email: form.email.trim(),
-          phone: form.phone.trim(),
-          business_name: form.businessName.trim(),
-          source_page: sourcePage,
-        }),
+        body: JSON.stringify(buildPayload(true)),
       });
       if (!res.ok) throw new Error('Submission failed');
+      const data = await res.json().catch(() => ({}));
+      setFit(
+        data.lead_fit ??
+          scoreLeadFit({ stage: form.businessStage, budget: form.budget, timeline: form.timeline, role: form.role }),
+      );
       setStep('confirmation');
     } catch {
-      setSubmitError("Something went wrong sending that. Mind trying again?");
+      setSubmitError('Something went wrong sending that. Mind trying again?');
     } finally {
       setSubmitting(false);
     }
   }
 
   const step1Valid = form.biggestChallenge !== '';
-  const step2Valid = form.services.length > 0;
-  const step3Valid =
-    form.name.trim() !== '' && EMAIL_RE.test(form.email.trim()) && isValidPhone(form.phone);
+  const isVendor = form.role === 'vendor';
+  const step2Valid = form.role !== '' && !isVendor && form.industry !== '' && form.businessStage !== '';
+  const step3Valid = form.budget !== '' && form.timeline !== '';
+  const step4Valid =
+    form.name.trim() !== '' &&
+    form.businessName.trim() !== '' &&
+    emailError(form.email) === null &&
+    isPlausiblePhone(form.phone);
+  const currentValid = step === 1 ? step1Valid : step === 2 ? step2Valid : step3Valid;
 
   const stepNumber = step === 'confirmation' ? null : step;
 
@@ -209,24 +240,25 @@ export default function ContactFormModal({ prefill, onClose }: ContactFormModalP
       ref={dialogRef}
       role="dialog"
       aria-modal="true"
-      aria-label="Contact intake form"
+      aria-label="Let's talk — project intake"
       tabIndex={-1}
-      className="fixed inset-0 z-[100] bg-taam-near-black text-white overflow-y-auto outline-none"
+      className="fixed inset-0 z-[100] tone-orange overflow-y-auto outline-none"
     >
       {/* Header: progress + close */}
-      <div className="sticky top-0 z-10 bg-taam-near-black/95 backdrop-blur-sm border-b border-gray-800">
-        <div className="max-w-2xl mx-auto px-6 py-4 flex items-center justify-between">
+      <div className="sticky top-0 z-10 bg-taam-orange border-b-2 border-white/40">
+        <div className="max-w-3xl mx-auto px-6 py-5 flex items-center justify-between">
           {stepNumber ? (
             <div className="flex items-center gap-3 flex-1">
-              <span className="text-xs font-bold uppercase tracking-wide text-gray-400 shrink-0">
-                Step {stepNumber} of 3
+              <span className="eyebrow shrink-0">
+                Step {stepNumber} of {TOTAL_STEPS}
               </span>
-              <div className="flex-1 h-1 bg-gray-800 rounded-full overflow-hidden max-w-xs">
+              <div className="flex-1 h-[3px] bg-white/30 overflow-hidden max-w-xs">
                 <div
-                  className="h-full bg-[#F46325] transition-all duration-300"
-                  style={{ width: `${(stepNumber / 3) * 100}%` }}
+                  className="h-full bg-white transition-all duration-500"
+                  style={{ width: `${(stepNumber / TOTAL_STEPS) * 100}%` }}
                 />
               </div>
+              <span className="eyebrow shrink-0 hidden sm:inline opacity-80">About 2 min</span>
             </div>
           ) : (
             <span />
@@ -235,7 +267,7 @@ export default function ContactFormModal({ prefill, onClose }: ContactFormModalP
             type="button"
             onClick={requestClose}
             aria-label="Close form"
-            className="ml-4 text-white hover:text-[#F46325] transition shrink-0"
+            className="ml-4 shrink-0 hover:opacity-70 transition"
           >
             <svg className="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -244,81 +276,120 @@ export default function ContactFormModal({ prefill, onClose }: ContactFormModalP
         </div>
       </div>
 
-      <div className="max-w-2xl mx-auto px-6 py-12">
+      <form className="max-w-3xl mx-auto px-6 py-14 md:py-20" onSubmit={handleSubmit} noValidate>
         {step === 1 && (
           <StepChallenge value={form.biggestChallenge} onSelect={selectChallenge} />
         )}
         {step === 2 && (
-          <StepServices value={form.services} onToggle={toggleService} />
+          <StepIntro title="Tell us about the business." lede="So we come to the call already knowing your world.">
+            <div>
+              <OptionGroup
+                legend="Who are we talking to?"
+                name="role"
+                options={ROLE_OPTIONS}
+                value={form.role}
+                onSelect={(v) => updateField('role', v)}
+              />
+              {isVendor && (
+                <p className="mt-5 rounded-lg bg-taam-near-black px-5 py-4 text-sm font-semibold max-w-xl" role="status">
+                  Appreciate it, but this form is only for businesses that want to hire us. We don&apos;t take
+                  sales pitches, SEO offers or partnership requests here.
+                </p>
+              )}
+            </div>
+            <OptionGroup
+              legend="What kind of business is it?"
+              name="industry"
+              options={INDUSTRY_OPTIONS}
+              value={form.industry}
+              onSelect={(v) => updateField('industry', v)}
+            />
+            <OptionGroup
+              legend="How long have you been open?"
+              name="business_stage"
+              options={STAGE_OPTIONS}
+              value={form.businessStage}
+              onSelect={(v) => updateField('businessStage', v)}
+            />
+          </StepIntro>
         )}
         {step === 3 && (
-          <StepContactInfo
-            name={form.name}
-            email={form.email}
-            phone={form.phone}
-            businessName={form.businessName}
-            onChange={updateField}
-            submitError={submitError}
-          />
+          <StepIntro
+            title="Where are you at?"
+            lede="Real marketing takes a real monthly investment. Give us honest numbers and we'll give you an honest answer — a plan that fits, or a referral to someone who can help."
+          >
+            <OptionGroup
+              legend="What could you put toward marketing each month?"
+              name="budget"
+              options={BUDGET_OPTIONS}
+              value={form.budget}
+              onSelect={(v) => updateField('budget', v)}
+            />
+            <OptionGroup
+              legend="When do you want to get moving?"
+              name="timeline"
+              options={TIMELINE_OPTIONS}
+              value={form.timeline}
+              onSelect={(v) => updateField('timeline', v)}
+            />
+          </StepIntro>
         )}
-        {step === 'confirmation' && <Confirmation name={form.name} onClose={onClose} />}
+        {step === 4 && (
+          <StepContactInfo form={form} onChange={updateField} onEmailBlur={savePartial} submitError={submitError} />
+        )}
+        {step === 'confirmation' && <Confirmation name={form.name} fit={fit} preLaunch={form.businessStage === 'pre_launch'} onClose={onClose} />}
 
         {step !== 'confirmation' && (
-          <div className="flex items-center justify-between mt-10">
-            {step === 2 || step === 3 ? (
-              <button
-                type="button"
-                onClick={goBack}
-                className="px-6 py-3 text-sm font-bold uppercase tracking-wide text-gray-400 hover:text-white transition"
-              >
+          <div className="flex items-center justify-between mt-12">
+            {step !== 1 ? (
+              <button type="button" onClick={goBack} className="eyebrow link-line py-3">
                 ← Back
               </button>
             ) : (
               <span />
             )}
 
-            {step === 3 ? (
+            {step === 4 ? (
               <button
-                type="button"
-                disabled={!step3Valid || submitting}
-                onClick={handleSubmit}
-                className="px-8 py-4 bg-[#F46325] text-white font-black text-sm md:text-base uppercase tracking-wide hover:bg-[#E55A1A] transition disabled:opacity-40 disabled:cursor-not-allowed"
+                type="submit"
+                disabled={!step4Valid || submitting}
+                className="btn btn-solid disabled:opacity-40 disabled:cursor-not-allowed disabled:pointer-events-none"
               >
-                {submitting ? 'Sending…' : 'Get My Free Recommendations'}
+                {submitting ? 'Sending…' : <>Send it <span aria-hidden="true">↗</span></>}
               </button>
             ) : (
               <button
                 type="button"
-                disabled={step === 1 ? !step1Valid : !step2Valid}
+                disabled={!currentValid}
                 onClick={goNext}
-                className="px-8 py-4 bg-[#F46325] text-white font-black text-sm md:text-base uppercase tracking-wide hover:bg-[#E55A1A] transition disabled:opacity-40 disabled:cursor-not-allowed"
+                className="btn btn-solid disabled:opacity-40 disabled:cursor-not-allowed disabled:pointer-events-none"
               >
                 Next →
               </button>
             )}
           </div>
         )}
-      </div>
+      </form>
 
       {showExitConfirm && (
-        <div className="fixed inset-0 z-[110] bg-black/80 flex items-center justify-center px-6">
-          <div className="bg-[#181818] border border-gray-700 rounded-lg max-w-sm w-full p-6">
-            <h3 className="text-lg font-black mb-2">Discard your progress?</h3>
-            <p className="text-sm text-gray-400 mb-6">
+        <div className="fixed inset-0 z-[110] bg-black/60 flex items-center justify-center px-6">
+          <div className="tone-ink rounded-[var(--radius-card)] max-w-sm w-full p-8">
+            <h3 className="display display-sm mb-3">Discard your progress?</h3>
+            <p className="text-sm text-white/70 mb-6">
               Your answers won&apos;t be saved if you close this now.
             </p>
             <div className="flex gap-3">
               <button
                 type="button"
                 onClick={() => setShowExitConfirm(false)}
-                className="flex-1 px-4 py-3 border border-gray-600 text-white text-sm font-bold uppercase tracking-wide hover:border-gray-400 transition"
+                className="flex-1 btn btn-ghost justify-center !px-4"
               >
                 Keep Going
               </button>
               <button
                 type="button"
                 onClick={discardAndClose}
-                className="flex-1 px-4 py-3 bg-red-600 text-white text-sm font-bold uppercase tracking-wide hover:bg-red-700 transition"
+                className="flex-1 btn justify-center !px-4 bg-taam-orange text-white hover:bg-white hover:text-taam-near-black"
               >
                 Discard
               </button>
@@ -330,62 +401,79 @@ export default function ContactFormModal({ prefill, onClose }: ContactFormModalP
   );
 }
 
+const pillBase =
+  'flex items-center gap-4 rounded-full cursor-pointer transition has-[:focus-visible]:outline has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-white has-[:focus-visible]:outline-offset-4';
+const pillOff = 'shadow-[inset_0_0_0_2px_rgba(255,255,255,0.55)] hover:shadow-[inset_0_0_0_2px_#fff]';
+const pillOn = 'bg-white text-taam-near-black';
+
+function StepIntro({ title, lede, children }: { title: string; lede: string; children: React.ReactNode }) {
+  return (
+    <div>
+      <h2 className="display display-md mb-5">{title}</h2>
+      <p className="lede mb-12 text-white/85 max-w-xl">{lede}</p>
+      <div className="space-y-12">{children}</div>
+    </div>
+  );
+}
+
+function OptionGroup({
+  legend,
+  name,
+  options,
+  value,
+  onSelect,
+}: {
+  legend: string;
+  name: string;
+  options: QualifierOption[];
+  value: string;
+  onSelect: (v: string) => void;
+}) {
+  return (
+    <fieldset>
+      <legend className="eyebrow mb-5">{legend}</legend>
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        {options.map((opt) => {
+          const selected = value === opt.value;
+          return (
+            <label key={opt.value} className={`${pillBase} px-6 py-4 ${selected ? pillOn : pillOff}`}>
+              <input
+                type="radio"
+                name={name}
+                value={opt.value}
+                checked={selected}
+                onChange={() => onSelect(opt.value)}
+                className="sr-only"
+              />
+              <span className="font-semibold">{opt.label}</span>
+            </label>
+          );
+        })}
+      </div>
+    </fieldset>
+  );
+}
+
 function StepChallenge({ value, onSelect }: { value: string; onSelect: (v: string) => void }) {
   return (
     <div>
-      <h2 className="text-3xl md:text-4xl font-black mb-2">What&apos;s your biggest challenge right now?</h2>
-      <p className="text-gray-400 mb-8">Pick the one that fits best.</p>
+      <h2 className="display display-md mb-5">What&apos;s holding the business back?</h2>
+      <p className="lede mb-10 text-white/85">Pick the one that hurts most.</p>
       <div className="space-y-3" role="radiogroup" aria-label="Biggest challenge">
         {CHALLENGE_OPTIONS.map((opt) => {
           const selected = value === opt.value;
           const Icon = iconMap[opt.icon];
           return (
-            <label
-              key={opt.value}
-              className={`flex items-center gap-4 border rounded-lg px-5 py-4 cursor-pointer transition ${
-                selected ? 'border-[#F46325] bg-[#F46325]/10' : 'border-gray-700 hover:border-gray-500'
-              }`}
-            >
+            <label key={opt.value} className={`${pillBase} px-6 py-4 ${selected ? pillOn : pillOff}`}>
               <input
                 type="radio"
                 name="biggest_challenge"
                 value={opt.value}
                 checked={selected}
                 onChange={() => onSelect(opt.value)}
-                className="accent-[#F46325] w-5 h-5 shrink-0"
+                className="sr-only"
               />
-              {Icon && <Icon size={24} className="shrink-0 text-[#F46325]" />}
-              <span className="font-semibold">{opt.label}</span>
-            </label>
-          );
-        })}
-      </div>
-    </div>
-  );
-}
-
-function StepServices({ value, onToggle }: { value: string[]; onToggle: (v: string) => void }) {
-  return (
-    <div>
-      <h2 className="text-3xl md:text-4xl font-black mb-2">Which services are you interested in?</h2>
-      <p className="text-gray-400 mb-8">Select all that apply.</p>
-      <div className="space-y-3" role="group" aria-label="Services interested">
-        {SERVICE_OPTIONS.map((opt) => {
-          const selected = value.includes(opt.value);
-          return (
-            <label
-              key={opt.value}
-              className={`flex items-center gap-4 border rounded-lg px-5 py-4 cursor-pointer transition ${
-                selected ? 'border-[#F46325] bg-[#F46325]/10' : 'border-gray-700 hover:border-gray-500'
-              }`}
-            >
-              <input
-                type="checkbox"
-                value={opt.value}
-                checked={selected}
-                onChange={() => onToggle(opt.value)}
-                className="accent-[#F46325] w-5 h-5 shrink-0"
-              />
+              {Icon && <Icon size={24} className="shrink-0" />}
               <span className="font-semibold">{opt.label}</span>
             </label>
           );
@@ -396,125 +484,238 @@ function StepServices({ value, onToggle }: { value: string[]; onToggle: (v: stri
 }
 
 function StepContactInfo({
-  name,
-  email,
-  phone,
-  businessName,
+  form,
   onChange,
+  onEmailBlur,
   submitError,
 }: {
-  name: string;
-  email: string;
-  phone: string;
-  businessName: string;
-  onChange: (field: keyof typeof emptyFormState, value: string) => void;
+  form: typeof emptyFormState;
+  onChange: (field: FormField, value: string) => void;
+  onEmailBlur: () => void;
   submitError: string | null;
 }) {
   const inputClass =
-    'w-full px-4 py-3 bg-gray-900 border border-gray-700 focus:border-[#F46325] outline-none text-white placeholder-gray-500 rounded transition';
+    'w-full px-0 py-3 bg-transparent border-0 border-b-2 border-white/50 focus:border-white outline-none text-white text-xl font-semibold placeholder-white/50 transition';
+  const optional = <span className="opacity-70 font-medium normal-case tracking-normal">(optional)</span>;
+  // Only flag a field once the visitor has left it, so nobody gets yelled at mid-typing.
+  const [touched, setTouched] = useState({ email: false, phone: false });
+  const emailMsg = touched.email && form.email.trim() !== '' ? emailError(form.email) : null;
+  const phoneMsg =
+    touched.phone && form.phone.trim() !== '' && !isPlausiblePhone(form.phone)
+      ? 'We call every serious inquiry — we’ll need a real number.'
+      : null;
+  const fieldError = (msg: string) => <p className="mt-2 text-sm font-semibold text-taam-near-black">{msg}</p>;
 
   return (
     <div>
-      <h2 className="text-3xl md:text-4xl font-black mb-8">
-        Almost done! Where should we send your free recommendations?
-      </h2>
-      <div className="space-y-5">
+      <h2 className="display display-md mb-5">Last step. Where do we reach you?</h2>
+      <p className="lede mb-8 text-white/85 max-w-xl">
+        A real person on our team reads every one of these. No bots, no sales script.
+      </p>
+      <ol className="mb-10 grid gap-3 sm:grid-cols-3 text-sm font-semibold">
+        {[
+          'We look over your answers and your business',
+          'We call within 1 business day to set up a short chat',
+          'You get a plan that fits — or a referral to someone who can help',
+        ].map((item, i) => (
+          <li key={item} className="flex gap-3 rounded-[var(--radius-card)] shadow-[inset_0_0_0_2px_rgba(255,255,255,0.4)] p-4">
+            <span className="eyebrow shrink-0">{String(i + 1).padStart(2, '0')}</span>
+            <span>{item}</span>
+          </li>
+        ))}
+      </ol>
+      {/* Honeypot — off-screen and skipped by keyboard and screen readers; only bots fill it. */}
+      <div aria-hidden="true" className="sr-only">
+        <label htmlFor="cf-company-fax">Company fax</label>
+        <input
+          id="cf-company-fax"
+          type="text"
+          tabIndex={-1}
+          autoComplete="off"
+          value={form.companyFax}
+          onChange={(e) => onChange('companyFax', e.target.value)}
+        />
+      </div>
+      <div className="grid sm:grid-cols-2 gap-x-8 gap-y-6">
         <div>
-          <label className="block text-sm font-bold mb-2 text-gray-300" htmlFor="cf-name">
-            Name
-          </label>
+          <label className="block eyebrow mb-2" htmlFor="cf-name">Your name</label>
           <input
             id="cf-name"
             type="text"
+            autoComplete="name"
             required
-            value={name}
+            value={form.name}
             onChange={(e) => onChange('name', e.target.value)}
             className={inputClass}
             placeholder="Jane Smith"
           />
         </div>
         <div>
-          <label className="block text-sm font-bold mb-2 text-gray-300" htmlFor="cf-email">
-            Email
-          </label>
-          <input
-            id="cf-email"
-            type="email"
-            required
-            value={email}
-            onChange={(e) => onChange('email', e.target.value)}
-            className={inputClass}
-            placeholder="jane@business.com"
-          />
-        </div>
-        <div>
-          <label className="block text-sm font-bold mb-2 text-gray-300" htmlFor="cf-phone">
-            Phone
-          </label>
-          <input
-            id="cf-phone"
-            type="tel"
-            required
-            value={phone}
-            onChange={(e) => onChange('phone', e.target.value)}
-            className={inputClass}
-            placeholder="(555) 123-4567"
-          />
-        </div>
-        <div>
-          <label className="block text-sm font-bold mb-2 text-gray-300" htmlFor="cf-business">
-            Business Name <span className="text-gray-500 font-normal normal-case">(optional)</span>
-          </label>
+          <label className="block eyebrow mb-2" htmlFor="cf-business">Business name</label>
           <input
             id="cf-business"
             type="text"
-            value={businessName}
+            autoComplete="organization"
+            required
+            value={form.businessName}
             onChange={(e) => onChange('businessName', e.target.value)}
             className={inputClass}
             placeholder="Your Business"
           />
         </div>
+        <div>
+          <label className="block eyebrow mb-2" htmlFor="cf-email">Email</label>
+          <input
+            id="cf-email"
+            type="email"
+            autoComplete="email"
+            required
+            value={form.email}
+            onChange={(e) => onChange('email', e.target.value)}
+            onBlur={() => {
+              setTouched((t) => ({ ...t, email: true }));
+              onEmailBlur();
+            }}
+            aria-invalid={emailMsg ? true : undefined}
+            className={inputClass}
+            placeholder="jane@business.com"
+          />
+          {emailMsg && fieldError(emailMsg)}
+        </div>
+        <div>
+          <label className="block eyebrow mb-2" htmlFor="cf-phone">Phone</label>
+          <input
+            id="cf-phone"
+            type="tel"
+            autoComplete="tel"
+            required
+            value={form.phone}
+            onChange={(e) => onChange('phone', e.target.value)}
+            onBlur={() => setTouched((t) => ({ ...t, phone: true }))}
+            aria-invalid={phoneMsg ? true : undefined}
+            className={inputClass}
+            placeholder="(555) 123-4567"
+          />
+          {phoneMsg && fieldError(phoneMsg)}
+        </div>
+        <div className="sm:col-span-2">
+          <label className="block eyebrow mb-2" htmlFor="cf-website">Website or Instagram {optional}</label>
+          <input
+            id="cf-website"
+            type="text"
+            autoComplete="url"
+            value={form.website}
+            onChange={(e) => onChange('website', e.target.value)}
+            className={inputClass}
+            placeholder="yourbusiness.com or @yourbusiness"
+          />
+        </div>
+        <div className="sm:col-span-2">
+          <label className="block eyebrow mb-2" htmlFor="cf-message">
+            What would a big year look like for you? {optional}
+          </label>
+          <textarea
+            id="cf-message"
+            rows={2}
+            value={form.message}
+            onChange={(e) => onChange('message', e.target.value)}
+            className={`${inputClass} resize-none text-lg`}
+            placeholder="More booked jobs, a second location, a website you're proud of…"
+          />
+        </div>
       </div>
-      {submitError && <p className="text-red-400 text-sm mt-4">{submitError}</p>}
+      <p className="mt-8 text-sm text-white/80">
+        No spam, no newsletter sign-up. Your info goes to our team and nowhere else.
+      </p>
+      {submitError && <p className="mt-4 inline-block rounded-lg bg-taam-near-black px-4 py-3 text-sm font-semibold">{submitError}</p>}
     </div>
   );
 }
 
-function Confirmation({ name, onClose }: { name: string; onClose: () => void }) {
+function Confirmation({
+  name,
+  fit,
+  preLaunch,
+  onClose,
+}: {
+  name: string;
+  fit: LeadFit;
+  preLaunch: boolean;
+  onClose: () => void;
+}) {
   const instagram = siteContent.contact.social.instagram;
+  const firstName = name.trim().split(/\s+/)[0] || 'friend';
+
+  if (fit === 'early') {
+    return (
+      <div className="text-center py-10">
+        <h2 className="display display-lg mb-6">Thanks, {firstName}.</h2>
+        <p className="lede max-w-xl mx-auto mb-6">
+          Straight talk: based on your answers, a monthly marketing retainer probably isn&apos;t the best use of
+          your money just yet. We&apos;ll still read what you sent.
+        </p>
+        {preLaunch ? (
+          <>
+            <p className="lede max-w-xl mx-auto mb-10">
+              In the meantime, our free tools are a good place to start while you get the doors open.
+            </p>
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+              <Link href="/tools" onClick={onClose} className="btn btn-solid">
+                Try our free tools →
+              </Link>
+            </div>
+          </>
+        ) : (
+          <>
+            <p className="lede max-w-xl mx-auto mb-10">
+              In the meantime, since you&apos;re already open and selling, you qualify for a free week of video:
+              real content for your business, no retainer.
+            </p>
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+              <Link href="/free-video-offer" onClick={onClose} className="btn btn-solid">
+                Get a free week of video →
+              </Link>
+              <Link href="/tools" onClick={onClose} className="eyebrow link-line">
+                Or try our free tools
+              </Link>
+            </div>
+          </>
+        )}
+        <CloseLink onClose={onClose} />
+      </div>
+    );
+  }
+
   return (
     <div className="text-center py-10">
-      <h2 className="text-4xl md:text-5xl font-black mb-4">You&apos;re all set! 🎉</h2>
-      <p className="text-gray-300 text-lg max-w-lg mx-auto mb-10">
-        Thanks, {name || 'friend'}! We&apos;ve received your info and one of our marketing specialists will
-        reach out within 1 business day.
+      <h2 className="display display-lg mb-6">Got it, {firstName}.</h2>
+      <p className="lede max-w-xl mx-auto mb-10">
+        We&apos;ll look over your answers and reach out within 1 business day to set up a short call. If we&apos;re
+        not the right team for it, we&apos;ll tell you straight.
       </p>
       <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-        <Link
-          href="/work"
-          onClick={onClose}
-          className="px-8 py-4 bg-[#F46325] text-white font-black text-sm uppercase tracking-wide hover:bg-[#E55A1A] transition"
-        >
-          See Our Recent Work →
+        <Link href="/work" onClick={onClose} className="btn btn-solid">
+          See our recent work →
         </Link>
         {instagram && (
-          <a
-            href={instagram}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-sm font-semibold text-gray-400 hover:text-white transition"
-          >
+          <a href={instagram} target="_blank" rel="noopener noreferrer" className="eyebrow link-line">
             Follow us on Instagram
           </a>
         )}
       </div>
-      <button
-        type="button"
-        onClick={onClose}
-        className="block mx-auto mt-8 text-xs uppercase tracking-wide text-gray-500 hover:text-white transition"
-      >
-        Close
-      </button>
+      <CloseLink onClose={onClose} />
     </div>
+  );
+}
+
+function CloseLink({ onClose }: { onClose: () => void }) {
+  return (
+    <button
+      type="button"
+      onClick={onClose}
+      className="block mx-auto mt-8 eyebrow opacity-80 hover:opacity-100 transition"
+    >
+      Close
+    </button>
   );
 }

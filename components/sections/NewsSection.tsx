@@ -1,13 +1,7 @@
-'use client';
-
-import Container from '../ui/Container';
-import Title from '../ui/Title';
-import Text from '../ui/Text';
-import Link from 'next/link';
-import { ArrowUpRight } from 'lucide-react';
-import { motion } from 'motion/react';
-import { staggerContainerScroll, staggerItemScroll } from '@/lib/motion-animations';
-import { ScrollReveal, ParallaxLayer } from '../motion';
+import Headline from '@/components/editorial/Headline';
+import MediaCard from '@/components/editorial/MediaCard';
+import Reveal from '@/components/editorial/Reveal';
+import Section, { type Tone } from '@/components/editorial/Section';
 
 interface NewsItem {
   id: number;
@@ -15,90 +9,60 @@ interface NewsItem {
   description: string;
   link: string;
   date: string;
+  image?: string;
 }
 
 interface NewsSectionProps {
   items: NewsItem[];
+  tone?: Tone;
+  index?: string;
 }
 
-const getCategoryTag = (title: string) => {
-  if (title.toLowerCase().includes('award')) return { tag: 'Award', color: 'bg-yellow-900/50 text-yellow-300' };
-  if (title.toLowerCase().includes('studio')) return { tag: 'Studio', color: 'bg-blue-900/50 text-blue-300' };
-  if (title.toLowerCase().includes('case study')) return { tag: 'Case Study', color: 'bg-purple-900/50 text-purple-300' };
-  if (title.toLowerCase().includes('hiring')) return { tag: 'Hiring', color: 'bg-green-900/50 text-green-300' };
-  return { tag: 'Update', color: 'bg-gray-800/50 text-gray-300' };
-};
+export default function NewsSection({ items, tone = 'ink', index = '05' }: NewsSectionProps) {
+  if (items.length === 0) return null;
 
-export default function NewsSection({ items }: NewsSectionProps) {
   return (
-    <section className="bg-taam-near-black relative overflow-hidden">
-      <ParallaxLayer offset={0} speed={0.3}>
-        <div className="absolute -bottom-20 -right-20 w-80 h-80 bg-orange-500/5 rounded-full blur-3xl" />
-      </ParallaxLayer>
+    <Section tone={tone} index={index} label="News">
+      {/* Cinematic statement card */}
+      <Reveal y={60}>
+        <MediaCard src="/media/cc-recap.jpg" video="/media/cc-recap.mp4" alt="Guests at A Night of Connection & Cocktails, a real estate networking event TAAM filmed" aspect="aspect-[4/5] sm:aspect-[16/9] lg:aspect-[21/9]" scrim>
+          <div className="flex h-full items-end p-6 md:p-12">
+            <p className="display display-lg max-w-[12ch]">
+              Make them say WOW.
+            </p>
+          </div>
+        </MediaCard>
+      </Reveal>
 
-      <Container>
-        <div className="py-14 md:py-16 relative z-10">
-          <ScrollReveal className="mb-12">
-            <Title as="h2" color="white">
-              NEWS &amp; UPDATES
-            </Title>
-          </ScrollReveal>
-
-          <motion.div
-            variants={staggerContainerScroll}
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: false, amount: 0.2 }}
-            className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-8"
-          >
-            {items.map((item, idx) => {
-              const category = getCategoryTag(item.title);
-              const formattedDate = new Date(item.date).toLocaleDateString('en-US', {
-                month: 'short',
-                day: 'numeric',
-                year: 'numeric',
-              });
-
-              return (
-                <motion.div key={item.id} variants={staggerItemScroll}>
-                  <Link
-                    href={item.link}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="group relative"
-                  >
-                  <div className="border-b border-gray-800 group-hover:border-taam-orange/50 pb-6 transition duration-300">
-                    <div className="flex items-start justify-between gap-4 mb-2">
-                      <span
-                        className={`px-2.5 py-1 rounded text-xs font-semibold whitespace-nowrap ${category.color} backdrop-blur-sm`}
-                      >
-                        {category.tag}
-                      </span>
-                      <span className="text-xs text-gray-500 whitespace-nowrap">
-                        {formattedDate}
-                      </span>
-                    </div>
-
-                    <Text
-                      as="p"
-                      className="text-base font-bold mb-2 group-hover:text-taam-orange transition flex items-center gap-2"
-                    >
-                      {item.title}
-                      <ArrowUpRight className="w-4 h-4 opacity-0 group-hover:opacity-100 transition transform group-hover:translate-x-1 group-hover:-translate-y-1" />
-                    </Text>
-                    <Text size="sm" color="gray-500" className="group-hover:text-gray-400 transition">
-                      {item.description}
-                    </Text>
-                  </div>
-
-                  <div className="absolute -inset-3 rounded border border-taam-orange/0 group-hover:border-taam-orange/10 transition" />
-                  </Link>
-                </motion.div>
-              );
-            })}
-          </motion.div>
-        </div>
-      </Container>
-    </section>
+      <div className="mt-28 md:mt-40 space-y-24">
+        {items.map((item) => {
+          const date = new Date(item.date).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric', timeZone: 'UTC' });
+          const isLink = item.link && item.link !== '#';
+          return (
+            <article key={item.id} className="grid grid-cols-12 gap-x-6 gap-y-10">
+              <div className="col-span-12 lg:col-span-7">
+                <p className="eyebrow mb-8 text-[color:var(--tone-muted)]">
+                  <time dateTime={item.date}>{date}</time>
+                </p>
+                <Headline text={item.title} className="display-lg" />
+                <Reveal className="mt-10 max-w-xl">
+                  <p className="lede text-[color:var(--tone-muted)]">{item.description}</p>
+                  {isLink && (
+                    <a href={item.link} target="_blank" rel="noopener noreferrer" className="eyebrow link-line inline-block mt-8">
+                      Read more ↗
+                    </a>
+                  )}
+                </Reveal>
+              </div>
+              {item.image && (
+                <Reveal className="col-span-12 md:col-span-8 md:col-start-5 lg:col-span-4 lg:col-start-9 self-end" delay={0.15}>
+                  <MediaCard src={item.image} video={item.image.startsWith('/media/') ? item.image.replace(/\.jpg$/, '.mp4') : undefined} alt="" aspect="aspect-[4/5]" sizes="(min-width: 1024px) 33vw, 100vw" />
+                </Reveal>
+              )}
+            </article>
+          );
+        })}
+      </div>
+    </Section>
   );
 }

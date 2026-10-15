@@ -68,3 +68,113 @@ export function getCtaCopy(category?: string): string {
   const found = CATEGORY_TO_CTA.find((entry) => entry.match.test(category));
   return found ? found.label : 'Get Free Recommendations';
 }
+
+// ---------- Lead qualification ----------
+// Asked before contact details so the team can see fit at a glance, and so visitors who aren't
+// ready yet get pointed somewhere useful instead of a sales call. Tune the ranges and the rules in
+// scoreLeadFit() to match real pricing.
+
+export interface QualifierOption {
+  value: string;
+  label: string;
+}
+
+export const INDUSTRY_OPTIONS: QualifierOption[] = [
+  { value: 'home_services', label: 'Trades & home services' },
+  { value: 'real_estate', label: 'Real estate' },
+  { value: 'food_hospitality', label: 'Restaurant & hospitality' },
+  { value: 'health_wellness', label: 'Health, beauty & wellness' },
+  { value: 'professional', label: 'Professional services' },
+  { value: 'retail_ecom', label: 'Retail & e-commerce' },
+  { value: 'other', label: 'Something else' },
+];
+
+export const STAGE_OPTIONS: QualifierOption[] = [
+  { value: 'pre_launch', label: 'Not open yet' },
+  { value: 'under_1y', label: 'Less than a year' },
+  { value: '1_3y', label: '1–3 years' },
+  { value: '3y_plus', label: '3+ years' },
+];
+
+// Who's filling it in. 'vendor' is someone pitching TAAM, not a buyer — the form turns them away and
+// the API files them as not-a-lead. 'staff' can't sign off, so they cap at a possible fit.
+export const ROLE_OPTIONS: QualifierOption[] = [
+  { value: 'owner', label: "I'm the owner" },
+  { value: 'decision_maker', label: 'I run marketing / sign off on spend' },
+  { value: 'staff', label: 'I work there — someone else decides' },
+  { value: 'vendor', label: "I'm pitching a service to TAAM" },
+];
+
+export const BUDGET_OPTIONS: QualifierOption[] = [
+  { value: 'under_1k', label: 'Under $1,000 / mo' },
+  { value: '1k_2_5k', label: '$1,000 – $2,500 / mo' },
+  { value: '2_5k_5k', label: '$2,500 – $5,000 / mo' },
+  { value: '5k_plus', label: '$5,000+ / mo' },
+  { value: 'unsure', label: 'Not sure yet' },
+];
+
+export const TIMELINE_OPTIONS: QualifierOption[] = [
+  { value: 'now', label: 'Right away' },
+  { value: '1_3m', label: 'In the next 1–3 months' },
+  { value: 'exploring', label: 'Just exploring' },
+];
+
+export type LeadFit = 'strong' | 'possible' | 'early' | 'not_a_lead';
+
+export const LEAD_FIT_LABELS: Record<LeadFit, string> = {
+  strong: 'Strong fit',
+  possible: 'Possible fit',
+  early: 'Too early',
+  not_a_lead: 'Not a lead (vendor/spam)',
+};
+
+export function scoreLeadFit({
+  stage,
+  budget,
+  timeline,
+  role,
+}: {
+  stage?: string;
+  budget?: string;
+  timeline?: string;
+  role?: string;
+}): LeadFit {
+  if (role === 'vendor') return 'not_a_lead';
+  if (stage === 'pre_launch' || budget === 'under_1k') return 'early';
+  const readyBudget = budget === '2_5k_5k' || budget === '5k_plus';
+  const readySoon = timeline === 'now' || timeline === '1_3m';
+  if (readyBudget && readySoon && stage !== 'under_1y' && role !== 'staff') return 'strong';
+  return 'possible';
+}
+
+export function optionLabel(options: QualifierOption[], value?: string | null): string {
+  return options.find((o) => o.value === value)?.label ?? value ?? '';
+}
+
+// ---------- Fake-lead filters ----------
+// Shared by the form (inline errors) and the API (final say).
+
+const DISPOSABLE_EMAIL_DOMAINS = new Set([
+  'mailinator.com', 'guerrillamail.com', 'guerrillamail.net', 'sharklasers.com', '10minutemail.com',
+  'tempmail.com', 'temp-mail.org', 'temp-mail.io', 'throwawaymail.com', 'yopmail.com', 'getnada.com',
+  'trashmail.com', 'dispostable.com', 'maildrop.cc', 'fakeinbox.com', 'mintemail.com', 'emailondeck.com',
+  'mohmal.com', 'tempail.com', 'burnermail.io', 'spamgourmet.com', 'mailnesia.com', 'tempr.email',
+]);
+
+export function isDisposableEmail(email: string): boolean {
+  const domain = email.trim().toLowerCase().split('@')[1] ?? '';
+  return DISPOSABLE_EMAIL_DOMAINS.has(domain);
+}
+
+/** 10+ digits, and not an obvious junk number like 0000000000 or 1234567890. */
+export function isPlausiblePhone(phone: string): boolean {
+  const digits = phone.replace(/\D/g, '');
+  if (digits.length < 10 || digits.length > 15) return false;
+  const last10 = digits.slice(-10);
+  if (/^(\d)\1+$/.test(last10)) return false;
+  if ('01234567890'.includes(last10) || '9876543210'.includes(last10)) return false;
+  return true;
+}
+
+/** Below this, a completed 4-step form was filled by a script, not a person. */
+export const MIN_HUMAN_FILL_MS = 6000;

@@ -1,21 +1,22 @@
 import type { Metadata } from 'next';
-import SimpleHeader from '../components/SimpleHeader';
 import siteContent from '../content/siteContent.json';
-import { getServiceInfo } from '../lib/services';
-import StatsBarSection from '@/components/sections/StatsBarSection';
-import Container from '@/components/ui/Container';
-import Title from '@/components/ui/Title';
-import Heading from '@/components/ui/Heading';
-import Text from '@/components/ui/Text';
-import Badge from '@/components/ui/Badge';
-import CTASection from '@/components/sections/CTASection';
+import ContactCTA from '../components/ContactCTA';
+import PageHero from '@/components/sections/PageHero';
+import ManifestoSection from '@/components/sections/ManifestoSection';
+import ServicesSection from '@/components/sections/ServicesSection';
+import ProcessSection from '@/components/sections/ProcessSection';
+import Section from '@/components/editorial/Section';
+import Headline from '@/components/editorial/Headline';
+import MediaCard from '@/components/editorial/MediaCard';
+import Reveal from '@/components/editorial/Reveal';
+import { maintenanceAmericaCredit } from '@/components/editorial/ShortCredit';
 
 export const metadata: Metadata = {
   title: "About TAAM | Content Marketing Agency",
-  description: "Learn about TAAM's unified team approach to content marketing. 9+ years delivering real results for high-performance businesses with 120+ projects delivered.",
+  description: "TAAM is a proven content marketing team that's always hungry for the next big problem. We can't make you good at what you do. We show it to the people who need to see it.",
   openGraph: {
     title: "About TAAM | Our Story & Team",
-    description: "Discover how TAAM's unified content marketing team delivers real results for high-performance businesses.",
+    description: "Better marketing for the best businesses. Meet the team that makes your customers say WOW.",
     type: "website",
     images: [
       {
@@ -33,127 +34,54 @@ export const metadata: Metadata = {
 
 export default function About() {
   const content = siteContent;
+  const hero = content.hero.about;
+
   return (
-    <div className="bg-black text-white">
-      <SimpleHeader
-        title={content.hero.about.title}
-        subtitle={content.hero.about.subtitle}
+    <>
+      <PageHero
+        eyebrow="About TAAM"
+        title={hero.title}
+        outlineFrom={2}
+        subtitle={hero.subtitle}
+        image={{ src: hero.imageSrc, video: hero.videoSrc, alt: 'Guests at A Night of Connection & Cocktails, a real estate networking event TAAM filmed at the Rouge Room, Red Rock Casino' }}
+        actions={
+          <ContactCTA className="btn btn-solid">
+            Work with us <span aria-hidden="true">↗</span>
+          </ContactCTA>
+        }
       />
 
-      <StatsBarSection stats={content.stats} />
+      <ManifestoSection
+        index="01"
+        label="Who we are"
+        statement={content.homepage.statement}
+        description={content.company.description}
+        stats={content.stats}
+      />
 
-      <section className="bg-[#F46325]">
-        <Container className="py-14">
-          <Title as="h1" color="white">
-            {content.company.tagline.toUpperCase()}
-          </Title>
-        </Container>
-      </section>
+      <ServicesSection services={content.company.services} showMoreLink={false} />
 
-      <section className="bg-black">
-        <Container className="py-16">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-12 mb-16">
-            <div>
-              <Heading as="h2" color="white" className="mb-4">
-                Who We Are
-              </Heading>
-              <Text color="gray-400" className="leading-relaxed">
-                {content.company.description}
-              </Text>
-            </div>
-            <div>
-              <Heading as="h2" color="white" className="mb-4">
-                What We Do
-              </Heading>
-              <Text color="gray-400" className="leading-relaxed mb-4">
-                We specialize in {content.company.services.join(', ').toLowerCase()}.
-              </Text>
-              <Text color="gray-400" className="leading-relaxed">
-                Every project is scoped with a clear challenge, a specific solution, and a way to
-                measure whether it worked — no vague "brand awareness" hand-waving.
-              </Text>
-            </div>
+      <Section tone="ink" index="03" label="The standard">
+        <div className="grid grid-cols-12 gap-x-6 gap-y-14">
+          <Reveal className="col-span-12 md:col-span-6 lg:col-span-5" y={60}>
+            <MediaCard src="/media/ma-invoice.jpg" video="/media/ma-invoice.mp4" alt="A Maintenance America LV short TAAM made: the client who says they're going to pay the invoice" credit={maintenanceAmericaCredit} aspect="aspect-[4/5]" sizes="(min-width: 768px) 45vw, 100vw" />
+          </Reveal>
+          <div className="col-span-12 md:col-span-6 lg:col-span-6 lg:col-start-7 self-end">
+            <Headline text={'Loyalty\nisn\'t a\nstrategy.'} outlineFrom={2} className="display-lg" />
+            <Reveal className="mt-10 max-w-lg">
+              <p className="lede text-[color:var(--tone-muted)]">
+                Don&apos;t let a ten-year relationship with your marketing agency, or the employee you handed social
+                media to, be the reason your company stops growing. Every project we take on gets a clear goal and a
+                way to measure it. If it isn&apos;t working, we change it. If we&apos;re not the right team, we&apos;ll
+                tell you who is.
+              </p>
+            </Reveal>
           </div>
+        </div>
+      </Section>
 
-          <div className="mb-16">
-            <Heading as="h2" color="white" className="mb-8">
-              How We Work
-            </Heading>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
-              {content.process.map((step) => (
-                <div key={step.step} className="border-t-2 border-[#F46325] pt-4">
-                  <Badge>{step.step}</Badge>
-                  <Heading as="h3" color="white" className="text-lg mt-2 mb-2">
-                    {step.title}
-                  </Heading>
-                  <Text size="sm" color="gray-400" className="leading-relaxed">
-                    {step.description}
-                  </Text>
-                </div>
-              ))}
-            </div>
-          </div>
+      <ProcessSection steps={content.process} index="04" image={{ src: '/media/ma-too-busy.jpg', video: '/media/ma-too-busy.mp4', alt: 'A Maintenance America LV short TAAM made: the client who is too busy to pay', credit: maintenanceAmericaCredit }} />
 
-          {/* Team section - commented out until team data is added to siteContent.json
-          <div className="mb-16">
-            <Heading as="h2" color="white" className="mb-8">
-              Our Team
-            </Heading>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-              {content.team?.map((member, index) => {
-                const direction = index % 2 === 0 ? 'left' : 'right';
-                return (
-                <div key={member.id}>
-                  <div className="aspect-square bg-gradient-to-br from-gray-800 to-gray-900 rounded-lg flex items-center justify-center border-2 border-gray-700 mb-3 overflow-hidden">
-                    {member.image && member.image !== '/placeholder-person.jpg' ? (
-                      <img src={member.image} alt={member.name} data-scroll-animate={direction} className="w-full h-full object-cover" />
-                    ) : (
-                      <Text size="sm" color="gray-600">{member.name}</Text>
-                    )}
-                  </div>
-                  <Heading as="h3" color="white" className="text-lg">
-                    {member.name}
-                  </Heading>
-                  <Text size="sm" color="white" className="text-[#F46325] font-semibold mb-2">
-                    {member.role}
-                  </Text>
-                  <Text size="sm" color="gray-400" className="leading-relaxed">
-                    {member.bio}
-                  </Text>
-                </div>
-              );
-              })}
-            </div>
-          </div>
-          */}
-
-          <div className="bg-gray-900 rounded-lg p-8 md:p-10">
-            <Heading as="h2" color="white" className="mb-8">
-              Our Services
-            </Heading>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-x-10 gap-y-8">
-              {content.company.services.map((service, idx) => {
-                const info = getServiceInfo(service);
-                return (
-                  <div key={service} className="flex gap-4">
-                    <Badge className="shrink-0">{String(idx + 1).padStart(2, '0')}</Badge>
-                    <div>
-                      <Heading as="h3" color="orange" className="text-lg mb-1">
-                        {info.name}
-                      </Heading>
-                      <Text size="sm" color="gray-400" className="leading-relaxed">
-                        {info.description}
-                      </Text>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-        </Container>
-      </section>
-
-      <CTASection title="READY TO STOP PAYING FOR EXCUSES?" variant="default" />
-    </div>
+    </>
   );
 }

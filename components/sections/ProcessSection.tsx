@@ -1,10 +1,9 @@
-'use client';
-
-import Container from '../ui/Container';
-import Title from '../ui/Title';
-import Text from '../ui/Text';
-import Badge from '../ui/Badge';
-import { motion } from 'motion/react';
+import Headline from '@/components/editorial/Headline';
+import Icon, { processIconNames } from '@/components/editorial/Icon';
+import MediaCard from '@/components/editorial/MediaCard';
+import Reveal from '@/components/editorial/Reveal';
+import Section, { type Tone } from '@/components/editorial/Section';
+import { maintenanceAmericaCredit, type Credit } from '@/components/editorial/ShortCredit';
 
 interface ProcessStep {
   step: string;
@@ -14,91 +13,44 @@ interface ProcessStep {
 
 interface ProcessSectionProps {
   steps: ProcessStep[];
+  tone?: Tone;
+  index?: string;
+  image?: { src: string; alt: string; video?: string; credit?: Credit };
 }
 
-export default function ProcessSection({ steps }: ProcessSectionProps) {
+/** A sticky cinematic card on one side; the four steps run past it with outlined numerals. */
+export default function ProcessSection({
+  steps,
+  tone = 'orange',
+  index = '04',
+  image = { src: '/media/ma-shop.jpg', video: '/media/ma-shop.mp4', alt: 'A Maintenance America LV short TAAM filmed in their Las Vegas shop', credit: maintenanceAmericaCredit },
+}: ProcessSectionProps) {
   return (
-    <section className="bg-black border-t border-gray-800 relative overflow-hidden">
-      <div className="absolute inset-0 bg-[linear-gradient(45deg,transparent_24%,rgba(244,99,37,.05)_25%,rgba(244,99,37,.05)_26%,transparent_27%,transparent_74%,rgba(244,99,37,.05)_75%,rgba(244,99,37,.05)_76%,transparent_77%,transparent)] bg-[length:60px_60px]" />
+    <Section tone={tone} index={index} label="Process">
+      <Headline text={'How we\nwork.'} outlineFrom={1} className="display-xl mb-20 md:mb-32" />
 
-      <Container>
-        <div className="py-14 md:py-16 relative z-10">
-          <Title as="h2" color="white" className="mb-12">
-            HOW WE WORK
-          </Title>
-
-          <div className="relative">
-            <motion.div
-              className="hidden lg:block absolute top-16 left-0 right-0 h-1 bg-gradient-to-r from-taam-orange/0 via-taam-orange/50 to-taam-orange/0"
-              initial={{ scaleX: 0, transformOrigin: 'left' }}
-              whileInView={{ scaleX: 1 }}
-              transition={{ duration: 1.2, ease: 'easeOut' }}
-              viewport={{ once: true, amount: 0.3 }}
-            />
-
-            <motion.div
-              initial="initial"
-              whileInView="animate"
-              viewport={{ once: true, amount: 0.3 }}
-              className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8"
-              variants={{
-                animate: {
-                  transition: {
-                    staggerChildren: 0.1,
-                    delayChildren: 0.2,
-                  },
-                },
-              }}
-            >
-              {steps.map((step, idx) => (
-                <motion.div
-                  key={step.step}
-                  className="relative group"
-                  whileHover={{ y: -5 }}
-                  variants={{
-                    initial: { opacity: 0, y: 20 },
-                    animate: { opacity: 1, y: 0, transition: { duration: 0.5, ease: 'easeOut' } },
-                  }}
-                >
-                  <div className="flex flex-col items-start">
-                    <div className="relative mb-6 z-20">
-                      <motion.div
-                        className="w-16 h-16 rounded-full bg-gradient-to-br from-taam-orange/20 to-taam-orange/10 border-2 border-taam-orange/40 flex items-center justify-center group-hover:border-taam-orange group-hover:from-taam-orange/30 group-hover:to-taam-orange/20 transition-all duration-300 group-hover:shadow-lg group-hover:shadow-orange-500/30"
-                        initial={{ scale: 0 }}
-                        whileInView={{ scale: 1 }}
-                        transition={{ delay: idx * 0.15 + 0.3, duration: 0.5, ease: 'easeOut' }}
-                        viewport={{ once: true, amount: 0.3 }}
-                      >
-                        <span className="text-2xl font-black text-taam-orange group-hover:scale-110 transition-transform">
-                          {step.step}
-                        </span>
-                      </motion.div>
-                      {idx < steps.length - 1 && (
-                        <motion.div
-                          className="hidden lg:block absolute top-8 -right-12 w-6 h-1 bg-gradient-to-r from-taam-orange to-transparent group-hover:from-taam-tint-2 transition"
-                          initial={{ scaleX: 0, transformOrigin: 'left' }}
-                          whileInView={{ scaleX: 1 }}
-                          transition={{ delay: idx * 0.15 + 0.5, duration: 0.4, ease: 'easeOut' }}
-                          viewport={{ once: true, amount: 0.3 }}
-                        />
-                      )}
-                    </div>
-
-                    <Title as="h3" color="white" className="text-xl mb-2">
-                      {step.title}
-                    </Title>
-                    <Text size="sm" color="gray-400" className="leading-relaxed group-hover:text-gray-300 transition">
-                      {step.description}
-                    </Text>
-                  </div>
-
-                  <div className="absolute -inset-4 rounded-lg border border-taam-orange/0 group-hover:border-taam-orange/20 transition-all duration-300" />
-                </motion.div>
-              ))}
-            </motion.div>
+      <div className="grid grid-cols-12 gap-x-6 gap-y-16">
+        <div className="col-span-12 lg:col-span-5">
+          <div className="lg:sticky lg:top-28">
+            <Reveal y={60}>
+              <MediaCard src={image.src} video={image.video} alt={image.alt} credit={image.credit} aspect="aspect-[4/5]" sizes="(min-width: 1024px) 40vw, 100vw" />
+            </Reveal>
           </div>
         </div>
-      </Container>
-    </section>
+
+        <ol className="col-span-12 lg:col-span-6 lg:col-start-7">
+          {steps.map((step, i) => (
+            <Reveal as="li" key={step.step} className="border-t-2 rule pt-8 pb-16 md:pb-24 last:pb-0">
+              <div className="flex items-start justify-between gap-6">
+                <span className="display outline-type text-[clamp(4.5rem,9vw,9rem)]">{step.step}</span>
+                <Icon name={processIconNames[i % processIconNames.length]} className="w-12 h-12 mt-2 shrink-0" />
+              </div>
+              <h3 className="display display-sm mt-6">{step.title}</h3>
+              <p className="lede mt-5 text-[color:var(--tone-muted)]">{step.description}</p>
+            </Reveal>
+          ))}
+        </ol>
+      </div>
+    </Section>
   );
 }

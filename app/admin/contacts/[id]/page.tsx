@@ -4,6 +4,16 @@ import { useEffect, useState } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import { useAdminAuth } from '@/lib/useAdminAuth';
 import Link from 'next/link';
+import {
+  BUDGET_OPTIONS,
+  INDUSTRY_OPTIONS,
+  LEAD_FIT_LABELS,
+  ROLE_OPTIONS,
+  STAGE_OPTIONS,
+  TIMELINE_OPTIONS,
+  optionLabel,
+  type LeadFit,
+} from '@/app/lib/cta';
 
 interface Contact {
   id: string;
@@ -17,6 +27,13 @@ interface Contact {
   source_page: string | null;
   biggest_challenge: string | null;
   services_interested: string | null;
+  industry?: string | null;
+  business_stage?: string | null;
+  budget?: string | null;
+  timeline?: string | null;
+  website?: string | null;
+  lead_fit?: string | null;
+  role?: string | null;
 }
 
 export default function ContactDetailsPage() {
@@ -296,6 +313,41 @@ export default function ContactDetailsPage() {
                 <p className="text-lg text-white">{contact.source_page || 'N/A'}</p>
               </div>
             </div>
+
+            {(contact.lead_fit || contact.budget || contact.industry) && (
+              <div className="grid grid-cols-2 gap-6 border-t border-gray-700 pt-6">
+                <div>
+                  <p className="text-xs font-bold text-gray-500 uppercase mb-2">Lead Fit</p>
+                  <p className="text-lg text-white">
+                    {LEAD_FIT_LABELS[contact.lead_fit as LeadFit] ?? (contact.lead_fit || 'N/A')}
+                  </p>
+                </div>
+                <div>
+                  <p className="text-xs font-bold text-gray-500 uppercase mb-2">Role</p>
+                  <p className="text-lg text-white">{optionLabel(ROLE_OPTIONS, contact.role) || 'N/A'}</p>
+                </div>
+                <div>
+                  <p className="text-xs font-bold text-gray-500 uppercase mb-2">Monthly Budget</p>
+                  <p className="text-lg text-white">{optionLabel(BUDGET_OPTIONS, contact.budget) || 'N/A'}</p>
+                </div>
+                <div>
+                  <p className="text-xs font-bold text-gray-500 uppercase mb-2">Timeline</p>
+                  <p className="text-lg text-white">{optionLabel(TIMELINE_OPTIONS, contact.timeline) || 'N/A'}</p>
+                </div>
+                <div>
+                  <p className="text-xs font-bold text-gray-500 uppercase mb-2">Industry</p>
+                  <p className="text-lg text-white">{optionLabel(INDUSTRY_OPTIONS, contact.industry) || 'N/A'}</p>
+                </div>
+                <div>
+                  <p className="text-xs font-bold text-gray-500 uppercase mb-2">Time in Business</p>
+                  <p className="text-lg text-white">{optionLabel(STAGE_OPTIONS, contact.business_stage) || 'N/A'}</p>
+                </div>
+                <div>
+                  <p className="text-xs font-bold text-gray-500 uppercase mb-2">Website / Instagram</p>
+                  <p className="text-lg text-white break-all">{contact.website || 'N/A'}</p>
+                </div>
+              </div>
+            )}
 
             {contact.message && (
               <div>

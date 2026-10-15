@@ -8,7 +8,7 @@ export default function robots(): MetadataRoute.Robots {
       {
         userAgent: '*',
         allow: ['/'],
-        disallow: ['/admin', '/*.json$', '/__*', '/.next/'],
+        disallow: ['/admin', '/onboarding/', '/*.json$', '/__*', '/.next/'],
       },
       {
         userAgent: 'Googlebot',

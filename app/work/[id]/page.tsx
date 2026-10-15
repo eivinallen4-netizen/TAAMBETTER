@@ -2,11 +2,15 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import siteContent from '../../content/siteContent.json';
-import ContactCTA from '../../components/ContactCTA';
 import { getCtaCopy, getServicesForCategory } from '../../lib/cta';
-import ScrollAnimations from '../../components/ScrollAnimations';
-import VideoCarousel from '../../components/VideoCarousel';
-import { ProjectHeroAnimated, ProjectBackLinkAnimated, ProjectLeftSectionAnimated, ProjectRightSectionAnimated, ProjectScrollAnimatedImage } from '../../components/ProjectAnimatedContent';
+import { stripHtml } from '@/lib/text-utils';
+import PageHero from '@/components/sections/PageHero';
+import CTASection from '@/components/sections/CTASection';
+import Section from '@/components/editorial/Section';
+import Headline from '@/components/editorial/Headline';
+import MediaCard from '@/components/editorial/MediaCard';
+import Reveal from '@/components/editorial/Reveal';
+import ReelStrip from './ReelStrip';
 
 export async function generateMetadata({ params }: { params: Promise<{ id: string }> }): Promise<Metadata> {
   const { id } = await params;
@@ -19,15 +23,14 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
   }
 
   const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://taammarketing.com";
+  const description = stripHtml(project.description).substring(0, 160);
 
   return {
     title: `${project.title} | TAAM Portfolio`,
-    description: project.description
-      .replace(/<[^>]*>/g, "")
-      .substring(0, 160),
+    description,
     openGraph: {
       title: `${project.title} | TAAM`,
-      description: project.description.replace(/<[^>]*>/g, "").substring(0, 160),
+      description,
       type: "website",
       images: project.image
         ? [
@@ -46,39 +49,34 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
   };
 }
 
-const colorClasses: Record<string, string> = {
-  red: 'from-red-900 to-red-700 border-red-500',
-  cyan: 'from-cyan-900 to-cyan-700 border-cyan-400',
-  yellow: 'from-yellow-900 to-yellow-700 border-yellow-400',
-  purple: 'from-purple-900 to-purple-700 border-purple-500',
-  green: 'from-green-900 to-green-700 border-green-500',
-  orange: 'from-orange-900 to-orange-700 border-orange-500',
-  blue: 'from-blue-900 to-blue-700 border-blue-500',
-  pink: 'from-pink-900 to-pink-700 border-pink-500',
-};
-
-const textColorClasses: Record<string, string> = {
-  red: 'text-red-400',
-  cyan: 'text-cyan-400',
-  yellow: 'text-yellow-400',
-  purple: 'text-purple-400',
-  green: 'text-green-400',
-  orange: 'text-orange-400',
-  blue: 'text-blue-400',
-  pink: 'text-pink-400',
-};
-
 export async function generateStaticParams() {
   return siteContent.projects
     .filter((project) => project.published !== false)
     .map((project) => ({ id: String(project.id) }));
 }
 
-export default async function ProjectPage({
-  params,
-}: {
-  params: Promise<{ id: string }>;
-}) {
+interface StoryBlock {
+  heading: string;
+  body: string[];
+}
+
+/**
+ * Case study copy is stored as plain text: blocks separated by blank lines, each block's
+ * first line is its heading ("The Challenge", "The Solution", ...).
+ */
+function parseStory(description: string): StoryBlock[] {
+  return stripHtml(description)
+    .split(/\n\s*\n/)
+    .map((block) => block.split('\n').map((l) => l.trim()).filter(Boolean))
+    .filter((lines) => lines.length > 0)
+    .map((lines) =>
+      lines.length > 1 && lines[0].length < 40 && !/[.!?]$/.test(lines[0])
+        ? { heading: lines[0].replace(/^the\s+/i, ''), body: lines.slice(1) }
+        : { heading: '', body: lines }
+    );
+}
+
+export default async function ProjectPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   const project = siteContent.projects.find((p) => String(p.id) === id);
 
@@ -86,204 +84,131 @@ export default async function ProjectPage({
     notFound();
   }
 
-  const colorClass = colorClasses[project.color] || colorClasses.red;
-  const textColorClass = textColorClasses[project.color] || textColorClasses.red;
-  const otherProjects = siteContent.projects
-    .filter((p) => p.published !== false && String(p.id) !== id)
-    .slice(0, 3);
+  const story = parseStory(project.description);
+  // Results and tagline get their own treatment from structured data when available.
+  const blocks = story.filter((b) => {
+    const h = b.heading.toLowerCase();
+    if (h === 'results' && project.results) return false;
+    if (h === 'tagline' && project.tagline) return false;
+    return true;
+  });
+  const reels = (project.videos ?? []).filter((v) => v.src);
+  const gallery = (project.images ?? []).filter((img) => img.src && img.src !== '/placeholder-project.jpg');
+  const otherProjects = siteContent.projects.filter((p) => p.published !== false && String(p.id) !== id).slice(0, 2);
+
+  // Sections alternate ink / orange after the orange hero; the footer is ink, so the
+  // closing CTA only appears when it lands on orange.
+  const tones = ['ink', 'orange'] as const;
+  let n = 0;
+  const nextTone = () => tones[n++ % 2];
+  const reelsTone = reels.length > 0 ? nextTone() : null;
+  const storyTone = nextTone();
+  const tailTone = nextTone();
+  const showCta = nextTone() === 'orange';
+  let idx = 0;
+  const nextIndex = () => String(++idx).padStart(2, '0');
 
   return (
-    <ScrollAnimations>
-      <div className="bg-black text-white min-h-screen overflow-hidden">
-        {/* Hero with color background */}
-        <ProjectHeroAnimated>
-          <div className={`bg-gradient-to-br ${colorClass} border-b-2 border-opacity-30`}>
-            <div className="mx-auto px-4 pt-20 pb-16 sm:px-6 sm:pt-24 sm:pb-20 md:max-w-6xl md:pt-32 md:pb-24">
-              <ProjectBackLinkAnimated>
-                <Link
-                  href="/work"
-                  className="inline-block text-xs sm:text-sm font-semibold text-white/80 hover:text-white transition mb-4 sm:mb-6"
-                >
-                  ← BACK TO WORK
-                </Link>
-              </ProjectBackLinkAnimated>
-          </div>
-        </div>
-
-        {/* Video Carousel Section */}
-        {project.videos && project.videos.length > 0 && (
-          <div className="mx-auto px-4 relative -mt-20 sm:-mt-24 md:-mt-32 mb-16 sm:mb-20 md:mb-24 z-10 sm:px-6 md:max-w-6xl">
-            <VideoCarousel videos={project.videos} />
-          </div>
+    <>
+      <PageHero
+        eyebrow={`Case study — ${project.category}`}
+        title={project.title.split(' ').reduce<string[]>((lines, word) => {
+          // Two words per line keeps long names poster-sized.
+          const last = lines[lines.length - 1];
+          if (last && last.split(' ').length < 2) lines[lines.length - 1] = `${last} ${word}`;
+          else lines.push(word);
+          return lines;
+        }, []).join('\n')}
+        outlineFrom={1}
+        size="lg"
+        subtitle={project.technologies}
+        image={project.image ? { src: project.image, alt: project.title } : undefined}
+      >
+        {project.results && (
+          <dl className="mt-16 md:mt-24 grid grid-cols-2 lg:grid-cols-4 gap-x-6 gap-y-10 border-t-2 rule pt-8">
+            {project.results.map((r) => (
+              <div key={r.label} className="flex flex-col">
+                <dt className="eyebrow mt-3 order-2">{r.label}</dt>
+                <dd className="display text-[clamp(3rem,7vw,7rem)] order-1">{r.value}</dd>
+                {r.from && <dd className="text-sm mt-1 order-3 opacity-80">{r.from}</dd>}
+              </div>
+            ))}
+          </dl>
         )}
+      </PageHero>
 
-        {/* Editorial Info Section - Company & Overview */}
-        <div className="mx-auto px-4 mb-12 sm:mb-16 md:mb-24 sm:px-6 md:max-w-6xl">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-16">
-            {/* Left: Agency */}
-            <ProjectLeftSectionAnimated>
-            <div
-              id="company-section"
-            >
-              <div className="space-y-4">
-                <div
-                  className={`text-xs font-bold mb-2 sm:mb-3 ${textColorClass}`}
-                >
-                  {project.category}
-                </div>
-                <h1 className="text-3xl sm:text-4xl md:text-5xl font-black leading-tight mb-6">
-                  {project.title}
-                </h1>
-                
-              </div>
-            </div>
-            </ProjectLeftSectionAnimated>
-
-            {/* Right: Overview & Impact */}
-            <ProjectRightSectionAnimated>
-            <div
-              id="overview-section"
-              className="flex flex-col justify-center"
-            >
-              <div className="border-t border-gray-700 pt-6 prose prose-invert max-w-none text-base sm:text-lg text-gray-300 leading-relaxed [&_p]:mb-4 [&_h3]:text-gray-200 [&_h3]:text-lg [&_h3]:font-semibold [&_h3]:mb-3 [&_h3]:mt-6 [&_strong]:text-gray-200 [&_em]:text-gray-400 [&_ul]:list-disc [&_ul]:ml-5 [&_li]:mb-2">
-                <div
-                  dangerouslySetInnerHTML={{ __html: project.description }}
-                />
-              </div>
-            </div>
-            </ProjectRightSectionAnimated>
+      {reelsTone && (
+        <Section tone={reelsTone} index={nextIndex()} label="The reels">
+          <div className="grid grid-cols-12 gap-6 mb-14 md:mb-20">
+            <Headline text={'Made for\nthe feed.'} outlineFrom={1} className="display-lg col-span-12 lg:col-span-8" />
+            <p className="col-span-12 md:col-span-5 lg:col-span-3 lg:col-start-10 self-end lede text-[color:var(--tone-muted)]">
+              Short-form, vertical, built to be watched to the end. Tap a reel to play it with sound.
+            </p>
           </div>
-        </div>
-        </ProjectHeroAnimated>
+          <ReelStrip reels={reels} />
+        </Section>
+      )}
 
-
-        {/* Featured Video Section */}
-        <div className="mx-auto px-4 mb-16 sm:mb-20 md:mb-32 sm:px-6 md:max-w-6xl">
-          <div
-            id="featured-video"
-            data-scroll-animate="right"
-            className="w-full bg-gradient-to-br from-gray-800 to-gray-700 rounded-lg aspect-video flex items-center justify-center border border-gray-600 overflow-hidden hover:border-[#F46325] hover:shadow-lg hover:shadow-orange-500/20 transition-all duration-300 group"
-          >
-            {project.videos && project.videos.length > 0 && typeof project.videos[0] === 'object' && 'src' in project.videos[0] ? (
-              <video
-                src={(project.videos[0] as any).src}
-                controls
-                autoPlay
-                muted
-                loop
-                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-              />
-            ) : (
-              <div className="text-center px-4">
-                <div className="text-sm font-bold mb-2 text-[#F46325]">Featured</div>
-                <div className="text-xs sm:text-sm text-gray-500">Hero video</div>
-              </div>
-            )}
-          </div>
-        </div>
-
-        {/* Editorial Image Gallery */}
-        {project.images && project.images.length > 0 ? (
-          project.images.map((img: any, idx: number) => {
-            const isLeft = (idx + 1) % 2 === 1;
-            const direction = isLeft ? 'left' : 'right';
-            return (
-              <ProjectScrollAnimatedImage key={idx} direction={direction as 'left' | 'right'}>
-                <div className={`mb-0 flex ${isLeft ? 'justify-start' : 'justify-end'} overflow-hidden`}>
-                  <div className="w-full lg:w-4/5 xl:w-3/4 aspect-video flex items-center justify-center border border-gray-600 overflow-hidden hover:border-[#F46325] transition-all duration-300 group">
-                    {img.src && img.src !== '/placeholder-project.jpg' ? (
-                      // eslint-disable-next-line @next/next/no-img-element
-                      <img
-                        src={img.src}
-                        alt={img.alt}
-                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                      />
-                    ) : (
-                      <div className="text-center px-4 group-hover:scale-105 transition-transform duration-300 bg-gradient-to-br from-gray-800 to-gray-700 w-full h-full flex items-center justify-center">
-                        <div className="text-xs sm:text-sm text-gray-500">{img.alt}</div>
-                      </div>
-                    )}
-                  </div>
-                </div>
-              </ProjectScrollAnimatedImage>
-            );
-          })
-        ) : (
-          [1, 2, 3, 4].map((idx) => {
-            const isLeft = idx % 2 === 1;
-            const direction = isLeft ? 'left' : 'right';
-            return (
-              <ProjectScrollAnimatedImage key={idx} direction={direction as 'left' | 'right'}>
-                <div className={`mb-0 flex ${isLeft ? 'justify-start' : 'justify-end'} overflow-hidden`}>
-                  <div className="w-full lg:w-4/5 xl:w-3/4 aspect-video flex items-center justify-center border border-gray-600 overflow-hidden hover:border-[#F46325] transition-all duration-300 group">
-                    <div className="text-center px-4 group-hover:scale-105 transition-transform duration-300 bg-gradient-to-br from-gray-800 to-gray-700 w-full h-full flex items-center justify-center">
-                      <div className="text-xs sm:text-sm text-gray-500">Image {idx}</div>
-                    </div>
-                  </div>
-                </div>
-              </ProjectScrollAnimatedImage>
-            );
-          })
+      <Section tone={storyTone} index={nextIndex()} label="The story">
+        {project.tagline && (
+          <Headline text={project.tagline} outlineFrom={0} className="display-lg max-w-[16ch] mb-24 md:mb-36" />
         )}
+        <div className="space-y-20 md:space-y-28">
+          {blocks.map((block, i) => (
+            <Reveal key={i} className="grid grid-cols-12 gap-x-6 gap-y-6 border-t-2 rule pt-8">
+              {block.heading && <h2 className="col-span-12 md:col-span-5 display display-md">{block.heading}</h2>}
+              <div className={`col-span-12 md:col-span-7 lg:col-span-6 ${block.heading ? 'lg:col-start-7' : 'md:col-start-6'} space-y-5`}>
+                {block.body.map((para, j) => (
+                  <p key={j} className="lede">{para}</p>
+                ))}
+              </div>
+            </Reveal>
+          ))}
+        </div>
+      </Section>
 
-        {/* More Work Section */}
-        {otherProjects.length > 0 && (
-          <div className="mx-auto px-4 mb-12 sm:mb-16 md:mb-24 sm:px-6 md:max-w-6xl">
-            <h2 className="text-2xl sm:text-3xl font-bold mb-8 sm:mb-12">
-              MORE WORK
-            </h2>
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 sm:gap-8">
-              {otherProjects.map((proj, idx) => (
-                <Link key={proj.id} href={`/work/${proj.id}`}>
-                  <div
-                    className="group cursor-pointer animate-scale-in opacity-0"
-                    style={{ animationDelay: `${1.6 + idx * 0.1}s` }}
-                  >
-                    <div className="bg-gradient-to-br from-gray-800 to-gray-700 rounded-lg aspect-square flex items-center justify-center border border-gray-600 overflow-hidden mb-3 sm:mb-4 group-hover:border-[#F46325] group-hover:shadow-lg group-hover:shadow-orange-500/20 transition-all duration-300">
-                      {proj.image && proj.image !== '/placeholder-project.jpg' ? (
-                        // eslint-disable-next-line @next/next/no-img-element
-                        <img src={proj.image} alt={proj.title} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
-                      ) : (
-                        <div className="text-center px-4">
-                          <div className="text-sm font-bold mb-2 text-[#F46325]">PROJECT</div>
-                          <div className="text-xs sm:text-sm text-gray-500">{proj.title}</div>
-                        </div>
-                      )}
-                    </div>
-                    <h3 className="text-base sm:text-lg font-bold mb-1 group-hover:text-[#F46325] transition-colors duration-300">
-                      {proj.title}
-                    </h3>
-                    <p className="text-xs sm:text-sm text-gray-400">{proj.category}</p>
-                  </div>
-                </Link>
+      <Section tone={tailTone} index={nextIndex()} label={gallery.length > 0 ? 'Gallery' : 'More work'}>
+          {gallery.length > 0 && (
+            <div className="space-y-6">
+              {gallery.map((img, i) => (
+                <Reveal key={img.src} y={60} className={i % 2 ? 'md:ml-[16%]' : 'md:mr-[16%]'}>
+                  <MediaCard src={img.src} alt={img.alt} aspect="aspect-[16/10]" sizes="(min-width: 768px) 84vw, 100vw" />
+                </Reveal>
               ))}
             </div>
-          </div>
-        )}
+          )}
 
-        {/* CTA Section */}
-        <section className="bg-[#F46325] py-12 sm:py-16 md:py-20 relative overflow-hidden">
-          <div className="absolute inset-0 opacity-10">
-            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white to-transparent" style={{ backgroundSize: '200% 100%' }}></div>
-          </div>
-          <div className="mx-auto px-4 text-center relative z-10 sm:px-6 md:max-w-7xl">
-            <h2 className="text-2xl sm:text-3xl md:text-4xl font-black mb-3 sm:mb-4">
-              START YOUR PROJECT
-            </h2>
-            <p className="text-xs sm:text-base mb-6 sm:mb-8 text-black/80 max-w-2xl mx-auto leading-relaxed">
-              Tell us the problem you&apos;re trying to solve. We&apos;ll tell you straight whether we&apos;re the right team to solve it.
-            </p>
-            <div>
-              <ContactCTA
-                services={getServicesForCategory(project.category)}
-                className="inline-block px-6 sm:px-8 py-3 sm:py-4 bg-black text-[#F46325] font-black text-sm sm:text-lg hover:bg-gray-900 hover:shadow-lg hover:shadow-black/50 transition-all duration-300 hover:scale-105 transform"
-              >
-                {getCtaCopy(project.category)}
-              </ContactCTA>
+          {otherProjects.length > 0 && (
+            <div className={gallery.length > 0 ? 'mt-28' : ''}>
+              <p className="eyebrow mb-10 text-[color:var(--tone-muted)]">More work</p>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {otherProjects.map((p) => (
+                  <Link key={p.id} href={`/work/${p.id}`} className="group block">
+                    {p.image && <MediaCard src={p.image} alt={p.title} aspect="aspect-[4/3]" sizes="(min-width: 768px) 50vw, 100vw" />}
+                    <h3 className="display display-sm mt-6">{p.title}</h3>
+                  </Link>
+                ))}
+              </div>
             </div>
-          </div>
-        </section>
-      </div>
-    </ScrollAnimations>
+          )}
+
+          <Link
+            href="/work"
+            className={gallery.length > 0 || otherProjects.length > 0 ? 'eyebrow link-line inline-block mt-20' : 'display display-lg link-line'}
+          >
+            ← All work
+          </Link>
+        </Section>
+
+      {showCta && (
+      <CTASection
+        title="Start your project"
+        headline={'Your\nturn.'}
+        description="Tell us the problem you're trying to solve. We'll see if we can give you better marketing, or refer you to someone who can."
+        buttonLabel={getCtaCopy(project.category)}
+        services={getServicesForCategory(project.category)}
+      />
+      )}
+    </>
   );
 }

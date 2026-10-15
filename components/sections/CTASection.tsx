@@ -1,108 +1,104 @@
-'use client';
-
-import Container from '../ui/Container';
-import Title from '../ui/Title';
-import Text from '../ui/Text';
-import Button from '../ui/Button';
+import type { ReactNode } from 'react';
 import ContactCTA from '@/app/components/ContactCTA';
-import { motion } from 'motion/react';
-import { slideInDown, fadeIn, slideInUp, slideInLeft, slideInRight, slideInLeftScroll, slideInRightScroll } from '@/lib/motion-animations';
-import { ParallaxLayer } from '../motion';
+import Headline from '@/components/editorial/Headline';
+import Reveal from '@/components/editorial/Reveal';
+import type { Tone } from '@/components/editorial/Section';
 
 interface CTASectionProps {
+  /** Small line above the poster headline. */
   title: string;
   description?: string;
   email?: string;
-  variant?: 'default' | 'work';
+  phone?: string;
+  tone?: Tone;
+  headline?: string;
+  buttonLabel?: string;
+  services?: string[];
+  /** Short "what happens after you click" sequence, shown beside the copy. */
+  nextSteps?: string[];
+  /** Objections answered right beside the ask, so nobody leaves the page to find them. */
+  faqs?: { q: string; a: ReactNode }[];
 }
 
+/** Closing poster: a giant two-line call, copy and a single action, off-axis. */
 export default function CTASection({
   title,
   description,
   email,
-  variant = 'default',
+  phone,
+  tone = 'orange',
+  headline = "Let's\ntalk.",
+  buttonLabel = 'Get free recommendations',
+  services,
+  nextSteps,
+  faqs,
 }: CTASectionProps) {
-  if (variant === 'work') {
-    return (
-      <section className="relative bg-taam-orange py-16 overflow-hidden">
-        <div className="absolute inset-0 bg-[linear-gradient(135deg,transparent_30%,rgba(0,0,0,.02)_31%,rgba(0,0,0,.02)_32%,transparent_33%)] bg-[length:60px_60px]" />
-        <ParallaxLayer offset={0} speed={0.4}>
-          <div className="absolute top-0 left-1/4 w-96 h-96 bg-orange-600/20 rounded-full blur-3xl" />
-        </ParallaxLayer>
-
-        <Container>
-          <div className="text-center relative z-10">
-            <motion.div variants={slideInDown} initial="initial" animate="animate">
-              <Title as="h2" color="white">
-                {title}
-              </Title>
-            </motion.div>
-            {description && (
-              <motion.div
-                variants={fadeIn}
-                initial="initial"
-                animate="animate"
-                transition={{ delay: 0.2 }}
-              >
-                <Text
-                  size="base"
-                  color="white"
-                  className="text-black/80 max-w-2xl mx-auto mb-8 mt-4"
-                >
-                  {description}
-                </Text>
-              </motion.div>
-            )}
-            <motion.div
-              variants={slideInUp}
-              initial="initial"
-              animate="animate"
-              transition={{ delay: 0.3 }}
-            >
-              <ContactCTA className="inline-block px-8 py-4 bg-black text-taam-orange font-black text-lg hover:bg-gray-900 transition relative overflow-hidden group">
-                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent group-hover:translate-x-full transition-transform duration-500 -translate-x-full" />
-                <span className="relative">Get Free Recommendations</span>
-              </ContactCTA>
-            </motion.div>
-          </div>
-        </Container>
-      </section>
-    );
-  }
-
   return (
-    <section className="relative bg-taam-orange py-16 overflow-hidden">
-      <div className="absolute inset-0 bg-[linear-gradient(135deg,transparent_30%,rgba(0,0,0,.02)_31%,rgba(0,0,0,.02)_32%,transparent_33%)] bg-[length:60px_60px]" />
-      <ParallaxLayer offset={0} speed={0.3}>
-        <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-orange-600/20 rounded-full blur-3xl" />
-      </ParallaxLayer>
+    <section className={`tone-${tone} relative overflow-clip`}>
+      <div className="gutter section-pad">
+        <p className="eyebrow mb-10 max-w-md">{title}</p>
+        <Headline text={headline} outlineFrom={1} className="display-mega" />
 
-      <Container>
-        <div className="flex flex-col md:flex-row items-center justify-between gap-6 relative z-10">
-          <motion.div variants={slideInLeftScroll} initial="initial" whileInView="whileInView" viewport={{ once: false, amount: 0.3 }}>
-            <Title as="h2" color="white" className="text-center md:text-left">
-              {title}
-            </Title>
-          </motion.div>
-          <motion.div
-            variants={slideInRightScroll}
-            initial="initial"
-            whileInView="whileInView"
-            viewport={{ once: false, amount: 0.3 }}
-            className="flex flex-col sm:flex-row items-center gap-4 shrink-0"
-          >
-            {email && (
-              <a href={`mailto:${email}`} className="text-sm font-semibold text-black/80 hover:text-black transition">
-                {email}
-              </a>
-            )}
-            <ContactCTA className="inline-block px-8 py-4 bg-taam-near-black text-taam-orange font-black text-lg hover:bg-gray-900 transition relative overflow-hidden group">
-              <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent group-hover:translate-x-full transition-transform duration-500 -translate-x-full" />
-              <span className="relative">Get Free Recommendations</span>
-            </ContactCTA>
-          </motion.div>
+        <div className="grid grid-cols-12 gap-x-6 gap-y-14 mt-16 md:mt-24">
+          {nextSteps && nextSteps.length > 0 && (
+            <Reveal className="col-span-12 md:col-span-6 lg:col-span-5">
+              <p className="eyebrow mb-6">What happens next</p>
+              <ol className="border-t-2 rule">
+                {nextSteps.map((item, i) => (
+                  <li key={item} className="flex gap-6 border-b-2 rule py-5">
+                    <span className="eyebrow pt-1">{String(i + 1).padStart(2, '0')}</span>
+                    <span className="text-lg font-semibold leading-snug">{item}</span>
+                  </li>
+                ))}
+              </ol>
+            </Reveal>
+          )}
+          <Reveal className="col-span-12 md:col-span-6 md:col-start-7 lg:col-span-5 lg:col-start-8">
+            {description && <p className="lede mb-10">{description}</p>}
+            <div className="flex flex-wrap items-center gap-x-8 gap-y-5">
+              <ContactCTA services={services} className="btn btn-solid">
+                {buttonLabel} <span aria-hidden="true">↗</span>
+              </ContactCTA>
+              {phone && (
+                <a href={`tel:${phone.replace(/[^+\d]/g, '')}`} className="font-semibold link-line">
+                  {phone}
+                </a>
+              )}
+              {email && (
+                <a href={`mailto:${email}`} className="font-semibold link-line">
+                  {email}
+                </a>
+              )}
+            </div>
+          </Reveal>
         </div>
-      </Container>
+
+        {faqs && faqs.length > 0 && (
+          <div className="grid grid-cols-12 gap-x-6 gap-y-10 mt-24 md:mt-36">
+            <Reveal className="col-span-12 lg:col-span-4">
+              <p className="eyebrow mb-4">Before you call</p>
+              <h3 className="display display-md">Questions we get asked.</h3>
+            </Reveal>
+            <div className="col-span-12 lg:col-span-8 border-t-2 rule">
+              {faqs.map((f) => (
+                <details key={f.q} className="group border-b-2 rule">
+                  <summary className="flex cursor-pointer list-none items-center justify-between gap-6 py-6 text-lg md:text-xl font-bold [&::-webkit-details-marker]:hidden">
+                    {f.q}
+                    <span aria-hidden="true" className="display text-2xl transition-transform duration-300 group-open:rotate-45">+</span>
+                  </summary>
+                  <div className="pb-7 pr-10 text-base md:text-lg leading-relaxed font-medium">{f.a}</div>
+                </details>
+              ))}
+              <div className="flex flex-wrap items-center gap-x-8 gap-y-5 pt-10">
+                <ContactCTA services={services} className="btn btn-solid">
+                  {buttonLabel} <span aria-hidden="true">↗</span>
+                </ContactCTA>
+                <p className="font-semibold">Question not here? Ask it on the call.</p>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
     </section>
   );
 }

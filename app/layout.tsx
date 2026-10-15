@@ -6,9 +6,12 @@ import Footer from "./components/Footer";
 import ContactFormProvider from "./components/ContactForm/ContactFormProvider";
 import { Analytics } from "@vercel/analytics/next"
 
+// Static weight instances (not the variable font): their glyphs have no overlapping
+// contours, so outlined display type (-webkit-text-stroke) renders cleanly.
 const montserrat = Montserrat({
   variable: "--font-montserrat",
   subsets: ["latin"],
+  weight: ["400", "500", "600", "700", "800", "900"],
 });
 
 const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://taammarketing.com";
@@ -20,10 +23,10 @@ export const metadata: Metadata = {
     apple: "/apple-touch-icon.png",
   },
   title: {
-    default: "TAAM | Content Marketing Agency for High-Performance Businesses",
+    default: "TAAM | Better Marketing for the Best Businesses",
     template: "%s | TAAM",
   },
-  description: "TAAM is a unified content marketing agency specializing in strategy, creation, development, and campaign execution. Stop paying for excuses. Start seeing results.",
+  description: "TAAM makes creative that makes your customers say WOW. A proven Las Vegas content marketing team for businesses that are already great at what they do.",
   keywords: [
     "content marketing agency",
     "digital agency",
@@ -54,8 +57,8 @@ export const metadata: Metadata = {
     locale: "en_US",
     url: baseUrl,
     siteName: "TAAM",
-    title: "TAAM | Content Marketing Agency for High-Performance Businesses",
-    description: "Stop paying for excuses. Start seeing results. A unified content marketing agency delivering real results through strategy, creation, development, and optimization.",
+    title: "TAAM | Better Marketing for the Best Businesses",
+    description: "You already got good at what you do. We show it to the people who need to see it.",
     images: [
       {
         url: "/og-image.png",
@@ -67,8 +70,8 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "TAAM | Content Marketing Agency",
-    description: "Stop paying for excuses. Start seeing results.",
+    title: "TAAM | Better Marketing for the Best Businesses",
+    description: "Creative that makes your customers say WOW.",
     images: ["/twitter-image.png"],
   },
   alternates: {
@@ -86,8 +89,8 @@ export default function RootLayout({
     "@type": "Organization",
     name: "TAAM",
     url: baseUrl,
-    logo: `${baseUrl}/logo.png`,
-    description: "A unified content marketing agency specializing in strategy, creation, development, and campaign execution.",
+    logo: `${baseUrl}/brand-assets/logos/TAAM_logo_orange_on_white.png`,
+    description: "Better marketing for the best businesses. Creative that makes your customers say WOW.",
     sameAs: [
       "https://www.instagram.com/taambetter",
       "https://www.tiktok.com/@taambetter",
@@ -100,10 +103,8 @@ export default function RootLayout({
     },
     address: {
       "@type": "PostalAddress",
-      streetAddress: "Your Address",
       addressLocality: "Las Vegas",
       addressRegion: "NV",
-      postalCode: "89102",
       addressCountry: "US",
     },
   };
@@ -119,14 +120,12 @@ export default function RootLayout({
           dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationSchema) }}
         />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
-        <meta name="theme-color" content="#111111" />
+        <meta name="theme-color" content="#F46325" />
         <link rel="icon" href="/favicon.ico" />
         <link rel="icon" type="image/png" sizes="32x32" href="/brand-assets/app-icon/favicons/favicon-32.png" />
         <link rel="icon" type="image/png" sizes="16x16" href="/brand-assets/app-icon/favicons/favicon-16.png" />
         <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
         <link rel="manifest" href="/manifest.json" />
-        <link rel="preload" as="video" href="/construction-timelapse.mp4" />
-        <link rel="preload" as="image" href="/brand-assets/logos/transparent/TAAM_logo_white_transparent.png" />
         <link rel="dns-prefetch" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
       </head>

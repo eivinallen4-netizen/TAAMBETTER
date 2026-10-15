@@ -19,12 +19,20 @@ interface Contact {
   source_page: string | null;
   biggest_challenge: string | null;
   services_interested: string | null;
+  industry: string | null;
+  business_stage: string | null;
+  budget: string | null;
+  timeline: string | null;
+  website: string | null;
+  lead_fit: string | null;
 }
 
 const columns: TableColumn<Contact>[] = [
   { key: 'name', header: 'Name', sortable: true },
   { key: 'email', header: 'Email', sortable: false },
   { key: 'business_name', header: 'Business', sortable: true },
+  { key: 'lead_fit', header: 'Fit', sortable: true },
+  { key: 'budget', header: 'Budget', sortable: true },
   { key: 'completion_status', header: 'Status', sortable: false },
   { key: 'timestamp', header: 'Date', sortable: true },
 ];

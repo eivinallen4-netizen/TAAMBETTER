@@ -1,7 +1,27 @@
 import { randomUUID } from 'crypto';
+import type { NextRequest } from 'next/server';
 import { createClient } from '@libsql/client';
+import { initializeTables } from '@/lib/init-tables';
+import { getClientIp, logger } from '@/lib/logger';
+import { createRateLimiter, handleRateLimit } from '@/lib/ratelimit';
+import {
+  BUDGET_OPTIONS,
+  INDUSTRY_OPTIONS,
+  MIN_HUMAN_FILL_MS,
+  ROLE_OPTIONS,
+  STAGE_OPTIONS,
+  TIMELINE_OPTIONS,
+  isDisposableEmail,
+  isPlausiblePhone,
+  scoreLeadFit,
+  type LeadFit,
+  type QualifierOption,
+} from '@/app/lib/cta';
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+// A real lead posts twice (partial on email blur, then complete), so this leaves room for retries.
+const contactLimiter = createRateLimiter({ windowMs: 60 * 60 * 1000, maxRequests: 10 });
 
 interface Contact {
   id: string;
@@ -15,6 +35,17 @@ interface Contact {
   biggest_challenge?: string;
   services_interested?: string | string[];
   business_name?: string;
+  industry: string;
+  business_stage: string;
+  budget: string;
+  timeline: string;
+  website: string;
+  role: string;
+  lead_fit: LeadFit;
+}
+
+function pickOption(options: QualifierOption[], value: unknown): string {
+  return typeof value === 'string' && options.some((o) => o.value === value) ? value : '';
 }
 
 let db: ReturnType<typeof createClient> | null = null;
@@ -36,29 +67,6 @@ function getDb() {
   return db;
 }
 
-async function initializeTursoTable(): Promise<void> {
-  try {
-    const database = getDb();
-    await database.execute(`
-      CREATE TABLE IF NOT EXISTS contacts (
-        id TEXT PRIMARY KEY,
-        name TEXT NOT NULL,
-        email TEXT NOT NULL,
-        phone TEXT,
-        message TEXT,
-        completion_status TEXT NOT NULL,
-        timestamp TEXT NOT NULL,
-        source_page TEXT,
-        biggest_challenge TEXT,
-        services_interested TEXT,
-        business_name TEXT
-      )
-    `);
-  } catch (err) {
-    console.error('Failed to initialize Turso table:', err);
-  }
-}
-
 async function writeToTurso(contact: Contact): Promise<{ success: boolean; error?: string }> {
   try {
     const database = getDb();
@@ -67,8 +75,8 @@ async function writeToTurso(contact: Contact): Promise<{ success: boolean; error
       : (contact.services_interested || '');
 
     await database.execute({
-      sql: `INSERT INTO contacts (id, name, email, phone, message, completion_status, timestamp, source_page, biggest_challenge, services_interested, business_name)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      sql: `INSERT INTO contacts (id, name, email, phone, message, completion_status, timestamp, source_page, biggest_challenge, services_interested, business_name, industry, business_stage, budget, timeline, website, lead_fit, role)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       args: [
         contact.id,
         contact.name,
@@ -81,6 +89,13 @@ async function writeToTurso(contact: Contact): Promise<{ success: boolean; error
         contact.biggest_challenge || '',
         servicesStr,
         contact.business_name || '',
+        contact.industry,
+        contact.business_stage,
+        contact.budget,
+        contact.timeline,
+        contact.website,
+        contact.lead_fit,
+        contact.role,
       ],
     });
 
@@ -90,14 +105,28 @@ async function writeToTurso(contact: Contact): Promise<{ success: boolean; error
   }
 }
 
-export async function POST(request: Request) {
-  await initializeTursoTable();
+export async function POST(request: NextRequest) {
+  const clientIp = getClientIp(request.headers);
+  const limit = contactLimiter(request, `contact:${clientIp}`);
+  if (!limit.allowed) return handleRateLimit(limit.resetTime!);
+
+  await initializeTables(getDb()).catch((err) => console.error('Table init failed:', err));
 
   let body: Record<string, unknown>;
   try {
     body = await request.json();
   } catch {
     return Response.json({ error: 'Invalid JSON' }, { status: 400 });
+  }
+
+  // Bots: a hidden field humans never see got filled, or four steps were "completed" in a blink.
+  // Answer like it worked so they don't learn to dodge it, but save nothing.
+  const honeypot = typeof body.company_fax === 'string' ? body.company_fax.trim() : '';
+  const elapsedMs = typeof body.elapsed_ms === 'number' ? body.elapsed_ms : null;
+  const isFinalSubmit = body.final === true;
+  if (honeypot || (isFinalSubmit && elapsedMs !== null && elapsedMs < MIN_HUMAN_FILL_MS)) {
+    logger.warn('Contact form bot submission dropped', { clientIp, honeypot: Boolean(honeypot), elapsedMs });
+    return Response.json({ success: true, completion_status: 'complete', lead_fit: 'possible' });
   }
 
   const name = typeof body.name === 'string' ? body.name.trim() : '';
@@ -109,7 +138,17 @@ export async function POST(request: Request) {
     ? body.services_interested.filter((s): s is string => typeof s === 'string')
     : [];
   const sourcePage = typeof body.source_page === 'string' ? body.source_page : '';
-  const message = typeof body.message === 'string' ? body.message.trim() : '';
+  const message = typeof body.message === 'string' ? body.message.trim().slice(0, 2000) : '';
+  const website = typeof body.website === 'string' ? body.website.trim().slice(0, 300) : '';
+  const industry = pickOption(INDUSTRY_OPTIONS, body.industry);
+  const businessStage = pickOption(STAGE_OPTIONS, body.business_stage);
+  const budget = pickOption(BUDGET_OPTIONS, body.budget);
+  const timeline = pickOption(TIMELINE_OPTIONS, body.timeline);
+  const role = pickOption(ROLE_OPTIONS, body.role);
+
+  if (email && isDisposableEmail(email)) {
+    return Response.json({ error: 'Please use a real email address' }, { status: 400 });
+  }
 
   // Trigger capture on name OR email (partial submission)
   const hasMinimalInfo = name.trim() !== '' || (email.trim() !== '' && EMAIL_RE.test(email));
@@ -122,9 +161,11 @@ export async function POST(request: Request) {
     name.trim() !== '' &&
     email.trim() !== '' &&
     EMAIL_RE.test(email) &&
-    phone.replace(/\D/g, '').length >= 10 &&
+    isPlausiblePhone(phone) &&
+    businessName !== '' &&
     biggestChallenge !== '' &&
-    servicesInterested.length > 0;
+    budget !== '' &&
+    timeline !== '';
 
   const contact: Contact = {
     id: randomUUID(),
@@ -138,6 +179,13 @@ export async function POST(request: Request) {
     ...(biggestChallenge && { biggest_challenge: biggestChallenge }),
     ...(servicesInterested.length > 0 && { services_interested: servicesInterested }),
     ...(businessName && { business_name: businessName }),
+    industry,
+    business_stage: businessStage,
+    budget,
+    timeline,
+    website,
+    role,
+    lead_fit: scoreLeadFit({ stage: businessStage, budget, timeline, role }),
   };
 
   // Write to Turso - don't block on failure
@@ -146,5 +194,5 @@ export async function POST(request: Request) {
     console.error('Turso write failed:', tursoResult.error);
   }
 
-  return Response.json({ success: true, completion_status: contact.completion_status });
+  return Response.json({ success: true, completion_status: contact.completion_status, lead_fit: contact.lead_fit });
 }
