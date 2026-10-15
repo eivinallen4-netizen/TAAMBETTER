@@ -7,6 +7,7 @@ import Mascot from '@/components/editorial/Mascot';
 import MediaCard from '@/components/editorial/MediaCard';
 import Reveal from '@/components/editorial/Reveal';
 import Section, { type Tone } from '@/components/editorial/Section';
+import Arrow from '@/components/editorial/Arrow';
 
 interface Result {
   value: string;
@@ -48,7 +49,7 @@ export default function WorkSection({ projects, tone = 'ink', index = '03', show
             <MediaCard src={featured.image} alt={featured.title} aspect="aspect-[4/5] sm:aspect-[16/9]" scrim>
               <div className="flex h-full items-end justify-between p-6 md:p-10">
                 <span className="eyebrow">{featured.category}</span>
-                <span className="btn btn-solid">View case ↗</span>
+                <span className="btn btn-solid">View case <Arrow /></span>
               </div>
             </MediaCard>
           )}
@@ -63,8 +64,8 @@ export default function WorkSection({ projects, tone = 'ink', index = '03', show
 
         {featured.results && (
           <dl className="relative col-span-12 lg:col-span-6 lg:col-start-7 grid grid-cols-2 gap-x-6 gap-y-10 self-end">
-            {/* Trophy for the numbers. */}
-            <Reveal className="absolute bottom-full right-0 mb-[-2px] w-24 md:w-28">
+            {/* Trophy for the numbers: under them on small screens, perched on the top rule on desktop. */}
+            <Reveal className="order-last col-span-2 justify-self-end w-24 md:w-28 lg:absolute lg:bottom-full lg:right-0 lg:mb-[-2px]">
               <Mascot pose="famous" size={144} className="mascot-bob w-full h-auto" />
             </Reveal>
             {featured.results.map((r, i) => (
@@ -82,7 +83,7 @@ export default function WorkSection({ projects, tone = 'ink', index = '03', show
         <div className="mt-20 md:mt-28">
           <div className="flex flex-wrap items-end justify-between gap-6 mb-8">
             <p className="eyebrow">The actual reels. Sound off, all organic.</p>
-            <Link href={`/work/${featured.id}`} className="eyebrow link-line">Full case study ↗</Link>
+            <Link href={`/work/${featured.id}`} className="eyebrow link-line">Full case study <Arrow /></Link>
           </div>
           <div className="-mx-[var(--gutter)] px-[var(--gutter)] flex gap-4 overflow-x-auto snap-x snap-mandatory pb-2 md:mx-0 md:px-0 md:grid md:grid-cols-4 md:overflow-visible">
             {reels.map((v, i) => (
@@ -98,7 +99,7 @@ export default function WorkSection({ projects, tone = 'ink', index = '03', show
           </div>
           <Reveal className="relative mt-12 flex flex-col sm:flex-row sm:items-center gap-x-10 gap-y-5">
             <ContactCTA className="btn btn-solid self-start">
-              Want this for your business? <span aria-hidden="true">↗</span>
+              Want this for your business? <Arrow />
             </ContactCTA>
             <p className="font-semibold text-[color:var(--tone-muted)]">
               Same team, same process. About two minutes to tell us about yours.
@@ -123,7 +124,7 @@ export default function WorkSection({ projects, tone = 'ink', index = '03', show
       )}
 
       <div className="mt-20 flex justify-end">
-        <Link href="/work" className="eyebrow link-line">All work ↗</Link>
+        <Link href="/work" className="eyebrow link-line">All work <Arrow /></Link>
       </div>
     </Section>
   );
