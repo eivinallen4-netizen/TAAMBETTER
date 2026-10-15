@@ -12,6 +12,7 @@ import {
   HelpCircle,
 } from 'lucide-react';
 import siteContent from '../../content/siteContent.json';
+import Mascot, { type MascotPose } from '@/components/editorial/Mascot';
 import {
   BUDGET_OPTIONS,
   CHALLENGE_OPTIONS,
@@ -30,6 +31,14 @@ import type { ContactFormPrefill } from './ContactFormProvider';
 
 type Step = 1 | 2 | 3 | 4 | 'confirmation';
 const TOTAL_STEPS = 4;
+
+// One mascot per step: fishing for the problem, chilling on the details, counting the budget, calling you.
+const STEP_MASCOTS: Record<1 | 2 | 3 | 4, MascotPose> = {
+  1: 'fishing',
+  2: 'chill',
+  3: 'counting',
+  4: 'phone',
+};
 
 interface ContactFormModalProps {
   prefill?: ContactFormPrefill;
@@ -276,7 +285,21 @@ export default function ContactFormModal({ prefill, onClose }: ContactFormModalP
         </div>
       </div>
 
-      <form className="max-w-3xl mx-auto px-6 py-14 md:py-20" onSubmit={handleSubmit} noValidate>
+      <form className="relative max-w-3xl mx-auto px-6 py-14 md:py-20" onSubmit={handleSubmit} noValidate>
+        {stepNumber && (
+          // Above the heading on smaller screens; out in the empty right margin on wide ones.
+          <Mascot
+            key={stepNumber}
+            pose={STEP_MASCOTS[stepNumber]}
+            size={320}
+            className={`mascot-pop mb-6 h-20 md:h-28 w-auto xl:absolute xl:mb-0 xl:h-auto xl:left-full ${
+              stepNumber === 1
+                ? // The fishing line drops its bait onto the edge of the answer list.
+                  'xl:top-40 xl:w-64 xl:-ml-14 2xl:w-80 2xl:-ml-20'
+                : 'xl:top-16 xl:w-56 xl:ml-2 2xl:w-72'
+            }`}
+          />
+        )}
         {step === 1 && (
           <StepChallenge value={form.biggestChallenge} onSelect={selectChallenge} />
         )}
@@ -373,7 +396,11 @@ export default function ContactFormModal({ prefill, onClose }: ContactFormModalP
 
       {showExitConfirm && (
         <div className="fixed inset-0 z-[110] bg-black/60 flex items-center justify-center px-6">
-          <div className="tone-ink rounded-[var(--radius-card)] max-w-sm w-full p-8">
+          <div className="relative tone-ink rounded-[var(--radius-card)] max-w-sm w-full p-8">
+            {/* Hangs onto the top edge of the dialog: "you're leaving?" */}
+            <div className="absolute inset-x-0 bottom-[calc(100%-1.6rem)] flex justify-center">
+              <Mascot pose="peek" size={176} className="mascot-pop w-36 sm:w-44 h-auto" />
+            </div>
             <h3 className="display display-sm mb-3">Discard your progress?</h3>
             <p className="text-sm text-white/70 mb-6">
               Your answers won&apos;t be saved if you close this now.
@@ -649,6 +676,7 @@ function Confirmation({
   if (fit === 'early') {
     return (
       <div className="text-center py-10">
+        <Mascot pose="wave" size={256} className="mascot-pop mx-auto mb-8 h-32 md:h-44 w-auto" />
         <h2 className="display display-lg mb-6">Thanks, {firstName}.</h2>
         <p className="lede max-w-xl mx-auto mb-6">
           Straight talk: based on your answers, a monthly marketing retainer probably isn&apos;t the best use of
@@ -688,6 +716,7 @@ function Confirmation({
 
   return (
     <div className="text-center py-10">
+      <Mascot pose="money-gun" size={320} className="mascot-pop mx-auto mb-8 h-36 md:h-52 w-auto" />
       <h2 className="display display-lg mb-6">Got it, {firstName}.</h2>
       <p className="lede max-w-xl mx-auto mb-10">
         We&apos;ll look over your answers and reach out within 1 business day to set up a short call. If we&apos;re

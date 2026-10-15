@@ -1,4 +1,5 @@
 import Headline from '@/components/editorial/Headline';
+import Mascot from '@/components/editorial/Mascot';
 import Reveal from '@/components/editorial/Reveal';
 import Section, { type Tone } from '@/components/editorial/Section';
 
@@ -34,7 +35,11 @@ export default function ManifestoSection({
         </Reveal>
       </div>
 
-      <dl className="mt-24 md:mt-36 grid grid-cols-2 lg:grid-cols-4 border-t rule">
+      <dl className="relative mt-24 md:mt-36 grid grid-cols-2 lg:grid-cols-4 border-t rule">
+        {/* Kicking back, sat on the rule above the numbers with his legs hanging over. */}
+        <Reveal className="absolute z-10 bottom-full right-0 w-32 md:w-44">
+          <Mascot pose="chill" size={176} className="w-full h-auto translate-y-[36%]" />
+        </Reveal>
         {stats.map((stat, i) => (
           <Reveal
             key={stat.label}

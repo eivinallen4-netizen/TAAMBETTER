@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState, useSyncExternalStore, type ReactNode } from 'react';
 import type { FreeTool } from '@/app/lib/tools';
+import Mascot from '@/components/editorial/Mascot';
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const STORAGE_KEY = 'taam-tools-contact';
@@ -146,7 +147,13 @@ export default function EmailGate({ tool, summary, website, report, teaser, chil
   }
 
   return (
-    <div className="relative rounded-[var(--radius-card)] border-2 rule p-8 md:p-12">
+    <div className="relative rounded-[var(--radius-card)] border-2 rule p-8 md:p-12 md:mt-28">
+      {/* Trophy pose standing on the card's top edge: the report is the prize. */}
+      <Mascot
+        pose="famous"
+        size={128}
+        className="mascot-pop hidden md:block absolute bottom-[calc(100%-4px)] right-10 w-28 lg:w-32 h-auto"
+      />
       <div className="grid grid-cols-12 gap-x-6 gap-y-10">
         <div className="col-span-12 lg:col-span-6">
           <p className="eyebrow mb-4">Free full report</p>

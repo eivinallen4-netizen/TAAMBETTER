@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react';
 import ContactCTA from '@/app/components/ContactCTA';
 import Headline from '@/components/editorial/Headline';
+import Mascot from '@/components/editorial/Mascot';
 import Reveal from '@/components/editorial/Reveal';
 import type { Tone } from '@/components/editorial/Section';
 
@@ -37,12 +38,22 @@ export default function CTASection({
     <section className={`tone-${tone} relative overflow-clip`}>
       <div className="gutter section-pad">
         <p className="eyebrow mb-10 max-w-md">{title}</p>
-        <Headline text={headline} outlineFrom={1} className="display-mega" />
+        <div className="relative">
+          <Headline text={headline} outlineFrom={1} className="display-mega" />
+          {/* On the phone, waiting for yours. */}
+          <Reveal className="absolute bottom-0 right-0 w-28 sm:w-44 lg:w-64">
+            <Mascot pose="phone" size={256} className="mascot-bob w-full h-auto" />
+          </Reveal>
+        </div>
 
         <div className="grid grid-cols-12 gap-x-6 gap-y-14 mt-16 md:mt-24">
           {nextSteps && nextSteps.length > 0 && (
             <Reveal className="col-span-12 md:col-span-6 lg:col-span-5">
-              <p className="eyebrow mb-6">What happens next</p>
+              <div className="relative">
+                <p className="eyebrow mb-6">What happens next</p>
+                {/* Sitting on the list, flipping a coin. */}
+                <Mascot pose="sitting" size={128} className="absolute z-10 bottom-0 right-4 translate-y-[26%] w-24 md:w-28 h-auto" />
+              </div>
               <ol className="border-t-2 rule">
                 {nextSteps.map((item, i) => (
                   <li key={item} className="flex gap-6 border-b-2 rule py-5">

@@ -1,5 +1,6 @@
 import Headline from '@/components/editorial/Headline';
 import Icon, { processIconNames } from '@/components/editorial/Icon';
+import Mascot from '@/components/editorial/Mascot';
 import MediaCard from '@/components/editorial/MediaCard';
 import Reveal from '@/components/editorial/Reveal';
 import Section, { type Tone } from '@/components/editorial/Section';
@@ -27,7 +28,13 @@ export default function ProcessSection({
 }: ProcessSectionProps) {
   return (
     <Section tone={tone} index={index} label="Process">
-      <Headline text={'How we\nwork.'} outlineFrom={1} className="display-xl mb-20 md:mb-32" />
+      <div className="relative mb-20 md:mb-32">
+        <Headline text={'How we\nwork.'} outlineFrom={1} className="display-xl" />
+        {/* Counting what the work brings in. */}
+        <Reveal className="absolute bottom-0 right-0 w-28 sm:w-40 lg:w-56">
+          <Mascot pose="counting" size={224} className="mascot-bob w-full h-auto" />
+        </Reveal>
+      </div>
 
       <div className="grid grid-cols-12 gap-x-6 gap-y-16">
         <div className="col-span-12 lg:col-span-5">

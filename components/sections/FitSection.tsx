@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import ContactCTA from '@/app/components/ContactCTA';
 import Headline from '@/components/editorial/Headline';
+import Mascot from '@/components/editorial/Mascot';
 import Reveal from '@/components/editorial/Reveal';
 import Section, { type Tone } from '@/components/editorial/Section';
 
@@ -47,7 +48,7 @@ export default function FitSection({
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-x-6 gap-y-16">
-        <FitList title="A good fit if" items={goodFit} mark="✓" />
+        <FitList title="A good fit if" items={goodFit} mark="✓" peek />
         <FitList title="Probably not if" items={notFit} mark="✕" muted />
       </div>
 
@@ -70,10 +71,18 @@ export default function FitSection({
   );
 }
 
-function FitList({ title, items, mark, muted = false }: { title: string; items: string[]; mark: string; muted?: boolean }) {
+function FitList({ title, items, mark, muted = false, peek = false }: { title: string; items: string[]; mark: string; muted?: boolean; peek?: boolean }) {
   return (
     <div>
-      <h3 className="display display-sm mb-8">{title}</h3>
+      <div className="relative pb-8">
+        <h3 className="display display-sm">{title}</h3>
+        {/* Peeks up over the top rule of the list. */}
+        {peek && (
+          <Reveal y={30} className="absolute bottom-0 right-4 w-24 md:w-32">
+            <Mascot pose="peek" size={144} className="w-full h-auto" />
+          </Reveal>
+        )}
+      </div>
       <ul className="border-t-2 rule">
         {items.map((item, i) => (
           <Reveal as="li" key={item} delay={i * 0.05} className="flex gap-5 border-b-2 rule py-6">

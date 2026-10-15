@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import Mascot from '@/components/editorial/Mascot';
 
 interface UrlFormProps {
   onSubmit: (url: string) => void;
@@ -19,8 +20,14 @@ export default function UrlForm({ onSubmit, loading, buttonLabel, loadingLabel }
         e.preventDefault();
         if (url.trim()) onSubmit(url.trim());
       }}
-      className="flex flex-col md:flex-row gap-3"
+      className="relative flex flex-col md:flex-row gap-3"
     >
+      {/* Stands on top of the button, flipping a coin while you type. */}
+      <Mascot
+        pose="sitting"
+        size={128}
+        className="mascot-pop hidden md:block absolute bottom-full right-8 mb-[-11px] w-24 lg:w-28 h-auto"
+      />
       <label htmlFor="tool-url" className="sr-only">Website address</label>
       <input
         id="tool-url"

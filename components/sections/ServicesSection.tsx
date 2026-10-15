@@ -2,6 +2,7 @@ import Link from 'next/link';
 import { getServiceInfo } from '@/app/lib/services';
 import Headline from '@/components/editorial/Headline';
 import Icon, { serviceIconNames } from '@/components/editorial/Icon';
+import Mascot from '@/components/editorial/Mascot';
 import Reveal from '@/components/editorial/Reveal';
 import Section, { type Tone } from '@/components/editorial/Section';
 
@@ -31,7 +32,11 @@ export default function ServicesSection({ services, showMoreLink = true, tone = 
         </Reveal>
       </div>
 
-      <ol className="border-t-2 rule">
+      <ol className="relative border-t-2 rule">
+        {/* Casting a line into the list. */}
+        <Reveal className="absolute bottom-full right-0 -mb-10 w-36 md:w-52 hidden sm:block">
+          <Mascot pose="fishing" size={208} className="w-full h-auto" />
+        </Reveal>
         {services.map((service, i) => {
           const info = getServiceInfo(service);
           const icon = serviceIconNames[service.toLowerCase()] ?? 'strategy';

@@ -3,6 +3,7 @@ import Link from 'next/link';
 import ContactCTA from '@/app/components/ContactCTA';
 import EdgeTitle from '@/components/editorial/EdgeTitle';
 import LoopVideo from '@/components/editorial/LoopVideo';
+import Mascot from '@/components/editorial/Mascot';
 import MediaCard from '@/components/editorial/MediaCard';
 import Reveal from '@/components/editorial/Reveal';
 import Section, { type Tone } from '@/components/editorial/Section';
@@ -61,7 +62,11 @@ export default function WorkSection({ projects, tone = 'ink', index = '03', show
         </Reveal>
 
         {featured.results && (
-          <dl className="col-span-12 lg:col-span-6 lg:col-start-7 grid grid-cols-2 gap-x-6 gap-y-10 self-end">
+          <dl className="relative col-span-12 lg:col-span-6 lg:col-start-7 grid grid-cols-2 gap-x-6 gap-y-10 self-end">
+            {/* Trophy for the numbers. */}
+            <Reveal className="absolute bottom-full right-0 mb-[-2px] w-24 md:w-28">
+              <Mascot pose="famous" size={144} className="mascot-bob w-full h-auto" />
+            </Reveal>
             {featured.results.map((r, i) => (
               <Reveal key={r.label} delay={i * 0.08} className="border-t rule pt-5 flex flex-col">
                 <dt className="eyebrow mt-3 order-2">{r.label}</dt>
@@ -91,13 +96,14 @@ export default function WorkSection({ projects, tone = 'ink', index = '03', show
               </Reveal>
             ))}
           </div>
-          <Reveal className="mt-12 flex flex-col sm:flex-row sm:items-center gap-x-10 gap-y-5">
+          <Reveal className="relative mt-12 flex flex-col sm:flex-row sm:items-center gap-x-10 gap-y-5">
             <ContactCTA className="btn btn-solid self-start">
               Want this for your business? <span aria-hidden="true">↗</span>
             </ContactCTA>
             <p className="font-semibold text-[color:var(--tone-muted)]">
               Same team, same process. About two minutes to tell us about yours.
             </p>
+            <Mascot pose="money-gun" size={176} className="mascot-bob hidden md:block ml-auto w-36 lg:w-44 h-auto" />
           </Reveal>
         </div>
       )}
