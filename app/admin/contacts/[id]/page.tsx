@@ -14,6 +14,7 @@ import {
   optionLabel,
   type LeadFit,
 } from '@/app/lib/cta';
+import { SendPanel } from '../../components/SendPanel';
 
 interface Contact {
   id: string;
@@ -179,6 +180,13 @@ export default function ContactDetailsPage() {
         </div>
       )}
 
+      {!isEditing && (
+        <SendPanel
+          recipient={{ name: contact.name, email: contact.email, businessName: contact.business_name ?? '', source: 'contact', sourceId: contact.id, paid: contact.completion_status === 'paid' }}
+          onSent={fetchContact}
+        />
+      )}
+
       <div className="bg-gray-900 rounded-lg border border-gray-700 p-8 mb-6">
         {isEditing ? (
           <div className="space-y-6">
@@ -233,6 +241,7 @@ export default function ContactDetailsPage() {
                 <option value="completed">Completed</option>
                 <option value="pending">Pending</option>
                 <option value="contacted">Contacted</option>
+                <option value="paid">Paid client</option>
               </select>
             </div>
 
@@ -306,7 +315,7 @@ export default function ContactDetailsPage() {
               </div>
               <div>
                 <p className="text-xs font-bold text-gray-500 uppercase mb-2">Status</p>
-                <p className="text-lg text-white capitalize">{contact.completion_status}</p>
+                <p className="text-lg text-white capitalize">{contact.completion_status === 'paid' ? 'Paid client' : contact.completion_status}</p>
               </div>
               <div>
                 <p className="text-xs font-bold text-gray-500 uppercase mb-2">Source Page</p>

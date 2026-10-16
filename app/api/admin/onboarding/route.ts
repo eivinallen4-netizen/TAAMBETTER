@@ -1,10 +1,9 @@
-import { randomUUID } from 'crypto';
 import { NextRequest, NextResponse } from 'next/server';
 import { requireAdmin } from '@/lib/admin-auth';
 import { getAdminDb } from '@/lib/admin-db';
 import { initializeTables } from '@/lib/init-tables';
-import { newOnboardingToken, onboardingUrl, toOnboardingRow } from '@/lib/onboarding-store';
-import { emptyAnswers, stepsFor } from '@/app/lib/onboarding';
+import { createOnboarding, onboardingUrl, toOnboardingRow } from '@/lib/onboarding-store';
+import { stepsFor } from '@/app/lib/onboarding';
 
 function str(value: unknown, max: number): string {
   return typeof value === 'string' ? value.trim().slice(0, max) : '';
@@ -26,7 +25,7 @@ export async function GET(request: NextRequest) {
 
     const result = await db.execute(
       `SELECT id, token, kind, client_name, business_name, client_email, message, status, current_step, answers,
-              admin_notes, created_at, updated_at, opened_at, submitted_at
+              admin_notes, created_at, updated_at, opened_at, submitted_at, paid_at
        FROM client_onboardings ORDER BY created_at DESC`
     );
 
@@ -47,6 +46,7 @@ export async function GET(request: NextRequest) {
         created_at: row.created_at,
         updated_at: row.updated_at,
         submitted_at: row.submitted_at,
+        paid_at: row.paid_at,
         url: onboardingUrl(row.token, origin),
       };
     });
@@ -76,24 +76,17 @@ export async function POST(request: NextRequest) {
     if (!clientName) {
       return NextResponse.json({ error: "Client's name is required" }, { status: 400 });
     }
+    // Onboarding happens after payment. The form makes the team confirm it.
+    if (body.paid !== true) {
+      return NextResponse.json({ error: 'Onboarding is for paid clients. Confirm they have paid first.' }, { status: 400 });
+    }
     const businessName = str(body.businessName, 160);
     const email = str(body.email, 200);
     const message = str(body.message, 1500);
 
     const db = getAdminDb();
     await initializeTables(db);
-
-    const id = randomUUID();
-    const token = newOnboardingToken();
-    const now = new Date().toISOString();
-    const answers = emptyAnswers({ businessName, contactName: clientName, email });
-
-    await db.execute({
-      sql: `INSERT INTO client_onboardings
-              (id, token, kind, client_name, business_name, client_email, message, status, current_step, answers, credentials, admin_notes, created_at, updated_at)
-            VALUES (?, ?, ?, ?, ?, ?, ?, 'sent', 0, ?, NULL, '', ?, ?)`,
-      args: [id, token, kind, clientName, businessName, email, message, JSON.stringify(answers), now, now],
-    });
+    const { id, token } = await createOnboarding(db, { kind, clientName, businessName, email, message, paid: true });
 
     return NextResponse.json({ id, kind, url: onboardingUrl(token, request.nextUrl.origin) }, { status: 201 });
   } catch (error) {

@@ -2,10 +2,10 @@
 
 import Image from 'next/image';
 import { useEffect, useRef, type CSSProperties, type ReactNode } from 'react';
-import { animate, motion, useInView, useReducedMotion, useScroll, useTransform } from 'motion/react';
 import ContactCTA from '@/app/components/ContactCTA';
 import LoopVideo from '@/components/editorial/LoopVideo';
 import Arrow from '@/components/editorial/Arrow';
+import useInViewOnce from '@/components/editorial/useInViewOnce';
 
 interface Stat {
   value: string;
@@ -30,7 +30,10 @@ interface HomeHeroProps {
   note?: ReactNode;
 }
 
-const EASE = [0.16, 1, 0.3, 1] as const;
+/** Close match for the site's cubic-bezier(0.16, 1, 0.3, 1). */
+const easeOutExpo = (t: number) => (t >= 1 ? 1 : 1 - 2 ** (-10 * t));
+
+const prefersReducedMotion = () => window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
 /** Timeline (seconds after first paint): lines rise, then the strike, then the outlined lines fill solid. */
 const T = { rise: 0, strike: 0.6, fill: 0.7, pill: 0.5, rest: 0.5 };
@@ -40,27 +43,26 @@ const d = (s: number) => ({ '--d': `${s}s` }) as CSSProperties;
 
 function CountUp({ value }: { value: string }) {
   const ref = useRef<HTMLSpanElement>(null);
-  const inView = useInView(ref, { once: true });
-  const reduce = useReducedMotion();
-  const match = value.match(/^([^\d]*)([\d.]+)(.*)$/);
+  const inView = useInViewOnce(ref);
 
   useEffect(() => {
-    if (!match || !inView || reduce || !ref.current) return;
+    const match = value.match(/^([^\d]*)([\d.]+)(.*)$/);
+    if (!match || !inView || !ref.current || prefersReducedMotion()) return;
     const [, pre, num, post] = match;
     const target = parseFloat(num);
     const el = ref.current;
-    el.textContent = `${pre}0${post}`;
-    const controls = animate(0, target, {
-      duration: 1.6,
-      delay: T.rest,
-      ease: EASE,
-      onUpdate: (v) => {
-        el.textContent = `${pre}${Number.isInteger(target) ? Math.round(v) : v.toFixed(1)}${post}`;
-      },
+    const show = (v: number) => {
+      el.textContent = `${pre}${Number.isInteger(target) ? Math.round(v) : v.toFixed(1)}${post}`;
+    };
+    show(0);
+    const start = performance.now() + T.rest * 1000;
+    let frame = requestAnimationFrame(function tick(now) {
+      const t = Math.max(0, (now - start) / 1600);
+      show(target * easeOutExpo(t));
+      if (t < 1) frame = requestAnimationFrame(tick);
     });
-    return () => controls.stop();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [inView, reduce, value]);
+    return () => cancelAnimationFrame(frame);
+  }, [inView, value]);
 
   return <span ref={ref}>{value}</span>;
 }
@@ -99,13 +101,37 @@ export default function HomeHero({
   pillLabel = 'On set, Las Vegas',
   caption,
 }: HomeHeroProps) {
-  const reduce = !!useReducedMotion();
   const lines = title.split('\n');
 
+  // The reel opens up as its top travels from the bottom of the viewport to 15% from the top.
   const reelRef = useRef<HTMLDivElement>(null);
-  const { scrollYProgress } = useScroll({ target: reelRef, offset: ['start end', 'start 0.15'] });
-  const reelScale = useTransform(scrollYProgress, [0, 1], reduce ? [1, 1] : [0.82, 1]);
-  const reelImgY = useTransform(scrollYProgress, [0, 1], reduce ? ['0%', '0%'] : ['-8%', '0%']);
+  const reelCardRef = useRef<HTMLDivElement>(null);
+  const reelImgRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    const reel = reelRef.current;
+    const card = reelCardRef.current;
+    const img = reelImgRef.current;
+    if (!reel || !card || !img || prefersReducedMotion()) return;
+    let frame = 0;
+    const update = () => {
+      frame = 0;
+      const vh = window.innerHeight;
+      const p = Math.min(1, Math.max(0, (vh - reel.getBoundingClientRect().top) / (vh * 0.85)));
+      card.style.transform = `scale(${0.82 + 0.18 * p})`;
+      img.style.transform = `translateY(${-8 * (1 - p)}%)`;
+    };
+    const onScroll = () => {
+      if (!frame) frame = requestAnimationFrame(update);
+    };
+    update();
+    window.addEventListener('scroll', onScroll, { passive: true });
+    window.addEventListener('resize', onScroll);
+    return () => {
+      cancelAnimationFrame(frame);
+      window.removeEventListener('scroll', onScroll);
+      window.removeEventListener('resize', onScroll);
+    };
+  }, []);
 
   const renderLine = (text: string, i: number) => {
     const isFill = i >= fillFrom;
@@ -128,13 +154,15 @@ export default function HomeHero({
       );
     }
 
+    // The solid line sits underneath and the outlined copy wipes off it, so both layers paint
+    // on the first frame. (Wiping the solid layer *in* made it the LCP element ~2.5s late.)
     if (isFill) {
       content = (
         <span className="relative inline-block">
-          <span className="outline-type">{text}</span>
+          <span className="text-white [-webkit-text-stroke:clamp(2px,0.28vw,5px)_white] [paint-order:stroke_fill]">{text}</span>
           <span
             aria-hidden="true"
-            className="enter-fill absolute inset-0 text-white [-webkit-text-stroke:clamp(2px,0.28vw,5px)_white] [paint-order:stroke_fill]"
+            className="outline-type enter-unfill absolute inset-0"
             style={d(T.fill + (i - fillFrom) * 0.12)}
           >
             {text}
@@ -151,7 +179,7 @@ export default function HomeHero({
         {isLast && (
           <span className="enter-pill hero-pill hidden sm:block" style={d(T.pill)}>
             <Image src={image.src} alt="" fill priority sizes="60vw" className="object-cover" style={{ objectPosition: "center 30%" }} />
-            {image.video && <LoopVideo src={image.video} poster={image.src} position="center 30%" />}
+            {image.video && <LoopVideo src={image.video} position="center 30%" />}
             <span className="hero-pill-label">
               <span className="live-dot" /> {pillLabel}
             </span>
@@ -200,11 +228,11 @@ export default function HomeHero({
 
       {/* The reel: starts inset, opens to full width as it scrolls up. */}
       <div ref={reelRef} className="gutter pb-[var(--gutter)]">
-        <motion.div style={{ scale: reelScale }} className="media-card aspect-[4/5] sm:aspect-[16/9] lg:aspect-[21/9] origin-top">
-          <motion.div style={{ y: reelImgY }} className="absolute inset-[-8%_0]">
+        <div ref={reelCardRef} className="media-card aspect-[4/5] sm:aspect-[16/9] lg:aspect-[21/9] origin-top">
+          <div ref={reelImgRef} className="absolute inset-[-8%_0]">
             <Image src={image.src} alt={image.alt} fill sizes="100vw" className="object-cover" style={{ objectPosition: image.position }} />
-            {image.video && <LoopVideo src={image.video} poster={image.src} position={image.position} />}
-          </motion.div>
+            {image.video && <LoopVideo src={image.video} position={image.position} />}
+          </div>
           <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent" aria-hidden="true" />
           {note && (
             <div className="absolute inset-x-0 bottom-0 z-10 flex flex-wrap items-end justify-between gap-4 p-6 md:p-10">
@@ -212,7 +240,7 @@ export default function HomeHero({
               <div className="text-base md:text-xl font-bold max-w-xl md:text-right">{note}</div>
             </div>
           )}
-        </motion.div>
+        </div>
         {caption && <div className="mt-4 text-sm font-semibold leading-relaxed text-[color:var(--tone-muted)]">{caption}</div>}
       </div>
     </section>

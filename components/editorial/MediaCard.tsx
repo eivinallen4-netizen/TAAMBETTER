@@ -15,7 +15,7 @@ interface MediaCardProps {
   scrim?: boolean;
   children?: ReactNode;
   position?: string;
-  /** Muted looping footage over the image; `src` doubles as its poster frame. */
+  /** Muted looping footage over the image; laid over the image (`src`). */
   video?: string;
   /** Client credit overlaid on the bottom of the frame, linking to their site. */
   credit?: Credit;
@@ -46,7 +46,7 @@ export default function MediaCard({
         className="object-cover"
         style={{ objectPosition: position }}
       />
-      {video && <LoopVideo src={video} poster={src} position={position} />}
+      {video && <LoopVideo src={video} position={position} />}
       {scrim && (
         <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/15 to-transparent" aria-hidden="true" />
       )}

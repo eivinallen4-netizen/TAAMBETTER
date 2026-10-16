@@ -420,7 +420,7 @@ function WelcomeStep({ kind, firstName, business, message }: { kind: OnboardingK
   return (
     <>
       <StepHead
-        eyebrow={`Welcome to TAAM`}
+        eyebrow="You're in · Welcome to TAAM"
         title={
           <>
             Welcome,
@@ -429,7 +429,7 @@ function WelcomeStep({ kind, firstName, business, message }: { kind: OnboardingK
           </>
         }
       >
-        We can&apos;t make you good at what you do. You already did that. Our job is to build {focus} shows {business} to the people who need to see it. This only takes a few minutes.
+        You&apos;re officially a TAAM client. Thanks for trusting us. We can&apos;t make you good at what you do. You already did that. Our job is to build {focus} shows {business} to the people who need to see it. This is the last step before we start, and it only takes a few minutes.
       </StepHead>
 
       {message && (

@@ -119,15 +119,12 @@ export default function RootLayout({
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationSchema) }}
         />
-        <meta name="viewport" content="width=device-width, initial-scale=1" />
         <meta name="theme-color" content="#F46325" />
         <link rel="icon" href="/favicon.ico" />
         <link rel="icon" type="image/png" sizes="32x32" href="/brand-assets/app-icon/favicons/favicon-32.png" />
         <link rel="icon" type="image/png" sizes="16x16" href="/brand-assets/app-icon/favicons/favicon-16.png" />
         <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
         <link rel="manifest" href="/manifest.json" />
-        <link rel="dns-prefetch" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
       </head>
       <body className="min-h-full flex flex-col bg-taam-near-black text-white">
         <ContactFormProvider>

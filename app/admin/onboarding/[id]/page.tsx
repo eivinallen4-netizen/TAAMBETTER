@@ -17,6 +17,7 @@ import {
 } from '@/app/lib/onboarding';
 import { StatusBadge } from '../../components/StatusBadge';
 import { KindBadge } from '../../components/NewOnboardingModal';
+import { SendPanel } from '../../components/SendPanel';
 
 interface OnboardingDetail {
   id: string;
@@ -33,6 +34,7 @@ interface OnboardingDetail {
   updated_at: string;
   opened_at: string | null;
   submitted_at: string | null;
+  paid_at: string | null;
   url: string;
   passwords: PasswordMap;
   passwordError: string;
@@ -193,6 +195,7 @@ export default function OnboardingDetailPage() {
           <p className="mt-1 text-lg text-gray-400">{a.business.businessName || data.business_name}</p>
           <p className="mt-2 text-sm text-gray-500">
             Created {new Date(data.created_at).toLocaleDateString()}
+            {data.paid_at && ` · Paid ${new Date(data.paid_at).toLocaleDateString()}`}
             {data.opened_at && ` · Opened ${new Date(data.opened_at).toLocaleString()}`}
             {data.submitted_at ? ` · Submitted ${new Date(data.submitted_at).toLocaleString()}` : ` · On step: ${stepLabel}`}
           </p>
@@ -233,6 +236,11 @@ export default function OnboardingDetailPage() {
         </div>
       )}
       {data.passwordError && <div className="mb-6 rounded-lg border border-red-500/50 bg-red-500/10 px-5 py-4 text-red-300">{data.passwordError}</div>}
+
+      <SendPanel
+        recipient={{ name: data.client_name, email: data.client_email, businessName: data.business_name, source: 'onboarding', sourceId: data.id, paid: !!data.paid_at }}
+        onSent={load}
+      />
 
       <div className="grid gap-6 xl:grid-cols-2">
         <Card title="Business & contact">

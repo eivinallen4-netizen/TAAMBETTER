@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import { useAdminAuth } from '@/lib/useAdminAuth';
 import Link from 'next/link';
+import { SendPanel } from '../../components/SendPanel';
 
 interface Lead {
   id: string;
@@ -150,6 +151,10 @@ export default function LeadDetailsPage() {
         <div className="mb-6 bg-red-900/20 border border-red-700 rounded p-4 text-red-400">
           {error}
         </div>
+      )}
+
+      {!isEditing && (
+        <SendPanel recipient={{ name: lead.name, email: '', businessName: lead.business_name, source: 'lead', sourceId: lead.id }} />
       )}
 
       <div className="bg-gray-900 rounded-lg border border-gray-700 p-8 mb-6">

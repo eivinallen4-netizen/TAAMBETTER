@@ -1,7 +1,7 @@
 'use client';
 
-import { motion, useReducedMotion } from 'motion/react';
-import type { ReactNode } from 'react';
+import { useRef, type CSSProperties, type ReactNode } from 'react';
+import useInViewOnce from './useInViewOnce';
 
 interface RevealProps {
   children: ReactNode;
@@ -12,25 +12,20 @@ interface RevealProps {
   as?: 'div' | 'li' | 'span';
 }
 
-/** Fades content up once as it scrolls into view. Static when the visitor prefers reduced motion. */
-export default function Reveal({ children, className, delay = 0, y = 40, as = 'div' }: RevealProps) {
-  const reduce = useReducedMotion();
-  const Component = motion[as];
-
-  if (reduce) {
-    const Static = as;
-    return <Static className={className}>{children}</Static>;
-  }
+/** Fades content up once as it scrolls into view (CSS `.reveal`). Static when the visitor prefers reduced motion. */
+export default function Reveal({ children, className = '', delay = 0, y = 40, as = 'div' }: RevealProps) {
+  const ref = useRef<HTMLElement>(null);
+  const shown = useInViewOnce(ref, 0.25);
+  const Tag = as;
 
   return (
-    <Component
-      className={className}
-      initial={{ opacity: 0, y }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true, amount: 0.25 }}
-      transition={{ duration: 1, delay, ease: [0.16, 1, 0.3, 1] }}
+    <Tag
+      ref={ref as never}
+      className={`reveal ${className}`}
+      data-shown={shown || undefined}
+      style={{ '--reveal-y': `${y}px`, '--d': `${delay}s` } as CSSProperties}
     >
       {children}
-    </Component>
+    </Tag>
   );
 }

@@ -2,11 +2,12 @@
 
 import Link from 'next/link';
 import { useCallback, useEffect, useState } from 'react';
-import { ExternalLink, Plus } from 'lucide-react';
+import { ExternalLink, Plus, Send } from 'lucide-react';
 import { useAdminAuth } from '@/lib/useAdminAuth';
 import { ONBOARDING_STATUSES, STATUS_LABELS, type OnboardingKind } from '@/app/lib/onboarding';
 import { StatusBadge } from './StatusBadge';
-import { CopyButton, KIND_META, KindBadge, NewOnboardingModal, type LinkKind } from './NewOnboardingModal';
+import { CopyButton, KIND_META, KindBadge, type LinkKind } from './NewOnboardingModal';
+import { SendModal, type Recipient } from './SendModal';
 
 interface OnboardingListItem {
   id: string;
@@ -22,6 +23,7 @@ interface OnboardingListItem {
   created_at: string;
   updated_at: string;
   submitted_at: string | null;
+  paid_at: string | null;
   url: string;
 }
 
@@ -32,6 +34,7 @@ export function OnboardingList({ kind }: { kind: LinkKind }) {
   const [filter, setFilter] = useState<string>('all');
   const [search, setSearch] = useState('');
   const [showNew, setShowNew] = useState(false);
+  const [resendTo, setResendTo] = useState<Recipient | null>(null);
 
   const load = useCallback(async () => {
     try {
@@ -66,7 +69,7 @@ export function OnboardingList({ kind }: { kind: LinkKind }) {
           <h1 className="flex items-center gap-3 text-4xl font-black">
             <Icon className="h-8 w-8 text-[#F46325]" /> {kind === 'website' ? 'Website onboarding' : 'Social media onboarding'}
           </h1>
-          <p className="mt-1 max-w-2xl text-gray-400">{meta.covers} Send each client their own link and watch their answers land here.</p>
+          <p className="mt-1 max-w-2xl text-gray-400">{meta.covers} For paid clients: send each one their own link and watch their answers land here.</p>
         </div>
         <button
           type="button"
@@ -159,6 +162,19 @@ export function OnboardingList({ kind }: { kind: LinkKind }) {
                     <td className="px-4 py-3">
                       <div className="flex items-center gap-2">
                         <CopyButton text={i.url} />
+                        {!done && (
+                          <button
+                            type="button"
+                            onClick={() =>
+                              setResendTo({ name: i.client_name, email: i.client_email, businessName: i.business_name, source: 'onboarding', sourceId: i.id, paid: !!i.paid_at })
+                            }
+                            className="text-gray-400 hover:text-white"
+                            aria-label="Email the link"
+                            title="Email the link (branded)"
+                          >
+                            <Send className="h-4 w-4" />
+                          </button>
+                        )}
                         <a href={i.url} target="_blank" rel="noreferrer" className="text-gray-400 hover:text-white" aria-label="Open link">
                           <ExternalLink className="h-4 w-4" />
                         </a>
@@ -172,7 +188,8 @@ export function OnboardingList({ kind }: { kind: LinkKind }) {
         </table>
       </div>
 
-      {showNew && <NewOnboardingModal kind={kind} onClose={() => setShowNew(false)} onCreated={load} />}
+      {showNew && <SendModal defaultType={kind === 'website' ? 'website_onboarding' : 'social_onboarding'} onClose={() => setShowNew(false)} onSent={load} />}
+      {resendTo && <SendModal recipient={resendTo} defaultType={kind === 'website' ? 'website_onboarding' : 'social_onboarding'} onClose={() => setResendTo(null)} onSent={load} />}
     </div>
   );
 }

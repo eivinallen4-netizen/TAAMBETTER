@@ -2,10 +2,12 @@
 
 import Link from 'next/link';
 import { useCallback, useEffect, useMemo, useState, useSyncExternalStore } from 'react';
-import { ArrowRight, Columns3, Globe, List, Plus, Search, Share2 } from 'lucide-react';
+import { ArrowRight, Columns3, Globe, List, Plus, Search, Send, Share2 } from 'lucide-react';
 import type { OnboardingKind } from '@/app/lib/onboarding';
 import { StatusBadge } from './StatusBadge';
-import { KindBadge, NewOnboardingModal, type LinkKind } from './NewOnboardingModal';
+import { KindBadge, type LinkKind } from './NewOnboardingModal';
+import { SendModal } from './SendModal';
+import type { MessageType } from '@/app/lib/crm-messages';
 
 type Source = 'video_offer' | 'contact' | 'tool' | 'onboarding';
 type LeadSource = Exclude<Source, 'onboarding'>;
@@ -308,7 +310,7 @@ function ContactList({ items, fetchedAt }: { items: OverviewItem[]; fetchedAt: n
 export function DashboardStats() {
   const [data, setData] = useState<Overview | null>(null);
   const [fetchedAt, setFetchedAt] = useState(0);
-  const [newKind, setNewKind] = useState<LinkKind | null>(null);
+  const [sendType, setSendType] = useState<MessageType | null>(null);
   const view = useSyncExternalStore(subscribeView, readView, () => 'board' as View);
 
   const load = useCallback(
@@ -349,17 +351,24 @@ export function DashboardStats() {
         <div className="flex flex-wrap gap-2">
           <button
             type="button"
-            onClick={() => setNewKind('website')}
+            onClick={() => setSendType('website_onboarding')}
             className="inline-flex items-center gap-2 rounded-lg bg-[#F46325] px-4 py-2.5 text-sm font-bold text-white hover:bg-[#FF7B42]"
           >
             <Plus className="h-4 w-4" /> <Globe className="h-4 w-4" /> Website link
           </button>
           <button
             type="button"
-            onClick={() => setNewKind('social')}
+            onClick={() => setSendType('social_onboarding')}
             className="inline-flex items-center gap-2 rounded-lg bg-[#F46325] px-4 py-2.5 text-sm font-bold text-white hover:bg-[#FF7B42]"
           >
             <Plus className="h-4 w-4" /> <Share2 className="h-4 w-4" /> Social link
+          </button>
+          <button
+            type="button"
+            onClick={() => setSendType('zoom')}
+            className="inline-flex items-center gap-2 rounded-lg border border-gray-600 px-4 py-2.5 text-sm font-bold text-gray-200 hover:border-[#F46325] hover:text-white"
+          >
+            <Send className="h-4 w-4" /> Zoom / any link
           </button>
         </div>
       </div>
@@ -403,7 +412,7 @@ export function DashboardStats() {
         <ContactList items={items} fetchedAt={fetchedAt} />
       )}
 
-      {newKind && <NewOnboardingModal kind={newKind} onClose={() => setNewKind(null)} onCreated={load} />}
+      {sendType && <SendModal defaultType={sendType} onClose={() => setSendType(null)} onSent={load} />}
     </div>
   );
 }

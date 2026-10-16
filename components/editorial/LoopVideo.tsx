@@ -4,16 +4,16 @@ import { useEffect, useRef } from 'react';
 
 interface LoopVideoProps {
   src: string;
-  poster?: string;
   position?: string;
   className?: string;
 }
 
 /**
- * Silent, looping footage used as decoration. Only loads and plays while on screen,
- * and stays on its poster frame for people who prefer reduced motion.
+ * Silent, looping footage used as decoration, laid over a still <Image> of its first frame
+ * (so there's no poster to download). Only loads and plays while on screen, and stays
+ * on the still for people who prefer reduced motion.
  */
-export default function LoopVideo({ src, poster, position = 'center', className = '' }: LoopVideoProps) {
+export default function LoopVideo({ src, position = 'center', className = '' }: LoopVideoProps) {
   const ref = useRef<HTMLVideoElement>(null);
 
   useEffect(() => {
@@ -46,7 +46,6 @@ export default function LoopVideo({ src, poster, position = 'center', className 
   return (
     <video
       ref={ref}
-      poster={poster}
       muted
       loop
       playsInline

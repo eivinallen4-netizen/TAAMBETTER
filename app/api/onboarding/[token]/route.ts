@@ -6,6 +6,8 @@ import { getClientIp } from '@/lib/logger';
 import { addSecurityHeaders } from '@/lib/security-headers';
 import { decryptPasswords, encryptPasswords, getOnboardingByToken } from '@/lib/onboarding-store';
 import { normalizeAnswers, stepsFor, WEBSITE_PASSWORD_KEY, type PasswordMap } from '@/app/lib/onboarding';
+import { sendBrandEmail } from '@/lib/brand-email';
+import { renderOnboardingReceivedEmail } from '@/lib/crm-email';
 
 // Public endpoint behind the per-client link. The token is the only credential, so passwords
 // are never sent back out: the form only learns which logins already have one saved.
@@ -113,6 +115,18 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
         row.id,
       ],
     });
+
+    // Branded "got it" email to the client. A failed send never fails their submission.
+    const to = answers.business.email || row.client_email;
+    if (submit && to) {
+      try {
+        const firstName = (answers.business.contactName || row.client_name).trim().split(/\s+/)[0] ?? '';
+        const mail = renderOnboardingReceivedEmail(firstName, answers.business.businessName || row.business_name, row.kind === 'website');
+        await sendBrandEmail({ to, ...mail, tag: 'onboarding_received' });
+      } catch (err) {
+        console.error('Onboarding received email failed:', err);
+      }
+    }
 
     return json({ success: true, savedPasswords: Object.keys(merged), submitted: submit });
   } catch (error) {

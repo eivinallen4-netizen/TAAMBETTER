@@ -6,6 +6,10 @@ const nextConfig: NextConfig = {
       allowedOrigins: ["*.app.github.dev"],
     },
   },
+  // The report PDF reads its fonts from disk at runtime.
+  outputFileTracingIncludes: {
+    "/api/tool-leads": ["./lib/fonts/**/*"],
+  },
   // Image optimization for WebP/AVIF
   images: {
     formats: ['image/avif', 'image/webp'],

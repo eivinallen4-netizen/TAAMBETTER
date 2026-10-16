@@ -39,13 +39,15 @@ interface LeadOptions {
   trap?: string;
   /** Email the full report (and sync to the CRM) with this payload. */
   report?: unknown;
+  /** Attach a PDF copy of the report to the email. */
+  pdf?: boolean;
 }
 
-function sendLead(tool: FreeTool, contact: Remembered, summary: string, { website, trap = '', report }: LeadOptions = {}) {
+function sendLead(tool: FreeTool, contact: Remembered, summary: string, { website, trap = '', report, pdf = false }: LeadOptions = {}) {
   return fetch('/api/tool-leads', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ tool: tool.slug, ...contact, summary, website, company_fax: trap, deliver: report !== undefined, report }),
+    body: JSON.stringify({ tool: tool.slug, ...contact, summary, website, company_fax: trap, deliver: report !== undefined, report, pdf }),
   });
 }
 
@@ -80,6 +82,7 @@ export default function EmailGate({ tool, summary, website, report, teaser, chil
   // Which result was emailed, so a changed result offers to send again.
   const [emailedFor, setEmailedFor] = useState<string | null>(null);
   const [emailing, setEmailing] = useState(false);
+  const [wantPdf, setWantPdf] = useState(true);
 
   // Returning visitor: save this new result against their email, once per result. Debounced so
   // calculators (whose summary changes on every keystroke) only save where the visitor settles.
@@ -104,7 +107,7 @@ export default function EmailGate({ tool, summary, website, report, teaser, chil
     const next = { name: name.trim(), email: email.trim() };
     sentFor.current = summary;
     try {
-      await sendLead(tool, next, summary, { website, trap, report });
+      await sendLead(tool, next, summary, { website, trap, report, pdf: wantPdf });
       setEmailedFor(summary);
     } catch {
       // The report unlocks regardless; a lost lead beats a frustrated visitor.
@@ -121,7 +124,7 @@ export default function EmailGate({ tool, summary, website, report, teaser, chil
     setEmailing(true);
     sentFor.current = summary;
     try {
-      await sendLead(tool, contact, summary, { website, report });
+      await sendLead(tool, contact, summary, { website, report, pdf: wantPdf });
     } catch {}
     setEmailing(false);
     setEmailedFor(summary);
@@ -136,9 +139,12 @@ export default function EmailGate({ tool, summary, website, report, teaser, chil
             Full report · {emailed ? `a copy is on its way to ${contact.email}` : `unlocked for ${contact.email}`}
           </p>
           {!emailed && (
-            <button type="button" onClick={emailReport} disabled={emailing} className="eyebrow underline underline-offset-4 hover:text-taam-orange disabled:opacity-60">
-              {emailing ? 'Sending…' : 'Email me this report'}
-            </button>
+            <>
+              <button type="button" onClick={emailReport} disabled={emailing} className="eyebrow underline underline-offset-4 hover:text-taam-orange disabled:opacity-60">
+                {emailing ? 'Sending…' : 'Email me this report'}
+              </button>
+              <PdfToggle checked={wantPdf} onChange={setWantPdf} compact />
+            </>
           )}
         </div>
         {children}
@@ -210,6 +216,7 @@ export default function EmailGate({ tool, summary, website, report, teaser, chil
               {error}
             </p>
           )}
+          <PdfToggle checked={wantPdf} onChange={setWantPdf} />
           <button type="submit" disabled={sending} className="btn btn-solid w-full justify-center disabled:opacity-60">
             {sending ? 'Unlocking…' : 'Unlock the full report'}
           </button>
@@ -219,5 +226,20 @@ export default function EmailGate({ tool, summary, website, report, teaser, chil
         </form>
       </div>
     </div>
+  );
+}
+
+function PdfToggle({ checked, onChange, compact = false }: { checked: boolean; onChange: (v: boolean) => void; compact?: boolean }) {
+  return (
+    <label className={`flex cursor-pointer select-none items-center gap-3 ${compact ? 'eyebrow text-[color:var(--tone-muted)]' : 'font-semibold'}`}>
+      <input type="checkbox" checked={checked} onChange={(e) => onChange(e.target.checked)} className="peer sr-only" />
+      <span
+        aria-hidden="true"
+        className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full border-2 border-white text-xs font-black text-taam-near-black peer-checked:bg-white peer-focus-visible:ring-2 peer-focus-visible:ring-white peer-focus-visible:ring-offset-2"
+      >
+        {checked ? '✓' : ''}
+      </span>
+      {compact ? 'Attach PDF' : 'Attach a downloadable PDF copy'}
+    </label>
   );
 }

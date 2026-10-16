@@ -59,6 +59,27 @@ export async function initializeTables(db: Client): Promise<void> {
     if (!onboardingCols.rows.some((r) => String(r.name) === 'kind')) {
       await db.execute('ALTER TABLE client_onboardings ADD COLUMN kind TEXT');
     }
+    // Onboarding only goes to paying clients; this is when the team confirmed payment.
+    if (!onboardingCols.rows.some((r) => String(r.name) === 'paid_at')) {
+      await db.execute('ALTER TABLE client_onboardings ADD COLUMN paid_at TEXT');
+    }
+
+    // Every branded email the CRM sends (onboarding links, Zoom links, any link), for each person's history.
+    await db.execute(`
+      CREATE TABLE IF NOT EXISTS crm_messages (
+        id TEXT PRIMARY KEY,
+        type TEXT NOT NULL,
+        to_email TEXT NOT NULL,
+        to_name TEXT,
+        subject TEXT NOT NULL,
+        link TEXT,
+        source TEXT,
+        source_id TEXT,
+        onboarding_id TEXT,
+        sent_at TEXT NOT NULL
+      )
+    `);
+    await db.execute('CREATE INDEX IF NOT EXISTS idx_crm_messages_email ON crm_messages(to_email)');
 
     // Qualification columns added after the table first shipped; add any that are missing.
     const existing = await db.execute('PRAGMA table_info(contacts)');

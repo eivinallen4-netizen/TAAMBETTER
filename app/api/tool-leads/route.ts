@@ -90,13 +90,13 @@ export async function POST(request: NextRequest) {
 
   const deliver = body.deliver === true && deliveryLimiter(request, `tool-email:${tool.slug}:${email.toLowerCase()}`).allowed;
   if (deliver) {
-    after(() => deliverReport({ tool, email, name, website, summary, payload: body.report }));
+    after(() => deliverReport({ tool, email, name, website, summary, payload: body.report, pdf: body.pdf === true }));
   }
 
   return Response.json({ success: true, emailed: deliver });
 }
 
-async function deliverReport(lead: { tool: FreeTool; email: string; name: string; website: string; summary: string; payload: unknown }) {
+async function deliverReport(lead: { tool: FreeTool; email: string; name: string; website: string; summary: string; payload: unknown; pdf: boolean }) {
   const { tool, email, name } = lead;
   let report = null;
   try {
@@ -108,7 +108,7 @@ async function deliverReport(lead: { tool: FreeTool; email: string; name: string
   let emailed = false;
   if (report) {
     try {
-      emailed = await sendToolEmail(email, report, name.split(' ')[0]);
+      emailed = await sendToolEmail(email, report, name.split(' ')[0], lead.pdf);
     } catch (err) {
       console.error('Tool report email failed:', err);
     }
