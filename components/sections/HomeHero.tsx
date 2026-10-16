@@ -1,10 +1,11 @@
 'use client';
 
 import Image from 'next/image';
-import { useEffect, useRef, type ReactNode } from 'react';
+import { useEffect, useRef, type CSSProperties, type ReactNode } from 'react';
 import { animate, motion, useInView, useReducedMotion, useScroll, useTransform } from 'motion/react';
 import ContactCTA from '@/app/components/ContactCTA';
 import LoopVideo from '@/components/editorial/LoopVideo';
+import Arrow from '@/components/editorial/Arrow';
 
 interface Stat {
   value: string;
@@ -31,8 +32,11 @@ interface HomeHeroProps {
 
 const EASE = [0.16, 1, 0.3, 1] as const;
 
-/** Timeline (seconds after mount): lines rise, then the strike, then the outlined lines fill solid. */
-const T = { rise: 0.15, strike: 1.0, fill: 1.45, pill: 1.3, rest: 1.6 };
+/** Timeline (seconds after first paint): lines rise, then the strike, then the outlined lines fill solid. */
+const T = { rise: 0, strike: 0.6, fill: 0.7, pill: 0.5, rest: 0.5 };
+
+/** Delay for the CSS `.enter-*` entrances in globals.css. */
+const d = (s: number) => ({ '--d': `${s}s` }) as CSSProperties;
 
 function CountUp({ value }: { value: string }) {
   const ref = useRef<HTMLSpanElement>(null);
@@ -73,7 +77,7 @@ function TalkBadge() {
           <textPath href="#talk-ring" textLength="486" lengthAdjust="spacing">Give us a call • Say wow • Give us a call • Say wow •</textPath>
         </text>
       </svg>
-      <span className="talk-badge-core" aria-hidden="true">↗</span>
+      <span className="talk-badge-core" aria-hidden="true"><Arrow /></span>
       <span className="sr-only">Give us a call</span>
     </ContactCTA>
   );
@@ -103,8 +107,6 @@ export default function HomeHero({
   const reelScale = useTransform(scrollYProgress, [0, 1], reduce ? [1, 1] : [0.82, 1]);
   const reelImgY = useTransform(scrollYProgress, [0, 1], reduce ? ['0%', '0%'] : ['-8%', '0%']);
 
-  const play = !reduce;
-
   const renderLine = (text: string, i: number) => {
     const isFill = i >= fillFrom;
     const isStrike = i === strikeLine;
@@ -120,13 +122,7 @@ export default function HomeHero({
           {head}
           <span className="relative inline-block">
             {word}
-            <motion.span
-              aria-hidden="true"
-              className="strike-bar"
-              initial={play ? { scaleX: 0 } : false}
-              animate={{ scaleX: 1 }}
-              transition={{ duration: 0.7, delay: T.strike, ease: EASE }}
-            />
+            <span aria-hidden="true" className="strike-bar enter-strike" style={d(T.strike)} />
           </span>
         </>
       );
@@ -136,80 +132,60 @@ export default function HomeHero({
       content = (
         <span className="relative inline-block">
           <span className="outline-type">{text}</span>
-          <motion.span
+          <span
             aria-hidden="true"
-            className="absolute inset-0 text-white [-webkit-text-stroke:clamp(2px,0.28vw,5px)_white] [paint-order:stroke_fill]"
-            initial={play ? { clipPath: 'inset(-10% 100% -10% 0)' } : false}
-            animate={{ clipPath: 'inset(-10% -5% -10% -5%)' }}
-            transition={{ duration: 1.1, delay: T.fill + (i - fillFrom) * 0.18, ease: EASE }}
+            className="enter-fill absolute inset-0 text-white [-webkit-text-stroke:clamp(2px,0.28vw,5px)_white] [paint-order:stroke_fill]"
+            style={d(T.fill + (i - fillFrom) * 0.12)}
           >
             {text}
-          </motion.span>
+          </span>
         </span>
       );
     }
 
     return (
       <span key={i} aria-hidden="true" className="flex items-center gap-[0.18em] [overflow-y:clip] pb-[0.06em] -mb-[0.06em]">
-        <motion.span
-          className="block shrink-0"
-          initial={play ? { y: '105%' } : false}
-          animate={{ y: '0%' }}
-          transition={{ duration: 1.1, delay: T.rise + 0.08 * i, ease: EASE }}
-        >
+        <span className="enter-rise block shrink-0" style={d(T.rise + 0.06 * i)}>
           {content}
-        </motion.span>
+        </span>
         {isLast && (
-          <motion.span
-            className="hero-pill hidden sm:block"
-            initial={play ? { clipPath: 'inset(0 100% 0 0 round 999px)' } : false}
-            animate={{ clipPath: 'inset(0 0% 0 0 round 999px)' }}
-            transition={{ duration: 1.2, delay: T.pill, ease: EASE }}
-          >
+          <span className="enter-pill hero-pill hidden sm:block" style={d(T.pill)}>
             <Image src={image.src} alt="" fill priority sizes="60vw" className="object-cover" style={{ objectPosition: "center 30%" }} />
             {image.video && <LoopVideo src={image.video} poster={image.src} position="center 30%" />}
             <span className="hero-pill-label">
               <span className="live-dot" /> {pillLabel}
             </span>
-          </motion.span>
+          </span>
         )}
       </span>
     );
   };
 
-  const fade = (delay: number) =>
-    play ? { initial: { opacity: 0, y: 24 }, animate: { opacity: 1, y: 0 }, transition: { duration: 0.9, delay, ease: EASE } } : {};
-
   return (
     <section className="tone-orange relative overflow-clip">
       <div className="gutter flex min-h-svh flex-col pt-28 md:pt-32 pb-8 md:pb-10">
-        <motion.div className="flex items-baseline justify-between gap-6" {...fade(0.05)}>
+        <div className="enter-fade flex items-baseline justify-between gap-6" style={d(0.05)}>
           <p className="eyebrow">Content marketing agency</p>
           <p className="eyebrow hidden sm:block">Las Vegas, NV</p>
-        </motion.div>
+        </div>
 
         <div className="relative my-auto py-10 md:py-12">
           <h1 className="display hero-type" aria-label={lines.join(' ')}>
             {lines.map(renderLine)}
           </h1>
-          <motion.div
-            className="absolute right-0 top-[8%] hidden lg:block"
-            initial={play ? { scale: 0, rotate: -90 } : false}
-            animate={{ scale: 1, rotate: 0 }}
-            transition={{ duration: 1, delay: T.rest + 0.2, ease: EASE }}
-          >
+          <div className="enter-pop absolute right-0 top-[8%] hidden lg:block" style={d(T.rest + 0.2)}>
             <TalkBadge />
-          </motion.div>
+          </div>
         </div>
 
         <div className="grid grid-cols-12 gap-x-6 gap-y-8 items-end border-t rule pt-6 md:pt-8">
-          <motion.p className="col-span-12 md:col-span-6 lg:col-span-4 font-medium leading-relaxed text-[0.98rem] md:text-[1.05rem]" {...fade(T.rest)}>
+          <p className="enter-fade col-span-12 md:col-span-6 lg:col-span-4 font-medium leading-relaxed text-[0.98rem] md:text-[1.05rem]" style={d(T.rest)}>
             {subtitle}
-          </motion.p>
-          <motion.div className="col-span-12 md:col-span-6 lg:col-span-4 flex flex-wrap gap-3 md:justify-end lg:justify-start" {...fade(T.rest + 0.1)}>
+          </p>
+          <div className="enter-fade col-span-12 md:col-span-6 lg:col-span-4 flex flex-wrap gap-3 md:justify-end lg:justify-start" style={d(T.rest + 0.1)}>
             {actions}
-          </motion.div>
-          <motion.dl className="col-span-12 lg:col-span-4 grid grid-cols-3 gap-4" {...fade(T.rest + 0.2)}>
+          </div>
+          <dl className="enter-fade col-span-12 lg:col-span-4 grid grid-cols-3 gap-4" style={d(T.rest + 0.2)}>
             {stats.slice(0, 3).map((s) => (
               <div key={s.label} className="flex flex-col">
                 <dt className="eyebrow text-[0.62rem] mt-1 order-2 text-[color:var(--tone-muted)]">{s.label}</dt>
@@ -218,7 +194,7 @@ export default function HomeHero({
                 </dd>
               </div>
             ))}
-          </motion.dl>
+          </dl>
         </div>
       </div>
 

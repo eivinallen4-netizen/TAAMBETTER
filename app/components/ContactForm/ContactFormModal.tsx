@@ -28,6 +28,7 @@ import {
   type QualifierOption,
 } from '../../lib/cta';
 import type { ContactFormPrefill } from './ContactFormProvider';
+import Arrow from '@/components/editorial/Arrow';
 
 type Step = 1 | 2 | 3 | 4 | 'confirmation';
 const TOTAL_STEPS = 4;
@@ -378,7 +379,7 @@ export default function ContactFormModal({ prefill, onClose }: ContactFormModalP
                 disabled={!step4Valid || submitting}
                 className="btn btn-solid disabled:opacity-40 disabled:cursor-not-allowed disabled:pointer-events-none"
               >
-                {submitting ? 'Sending…' : <>Send it <span aria-hidden="true">↗</span></>}
+                {submitting ? 'Sending…' : <>Send it <Arrow /></>}
               </button>
             ) : (
               <button
@@ -387,7 +388,7 @@ export default function ContactFormModal({ prefill, onClose }: ContactFormModalP
                 onClick={goNext}
                 className="btn btn-solid disabled:opacity-40 disabled:cursor-not-allowed disabled:pointer-events-none"
               >
-                Next →
+                Next <Arrow dir="right" />
               </button>
             )}
           </div>
@@ -689,7 +690,7 @@ function Confirmation({
             </p>
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
               <Link href="/tools" onClick={onClose} className="btn btn-solid">
-                Try our free tools →
+                Try our free tools <Arrow dir="right" />
               </Link>
             </div>
           </>
@@ -701,7 +702,7 @@ function Confirmation({
             </p>
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
               <Link href="/free-video-offer" onClick={onClose} className="btn btn-solid">
-                Get a free week of video →
+                Get a free week of video <Arrow dir="right" />
               </Link>
               <Link href="/tools" onClick={onClose} className="eyebrow link-line">
                 Or try our free tools
@@ -724,7 +725,7 @@ function Confirmation({
       </p>
       <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
         <Link href="/work" onClick={onClose} className="btn btn-solid">
-          See our recent work →
+          See our recent work <Arrow dir="right" />
         </Link>
         {instagram && (
           <a href={instagram} target="_blank" rel="noopener noreferrer" className="eyebrow link-line">

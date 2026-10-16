@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import Mascot from '@/components/editorial/Mascot';
+import Arrow from '@/components/editorial/Arrow';
 
 interface UrlFormProps {
   onSubmit: (url: string) => void;
@@ -42,7 +43,7 @@ export default function UrlForm({ onSubmit, loading, buttonLabel, loadingLabel }
         className="min-w-0 flex-1 rounded-full bg-white/10 px-7 py-5 text-lg md:text-xl font-semibold outline-none placeholder:text-white/40 focus:bg-white/15 focus:ring-2 focus:ring-white"
       />
       <button type="submit" disabled={loading} className="btn btn-solid justify-center !py-5 disabled:opacity-60">
-        {loading ? loadingLabel : buttonLabel} {!loading && <span aria-hidden="true">↗</span>}
+        {loading ? loadingLabel : buttonLabel} {!loading && <Arrow />}
       </button>
     </form>
   );

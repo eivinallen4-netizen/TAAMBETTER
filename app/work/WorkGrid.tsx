@@ -4,6 +4,7 @@ import { useMemo, useState } from 'react';
 import Link from 'next/link';
 import MediaCard from '@/components/editorial/MediaCard';
 import Reveal from '@/components/editorial/Reveal';
+import Arrow from '@/components/editorial/Arrow';
 
 interface Project {
   id: number;
@@ -82,7 +83,7 @@ export default function WorkGrid({ projects }: { projects: Project[] }) {
                     </dl>
                   )}
                 </div>
-                <span className="eyebrow link-line inline-block mt-6">View case study ↗</span>
+                <span className="eyebrow link-line inline-block mt-6">View case study <Arrow /></span>
               </Link>
             </Reveal>
           );

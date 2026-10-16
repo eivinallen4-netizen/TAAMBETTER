@@ -5,6 +5,7 @@ import { usePathname } from 'next/navigation';
 import siteContent from '../content/siteContent.json';
 import ContactCTA from './ContactCTA';
 import Logo from '@/components/editorial/Logo';
+import Arrow from '@/components/editorial/Arrow';
 
 const socials = [
   { label: 'Instagram', key: 'instagram' },
@@ -46,7 +47,7 @@ export default function Footer() {
               {socials.map((s) => (
                 <li key={s.key}>
                   <a href={content.contact.social[s.key]} target="_blank" rel="noopener noreferrer" className="link-line">
-                    {s.label} ↗
+                    {s.label} <Arrow />
                   </a>
                 </li>
               ))}

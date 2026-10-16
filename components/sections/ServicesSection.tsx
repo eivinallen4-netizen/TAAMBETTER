@@ -5,6 +5,7 @@ import Icon, { serviceIconNames } from '@/components/editorial/Icon';
 import Mascot from '@/components/editorial/Mascot';
 import Reveal from '@/components/editorial/Reveal';
 import Section, { type Tone } from '@/components/editorial/Section';
+import Arrow from '@/components/editorial/Arrow';
 
 interface ServicesSectionProps {
   services: string[];
@@ -26,7 +27,7 @@ export default function ServicesSection({ services, showMoreLink = true, tone = 
           </p>
           {showMoreLink && (
             <Link href="/about" className="eyebrow link-line inline-block mt-8">
-              More about us ↗
+              More about us <Arrow />
             </Link>
           )}
         </Reveal>

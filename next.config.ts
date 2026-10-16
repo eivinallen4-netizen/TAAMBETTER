@@ -81,9 +81,10 @@ const nextConfig: NextConfig = {
           },
         ],
       },
-      // Cache vector brand assets and icons
+      // Cache vector brand assets, icons, and site footage/art. Not immutable,
+      // since files here get replaced under the same name.
       {
-        source: "/(brand|icons)/:path(.*)",
+        source: "/(brand|icons|media|characters|Discount-drain)/:path(.*)",
         headers: [
           {
             key: "Cache-Control",

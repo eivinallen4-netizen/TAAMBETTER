@@ -2,6 +2,7 @@ import Headline from '@/components/editorial/Headline';
 import MediaCard from '@/components/editorial/MediaCard';
 import Reveal from '@/components/editorial/Reveal';
 import Section, { type Tone } from '@/components/editorial/Section';
+import Arrow from '@/components/editorial/Arrow';
 
 interface NewsItem {
   id: number;
@@ -49,7 +50,7 @@ export default function NewsSection({ items, tone = 'ink', index = '05' }: NewsS
                   <p className="lede text-[color:var(--tone-muted)]">{item.description}</p>
                   {isLink && (
                     <a href={item.link} target="_blank" rel="noopener noreferrer" className="eyebrow link-line inline-block mt-8">
-                      Read more ↗
+                      Read more <Arrow />
                     </a>
                   )}
                 </Reveal>

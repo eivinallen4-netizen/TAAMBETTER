@@ -2,6 +2,7 @@
 
 import { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
+import Arrow from '@/components/editorial/Arrow';
 
 type Step = 1 | 2 | 3 | 'confirmation';
 
@@ -201,7 +202,7 @@ export default function FreeVideoOfferPage() {
                 onClick={goNext}
                 className="btn btn-solid disabled:opacity-40 disabled:cursor-not-allowed disabled:pointer-events-none"
               >
-                {step === 1 ? 'Continue' : 'One Step Closer'} →
+                {step === 1 ? 'Continue' : 'One Step Closer'} <Arrow dir="right" />
               </button>
             )}
           </div>
@@ -374,7 +375,7 @@ function Confirmation({ name, noSalesYet }: { name: string; noSalesYet: boolean 
         </p>
         <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
           <Link href="/tools" className="btn btn-solid">
-            Try our free tools →
+            Try our free tools <Arrow dir="right" />
           </Link>
         </div>
         <Link
@@ -396,7 +397,7 @@ function Confirmation({ name, noSalesYet }: { name: string; noSalesYet: boolean 
           href="/"
           className="btn btn-solid"
         >
-          Check Us Out →
+          Check Us Out <Arrow dir="right" />
         </Link>
       </div>
       <Link

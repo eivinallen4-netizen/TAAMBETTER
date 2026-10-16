@@ -47,11 +47,12 @@ export default function ReelStrip({ reels }: { reels: Reel[] }) {
               ref={(el) => {
                 refs.current[i] = el;
               }}
-              src={`${reel.src}#t=0.5`}
+              src={reel.src}
+              poster={reel.src.replace(/\.mp4$/, '.jpg')}
               muted
               loop
               playsInline
-              preload="metadata"
+              preload="none"
               onEnded={() => setPlaying(null)}
               className="absolute inset-0 h-full w-full object-cover"
             />

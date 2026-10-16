@@ -32,8 +32,15 @@ export default function LoopVideo({ src, poster, position = 'center', className 
       },
       { rootMargin: '200px' },
     );
-    io.observe(el);
-    return () => io.disconnect();
+    // Hold the footage until the page itself has loaded, so it never competes
+    // with the scripts, styles and fonts the first paint needs.
+    const start = () => io.observe(el);
+    if (document.readyState === 'complete') start();
+    else window.addEventListener('load', start, { once: true });
+    return () => {
+      window.removeEventListener('load', start);
+      io.disconnect();
+    };
   }, [src]);
 
   return (

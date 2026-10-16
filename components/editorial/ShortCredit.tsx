@@ -1,3 +1,4 @@
+import Arrow from '@/components/editorial/Arrow';
 export interface Credit {
   client: string;
   href: string;
@@ -21,7 +22,7 @@ export default function ShortCredit({ client, href, note }: Credit) {
         rel="noopener noreferrer"
         className="inline-flex items-center gap-2 text-base font-semibold uppercase tracking-wide underline-offset-4 hover:underline"
       >
-        {client} <span aria-hidden="true">↗</span>
+        {client} <Arrow />
       </a>
       <p className="mt-1 text-xs uppercase tracking-wider text-white/75">{note}</p>
     </div>

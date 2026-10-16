@@ -1,5 +1,6 @@
 'use client';
 
+import type { CSSProperties } from 'react';
 import { motion, useReducedMotion, type Variants } from 'motion/react';
 
 interface HeadlineProps {
@@ -41,15 +42,33 @@ export default function Headline({ text, outlineFrom = Infinity, as = 'h2', clas
     );
   }
 
+  // Heroes rise in with CSS so they start on first paint rather than after hydration.
+  if (immediate) {
+    const Tag = as;
+    return (
+      <Tag className={`display ${className}`} aria-label={label}>
+        {lines.map((l, i) => (
+          <span key={i} aria-hidden="true" className="block [overflow-x:visible] [overflow-y:clip] pb-[0.06em] -mb-[0.06em]">
+            <span
+              className={`enter-rise block ${i >= outlineFrom ? 'outline-type' : ''}`}
+              style={{ '--d': `${0.06 * i}s` } as CSSProperties}
+            >
+              {l}
+            </span>
+          </span>
+        ))}
+      </Tag>
+    );
+  }
+
   const Tag = motion[as];
   return (
     <Tag
       className={`display ${className}`}
       aria-label={label}
       initial="hidden"
-      {...(immediate
-        ? { animate: 'shown', transition: { delayChildren: 0.15 } }
-        : { whileInView: 'shown', viewport: { once: true, amount: 0.3 } })}
+      whileInView="shown"
+      viewport={{ once: true, amount: 0.3 }}
     >
       {lines.map((l, i) => (
         <span key={i} aria-hidden="true" className="block [overflow-x:visible] [overflow-y:clip] pb-[0.06em] -mb-[0.06em]">

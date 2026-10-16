@@ -4,6 +4,7 @@ import Headline from '@/components/editorial/Headline';
 import Mascot from '@/components/editorial/Mascot';
 import Reveal from '@/components/editorial/Reveal';
 import type { Tone } from '@/components/editorial/Section';
+import Arrow from '@/components/editorial/Arrow';
 
 interface CTASectionProps {
   /** Small line above the poster headline. */
@@ -68,7 +69,7 @@ export default function CTASection({
             {description && <p className="lede mb-10">{description}</p>}
             <div className="flex flex-wrap items-center gap-x-8 gap-y-5">
               <ContactCTA services={services} className="btn btn-solid">
-                {buttonLabel} <span aria-hidden="true">↗</span>
+                {buttonLabel} <Arrow />
               </ContactCTA>
               {phone && (
                 <a href={`tel:${phone.replace(/[^+\d]/g, '')}`} className="font-semibold link-line">
@@ -102,7 +103,7 @@ export default function CTASection({
               ))}
               <div className="flex flex-wrap items-center gap-x-8 gap-y-5 pt-10">
                 <ContactCTA services={services} className="btn btn-solid">
-                  {buttonLabel} <span aria-hidden="true">↗</span>
+                  {buttonLabel} <Arrow />
                 </ContactCTA>
                 <p className="font-semibold">Question not here? Ask it on the call.</p>
               </div>

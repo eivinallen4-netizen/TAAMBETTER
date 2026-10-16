@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { useState } from 'react';
 import { Check, Copy, Globe, Mail, Share2, X } from 'lucide-react';
 import { KIND_LABELS, type OnboardingKind } from '@/app/lib/onboarding';
+import Arrow from '@/components/editorial/Arrow';
 
 export type LinkKind = Exclude<OnboardingKind, 'full'>;
 
@@ -115,7 +116,7 @@ export function NewOnboardingModal({ kind, onClose, onCreated }: { kind: LinkKin
                 </a>
               )}
               <Link href={`/admin/onboarding/${created.id}`} className="ml-auto text-sm font-semibold text-[#F46325] hover:underline">
-                Open client →
+                Open client <Arrow dir="right" />
               </Link>
             </div>
           </div>

@@ -1,7 +1,6 @@
-import type { ReactNode } from 'react';
+import type { CSSProperties, ReactNode } from 'react';
 import Headline from '@/components/editorial/Headline';
 import MediaCard from '@/components/editorial/MediaCard';
-import Reveal from '@/components/editorial/Reveal';
 import type { Tone } from '@/components/editorial/Section';
 
 interface PageHeroProps {
@@ -51,18 +50,18 @@ export default function PageHero({
 
         {(subtitle || actions) && (
           <div className="grid grid-cols-12 gap-6 mt-14 md:mt-20">
-            <Reveal className="col-span-12 md:col-span-6 md:col-start-7 lg:col-span-4 lg:col-start-8" delay={0.4}>
+            <div className="enter-fade col-span-12 md:col-span-6 md:col-start-7 lg:col-span-4 lg:col-start-8" style={{ '--d': '0.3s' } as CSSProperties}>
               {subtitle && <p className="lede">{subtitle}</p>}
               {actions && <div className="mt-8 flex flex-wrap gap-3">{actions}</div>}
               {note && <div className="mt-6 text-sm font-semibold leading-relaxed">{note}</div>}
-            </Reveal>
+            </div>
           </div>
         )}
 
         {children}
 
         {image && (
-          <Reveal className="mt-16 md:mt-24" delay={0.2} y={60}>
+          <div className="enter-fade mt-16 md:mt-24" style={{ '--d': '0.2s' } as CSSProperties}>
             <MediaCard
               src={image.src}
               video={image.video}
@@ -71,7 +70,7 @@ export default function PageHero({
               aspect="aspect-[4/5] sm:aspect-[16/9] lg:aspect-[21/9]"
               position={image.position}
             />
-          </Reveal>
+          </div>
         )}
       </div>
     </section>

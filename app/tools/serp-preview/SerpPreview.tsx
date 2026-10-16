@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { useState, useSyncExternalStore } from 'react';
 import { getTool } from '@/app/lib/tools';
 import ResultCTA from '@/components/tools/ResultCTA';
+import Arrow from '@/components/editorial/Arrow';
 
 const tool = getTool('serp-preview');
 
@@ -145,7 +146,7 @@ export default function SerpPreview() {
           </p>
           <p className="mt-6 font-semibold">
             Want to check what your live page actually says?{' '}
-            <Link href="/tools/seo-grader" className="link-line">Run the free SEO grader ↗</Link>
+            <Link href="/tools/seo-grader" className="link-line">Run the free SEO grader <Arrow /></Link>
           </p>
         </div>
       </div>

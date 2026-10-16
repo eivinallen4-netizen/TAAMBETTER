@@ -10,6 +10,7 @@ import Headline from '@/components/editorial/Headline';
 import MediaCard from '@/components/editorial/MediaCard';
 import Reveal from '@/components/editorial/Reveal';
 import { maintenanceAmericaCredit } from '@/components/editorial/ShortCredit';
+import Arrow from '@/components/editorial/Arrow';
 
 export const metadata: Metadata = {
   title: "About TAAM | Content Marketing Agency",
@@ -46,7 +47,7 @@ export default function About() {
         image={{ src: hero.imageSrc, video: hero.videoSrc, alt: 'Guests at A Night of Connection & Cocktails, a real estate networking event TAAM filmed at the Rouge Room, Red Rock Casino' }}
         actions={
           <ContactCTA className="btn btn-solid">
-            Work with us <span aria-hidden="true">↗</span>
+            Work with us <Arrow />
           </ContactCTA>
         }
       />

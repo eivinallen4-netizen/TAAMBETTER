@@ -6,6 +6,7 @@ import { GBP_QUESTIONS as QUESTIONS, gbpImpact, scoreGbp, type GbpAnswer as Answ
 import EmailGate from '@/components/tools/EmailGate';
 import ResultCTA from '@/components/tools/ResultCTA';
 import ScoreRing from '@/components/tools/ScoreRing';
+import Arrow from '@/components/editorial/Arrow';
 
 const tool = getTool('google-business-profile-audit');
 
@@ -59,7 +60,7 @@ export default function GbpAudit() {
       {!showResult && (
         <div className="flex flex-col sm:flex-row sm:items-center gap-5">
           <button type="button" disabled={!complete} onClick={() => setShowResult(true)} className="btn btn-solid self-start disabled:opacity-50">
-            See my score <span aria-hidden="true">↗</span>
+            See my score <Arrow />
           </button>
           <p className="font-semibold text-[color:var(--tone-muted)]">
             {complete ? 'All set.' : `${answered} of ${QUESTIONS.length} answered`}

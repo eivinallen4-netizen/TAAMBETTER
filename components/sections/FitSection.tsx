@@ -4,6 +4,7 @@ import Headline from '@/components/editorial/Headline';
 import Mascot from '@/components/editorial/Mascot';
 import Reveal from '@/components/editorial/Reveal';
 import Section, { type Tone } from '@/components/editorial/Section';
+import Arrow from '@/components/editorial/Arrow';
 
 interface FitSectionProps {
   goodFit?: string[];
@@ -54,7 +55,7 @@ export default function FitSection({
 
       <Reveal className="mt-20 md:mt-28 flex flex-col sm:flex-row sm:items-center gap-x-10 gap-y-6">
         <ContactCTA className="btn btn-solid self-start">
-          Sounds like us. Let&apos;s talk <span aria-hidden="true">↗</span>
+          Sounds like us. Let&apos;s talk <Arrow />
         </ContactCTA>
         <p className="font-semibold">
           Not ready for a retainer?{' '}
@@ -63,7 +64,7 @@ export default function FitSection({
           </Link>
           . Already open and selling?{' '}
           <Link href="/free-video-offer" className="link-line">
-            Get a free week of video ↗
+            Get a free week of video <Arrow />
           </Link>
         </p>
       </Reveal>

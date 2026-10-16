@@ -12,6 +12,7 @@ import ProcessSection from '@/components/sections/ProcessSection';
 import FitSection from '@/components/sections/FitSection';
 import CTASection from '@/components/sections/CTASection';
 import StickyTalkBar from '@/components/sections/StickyTalkBar';
+import Arrow from '@/components/editorial/Arrow';
 
 export const metadata: Metadata = {
   title: "TAAM | Better Marketing for the Best Businesses",
@@ -65,7 +66,7 @@ export default function Home() {
         actions={
           <>
             <ContactCTA className="btn btn-solid">
-              {hero.buttonText} <span aria-hidden="true">↗</span>
+              {hero.buttonText} <Arrow />
             </ContactCTA>
             <Link href="/work" className="btn btn-ghost">See the work</Link>
             <p className="w-full text-sm font-semibold text-[color:var(--tone-muted)]">
@@ -81,7 +82,7 @@ export default function Home() {
           featured && featuredResult ? (
             <Link href={`/work/${featured.id}`} className="link-line">
               {featured.title}: {featuredResult.from} to {featuredResult.value} {featuredResult.label.toLowerCase()}
-              {featured.results?.some((r) => r.label.toLowerCase() === 'ad spend' && r.value === '$0') && ', $0 in ads'}. See how ↗
+              {featured.results?.some((r) => r.label.toLowerCase() === 'ad spend' && r.value === '$0') && ', $0 in ads'}. See how <Arrow />
             </Link>
           ) : undefined
         }

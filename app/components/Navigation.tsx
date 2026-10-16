@@ -6,6 +6,7 @@ import { useEffect, useRef, useState } from 'react';
 import siteContent from '../content/siteContent.json';
 import ContactCTA from './ContactCTA';
 import Logo from '@/components/editorial/Logo';
+import Arrow from '@/components/editorial/Arrow';
 
 const links: { href: string; label: string; short?: string }[] = [
   { href: '/', label: 'Home' },
@@ -139,7 +140,7 @@ export default function Navigation() {
           <div className="flex flex-wrap gap-x-6 gap-y-2">
             {socials.map((s) => (
               <a key={s.key} href={content.contact.social[s.key]} target="_blank" rel="noopener noreferrer" className="eyebrow">
-                {s.label} ↗
+                {s.label} <Arrow />
               </a>
             ))}
           </div>

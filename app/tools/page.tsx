@@ -7,6 +7,7 @@ import Reveal from '@/components/editorial/Reveal';
 import Section from '@/components/editorial/Section';
 import PageHero from '@/components/sections/PageHero';
 import CTASection from '@/components/sections/CTASection';
+import Arrow from '@/components/editorial/Arrow';
 
 const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://taammarketing.com';
 
@@ -57,7 +58,7 @@ export default function ToolsPage() {
                 <span className="col-span-2 md:col-span-1 eyebrow">{String(i + 1).padStart(2, '0')}</span>
                 <h2 className="col-span-10 md:col-span-6 display display-md hover-outline">{t.name}</h2>
                 <p className="col-span-10 col-start-3 md:col-span-4 md:col-start-auto text-base md:text-lg leading-relaxed font-medium">
-                  {t.pitch} <span className="font-bold whitespace-nowrap">Try it ↗</span>
+                  {t.pitch} <span className="font-bold whitespace-nowrap">Try it <Arrow /></span>
                 </p>
                 <Icon
                   name={t.icon}

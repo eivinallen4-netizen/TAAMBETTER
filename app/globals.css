@@ -390,6 +390,59 @@ body {
       transform: translateY(-8px) rotate(-1.5deg);
     }
   }
+
+  /* Above-the-fold entrances. Plain CSS so they start on first paint instead of
+     waiting for JavaScript to hydrate. Stagger with an inline --d delay. */
+  .enter-rise {
+    animation: enter-rise 0.9s var(--ease-out-expo) var(--d, 0s) both;
+  }
+  .enter-fade {
+    animation: enter-fade 0.8s var(--ease-out-expo) var(--d, 0s) both;
+  }
+  .enter-fill {
+    clip-path: inset(-10% -5% -10% -5%);
+    animation: enter-fill 0.9s var(--ease-out-expo) var(--d, 0s) both;
+  }
+  .enter-strike {
+    animation: enter-strike 0.6s var(--ease-out-expo) var(--d, 0s) both;
+  }
+  .enter-pill {
+    animation: enter-pill 1s var(--ease-out-expo) var(--d, 0s) both;
+  }
+  .enter-pop {
+    animation: enter-pop 0.9s var(--ease-out-expo) var(--d, 0s) both;
+  }
+  @keyframes enter-rise {
+    from {
+      transform: translateY(105%);
+    }
+  }
+  @keyframes enter-fade {
+    from {
+      opacity: 0;
+      transform: translateY(24px);
+    }
+  }
+  @keyframes enter-fill {
+    from {
+      clip-path: inset(-10% 100% -10% 0);
+    }
+  }
+  @keyframes enter-strike {
+    from {
+      transform: scaleX(0);
+    }
+  }
+  @keyframes enter-pill {
+    from {
+      clip-path: inset(0 100% 0 0 round 999px);
+    }
+  }
+  @keyframes enter-pop {
+    from {
+      transform: scale(0) rotate(-90deg);
+    }
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -397,7 +450,13 @@ body {
   .talk-badge-ring,
   .live-dot,
   .mascot-pop,
-  .mascot-bob {
+  .mascot-bob,
+  .enter-rise,
+  .enter-fade,
+  .enter-fill,
+  .enter-strike,
+  .enter-pill,
+  .enter-pop {
     animation: none;
   }
   html {

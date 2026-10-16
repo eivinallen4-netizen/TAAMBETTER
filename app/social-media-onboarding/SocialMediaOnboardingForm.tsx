@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import Arrow from '@/components/editorial/Arrow';
 import {
   Camera,
   Users,
@@ -377,7 +378,7 @@ export default function SocialMediaOnboardingForm({ intakeToken }: SocialMediaOn
               onClick={goToCredentials}
               className="px-8 py-4 bg-[#F46325] text-white font-black text-sm md:text-base uppercase tracking-wide hover:bg-[#E55A1A] transition disabled:opacity-40 disabled:cursor-not-allowed"
             >
-              Next →
+              Next <Arrow dir="right" />
             </button>
           )}
 
@@ -388,7 +389,7 @@ export default function SocialMediaOnboardingForm({ intakeToken }: SocialMediaOn
               onClick={nextAccount}
               className="px-8 py-4 bg-[#F46325] text-white font-black text-sm md:text-base uppercase tracking-wide hover:bg-[#E55A1A] transition disabled:opacity-40 disabled:cursor-not-allowed"
             >
-              {currentPlatformIndex === selectedPlatforms.length - 1 ? 'Review' : 'Next'} →
+              {currentPlatformIndex === selectedPlatforms.length - 1 ? 'Review' : 'Next'} <Arrow dir="right" />
             </button>
           )}
 

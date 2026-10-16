@@ -1,5 +1,6 @@
 import ContactCTA from '@/app/components/ContactCTA';
 import type { FreeTool } from '@/app/lib/tools';
+import Arrow from '@/components/editorial/Arrow';
 
 interface ResultCTAProps {
   tool: FreeTool;
@@ -21,7 +22,7 @@ export default function ResultCTA({ tool, hook }: ResultCTAProps) {
       </div>
       <div className="col-span-12 lg:col-span-5 lg:justify-self-end">
         <ContactCTA challenge={tool.challenge} services={tool.services} className="btn btn-solid">
-          Book a free call <span aria-hidden="true">↗</span>
+          Book a free call <Arrow />
         </ContactCTA>
         <p className="mt-4 text-sm font-semibold">No obligation · Reply within 1 business day</p>
       </div>

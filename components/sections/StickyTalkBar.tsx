@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import ContactCTA from '@/app/components/ContactCTA';
+import Arrow from '@/components/editorial/Arrow';
 
 /**
  * Phone-only bottom bar: once the hero's buttons scroll away, the ask stays one thumb-tap away.
@@ -36,7 +37,7 @@ export default function StickyTalkBar({ phone }: { phone: string }) {
           Call {phone}
         </a>
         <ContactCTA className="btn btn-solid !py-3 !px-5 shrink-0">
-          Let&apos;s talk <span aria-hidden="true">↗</span>
+          Let&apos;s talk <Arrow />
         </ContactCTA>
       </div>
     </div>
