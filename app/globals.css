@@ -442,9 +442,15 @@ body {
       transform: translateY(24px);
     }
   }
+  /* The left edge has to travel past the right edge's -5% overhang, or a sliver of the
+     outlined copy stays on the last letter. Hidden at the end so nothing can linger. */
   @keyframes enter-unfill {
+    99.9% {
+      visibility: visible;
+    }
     to {
-      clip-path: inset(-10% -5% -10% 100%);
+      clip-path: inset(-10% -5% -10% 106%);
+      visibility: hidden;
     }
   }
   @keyframes enter-strike {

@@ -84,7 +84,10 @@ export async function initializeTables(db: Client): Promise<void> {
     // Qualification columns added after the table first shipped; add any that are missing.
     const existing = await db.execute('PRAGMA table_info(contacts)');
     const have = new Set(existing.rows.map((r) => String(r.name)));
-    for (const col of CONTACT_QUALIFIER_COLUMNS) {
+    // `logo` is the company logo the team uploads in the CRM, stored as a small data: URL.
+    // `interests` is the comma list behind the interest buttons (lib/interests.ts); `deck` is the
+    // team's edits to that contact's marketing-plan slides, as JSON (lib/deck.ts).
+    for (const col of [...CONTACT_QUALIFIER_COLUMNS, 'logo', 'interests', 'deck']) {
       if (!have.has(col)) {
         await db.execute(`ALTER TABLE contacts ADD COLUMN ${col} TEXT`);
       }

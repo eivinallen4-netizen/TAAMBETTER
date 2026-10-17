@@ -1,7 +1,7 @@
-import { randomUUID } from 'crypto';
 import { after, NextRequest } from 'next/server';
 import { createClient } from '@libsql/client';
 import { initializeTables } from '@/lib/init-tables';
+import { saveContact } from '@/lib/contacts';
 import { createRateLimiter, handleRateLimit } from '@/lib/ratelimit';
 import { getClientIp } from '@/lib/logger';
 import { FREE_TOOLS, type FreeTool } from '@/app/lib/tools';
@@ -68,20 +68,16 @@ export async function POST(request: NextRequest) {
   try {
     const database = getDb();
     await initializeTables(database);
-    await database.execute({
-      sql: `INSERT INTO contacts (id, name, email, phone, message, completion_status, timestamp, source_page, biggest_challenge, services_interested, business_name, industry, business_stage, budget, timeline, website, lead_fit)
-            VALUES (?, ?, ?, '', ?, 'partial', ?, ?, ?, ?, '', '', '', '', '', ?, '')`,
-      args: [
-        randomUUID(),
-        name,
-        email,
-        `[Free tool: ${tool.name}] ${summary}`,
-        new Date().toISOString(),
-        `/tools/${tool.slug}`,
-        tool.challenge,
-        tool.services.join(', '),
-        website,
-      ],
+    await saveContact(database, {
+      name,
+      email,
+      message: `[Free tool: ${tool.name}] ${summary}`,
+      completion_status: 'partial',
+      timestamp: new Date().toISOString(),
+      source_page: `/tools/${tool.slug}`,
+      biggest_challenge: tool.challenge,
+      services_interested: tool.services.join(', '),
+      website,
     });
   } catch (err) {
     // Never hold the visitor's report hostage to a database hiccup.

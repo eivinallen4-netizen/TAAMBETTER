@@ -45,6 +45,9 @@ export default function FitSection({
             Better marketing for the best businesses. If the first list sounds like you, we should talk. If it
             doesn&apos;t, call anyway. We&apos;ll point you to someone who fits.
           </p>
+          <Link href="/blog/dont-let-your-agency-hold-you-back" className="link-line mt-4 inline-block text-sm font-semibold">
+            Same agency for years? Learn more <Arrow />
+          </Link>
         </Reveal>
       </div>
 

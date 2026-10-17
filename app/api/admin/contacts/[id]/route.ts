@@ -2,6 +2,9 @@ import { NextRequest, NextResponse } from 'next/server';
 import { requireAdmin } from '@/lib/admin-auth';
 import { getAdminDb } from '@/lib/admin-db';
 import { initializeTables } from '@/lib/init-tables';
+import { CONTACT_FIELDS } from '@/lib/contacts';
+import { LOGO_VERSION_SQL, cleanLogo } from '@/lib/contact-logo';
+import { inferInterests, joinInterests } from '@/lib/interests';
 
 const EDITABLE_FIELDS = [
   'name',
@@ -13,7 +16,34 @@ const EDITABLE_FIELDS = [
   'biggest_challenge',
   'services_interested',
   'business_name',
+  'industry',
+  'business_stage',
+  'budget',
+  'timeline',
+  'website',
+  'lead_fit',
+  'role',
+  'interests',
 ];
+
+// Everything on the row except the logo itself, which is served as an image.
+const RETURN_COLUMNS = `id, ${CONTACT_FIELDS.join(', ')}, ${LOGO_VERSION_SQL}`;
+
+/** Contacts saved before interests existed get them suggested from their data until someone picks. */
+function withSuggestions(row: Record<string, unknown>) {
+  const str = (k: string) => (row[k] == null ? '' : String(row[k]));
+  return {
+    ...row,
+    interests_suggested: str('interests')
+      ? ''
+      : inferInterests({
+          source_page: str('source_page'),
+          services_interested: str('services_interested'),
+          biggest_challenge: str('biggest_challenge'),
+          message: str('message'),
+        }).join(', '),
+  };
+}
 
 export async function GET(
   request: NextRequest,
@@ -33,7 +63,7 @@ export async function GET(
     await initializeTables(db);
 
     const result = await db.execute({
-      sql: 'SELECT * FROM contacts WHERE id = ?',
+      sql: `SELECT ${RETURN_COLUMNS} FROM contacts WHERE id = ?`,
       args: [id],
     });
 
@@ -41,7 +71,7 @@ export async function GET(
       return NextResponse.json({ error: 'Contact not found' }, { status: 404 });
     }
 
-    return NextResponse.json(result.rows[0]);
+    return NextResponse.json(withSuggestions(result.rows[0] as Record<string, unknown>));
   } catch (error) {
     console.error('Contact fetch error:', error);
     if (error instanceof Error && error.message === 'Unauthorized') {
@@ -75,8 +105,17 @@ export async function PATCH(
         if (field === 'services_interested' && Array.isArray(value)) {
           value = value.join(', ');
         }
+        // 'none' remembers that the team switched them all off, so suggestions don't come back.
+        if (field === 'interests') value = joinInterests(Array.isArray(value) ? value : String(value ?? '').split(',')) || 'none';
         updates[field] = value;
       }
+    }
+    if ('logo' in body) {
+      const logo = cleanLogo(body.logo);
+      if (logo === null) {
+        return NextResponse.json({ error: 'Logo must be a PNG, JPG or WebP image under 300 KB' }, { status: 400 });
+      }
+      updates.logo = logo;
     }
 
     if (Object.keys(updates).length === 0) {
@@ -92,7 +131,7 @@ export async function PATCH(
     const values = [...Object.values(updates), id];
 
     const result = await db.execute({
-      sql: `UPDATE contacts SET ${setClause} WHERE id = ? RETURNING *`,
+      sql: `UPDATE contacts SET ${setClause} WHERE id = ? RETURNING ${RETURN_COLUMNS}`,
       args: values,
     });
 
@@ -100,7 +139,7 @@ export async function PATCH(
       return NextResponse.json({ error: 'Contact not found' }, { status: 404 });
     }
 
-    return NextResponse.json(result.rows[0]);
+    return NextResponse.json(withSuggestions(result.rows[0] as Record<string, unknown>));
   } catch (error) {
     console.error('Contact update error:', error);
     if (error instanceof Error && error.message === 'Unauthorized') {

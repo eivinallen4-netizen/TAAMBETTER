@@ -31,10 +31,12 @@ export function SendPanel({ recipient, onSent, types = MESSAGE_TYPES }: { recipi
   }, [load]);
 
   return (
-    <section className="mb-6 rounded-lg border border-gray-700 bg-gray-900 p-6">
-      <h2 className="mb-1 text-lg font-black uppercase tracking-wide">Send them something</h2>
-      <p className="mb-4 text-sm text-gray-400">Every email goes out branded, from TAAM. Onboarding is for paid clients.</p>
-      <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+    <section className="mb-6 rounded-xl border border-[#F46325]/30 bg-gray-900/60 p-5 sm:p-6">
+      <div className="mb-4 flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
+        <h2 className="text-lg font-black uppercase tracking-wide">Send them something</h2>
+        <p className="text-xs text-gray-500">Branded email from TAAM, previewed before it goes. Onboarding is for paid clients.</p>
+      </div>
+      <div className="grid grid-cols-2 gap-2 sm:gap-3 lg:grid-cols-4">
         {types.map((t) => {
           const Icon = ICONS[t];
           return (
@@ -42,10 +44,13 @@ export function SendPanel({ recipient, onSent, types = MESSAGE_TYPES }: { recipi
               key={t}
               type="button"
               onClick={() => setOpen(t)}
-              className="flex flex-col items-start gap-2 rounded-lg border border-gray-700 p-3 text-left text-sm font-bold text-gray-200 transition hover:border-[#F46325] hover:bg-[#F46325]/10 hover:text-white"
+              className="group flex flex-col items-start gap-2 rounded-xl border border-gray-700 bg-gray-800/40 p-4 text-left transition hover:-translate-y-0.5 hover:border-[#F46325] hover:bg-[#F46325]/10"
             >
-              <Icon className="h-5 w-5 text-[#F46325]" />
-              {MESSAGE_META[t].label}
+              <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-[#F46325]/15 transition group-hover:bg-[#F46325]">
+                <Icon className="h-5 w-5 text-[#F46325] transition group-hover:text-white" />
+              </span>
+              <span className="text-sm font-black text-white">{MESSAGE_META[t].label}</span>
+              <span className="hidden text-xs leading-snug text-gray-500 sm:block">{MESSAGE_META[t].hint}</span>
             </button>
           );
         })}

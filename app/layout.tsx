@@ -94,7 +94,7 @@ export default function RootLayout({
     sameAs: [
       "https://www.instagram.com/taambetter",
       "https://www.tiktok.com/@taambetter",
-      "https://www.linkedin.com/company/taambetter",
+      "https://www.linkedin.com/company/taam-better-marketing/",
     ],
     contactPoint: {
       "@type": "ContactPoint",

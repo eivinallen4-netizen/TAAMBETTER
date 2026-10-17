@@ -39,6 +39,12 @@ export default function sitemap(): MetadataRoute.Sitemap {
       changeFrequency: 'monthly' as const,
       priority: 0.9,
     },
+    {
+      url: `${baseUrl}/blog/dont-let-your-agency-hold-you-back`,
+      lastModified: new Date('2026-10-16').toISOString(),
+      changeFrequency: 'monthly' as const,
+      priority: 0.7,
+    },
     ...FREE_TOOLS.map((tool) => ({
       url: `${baseUrl}/tools/${tool.slug}`,
       lastModified: new Date().toISOString(),

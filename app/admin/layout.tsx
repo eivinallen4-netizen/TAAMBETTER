@@ -19,7 +19,7 @@ const NAV: { heading?: string; links: { href: string; label: string; icon: Lucid
     heading: 'Leads',
     links: [
       { href: '/admin/leads', label: 'Free video offers', icon: Video },
-      { href: '/admin/contacts', label: 'Contact & tools', icon: Inbox },
+      { href: '/admin/contacts', label: 'Contacts', icon: Inbox },
     ],
   },
 ];

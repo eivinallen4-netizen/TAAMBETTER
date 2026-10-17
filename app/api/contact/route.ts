@@ -2,6 +2,7 @@ import { randomUUID } from 'crypto';
 import type { NextRequest } from 'next/server';
 import { createClient } from '@libsql/client';
 import { initializeTables } from '@/lib/init-tables';
+import { saveContact } from '@/lib/contacts';
 import { getClientIp, logger } from '@/lib/logger';
 import { createRateLimiter, handleRateLimit } from '@/lib/ratelimit';
 import {
@@ -69,34 +70,15 @@ function getDb() {
 
 async function writeToTurso(contact: Contact): Promise<{ success: boolean; error?: string }> {
   try {
-    const database = getDb();
     const servicesStr = Array.isArray(contact.services_interested)
       ? contact.services_interested.join(', ')
       : (contact.services_interested || '');
 
-    await database.execute({
-      sql: `INSERT INTO contacts (id, name, email, phone, message, completion_status, timestamp, source_page, biggest_challenge, services_interested, business_name, industry, business_stage, budget, timeline, website, lead_fit, role)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-      args: [
-        contact.id,
-        contact.name,
-        contact.email,
-        contact.phone,
-        contact.message,
-        contact.completion_status,
-        contact.timestamp,
-        contact.source_page,
-        contact.biggest_challenge || '',
-        servicesStr,
-        contact.business_name || '',
-        contact.industry,
-        contact.business_stage,
-        contact.budget,
-        contact.timeline,
-        contact.website,
-        contact.lead_fit,
-        contact.role,
-      ],
+    await saveContact(getDb(), {
+      ...contact,
+      biggest_challenge: contact.biggest_challenge || '',
+      services_interested: servicesStr,
+      business_name: contact.business_name || '',
     });
 
     return { success: true };

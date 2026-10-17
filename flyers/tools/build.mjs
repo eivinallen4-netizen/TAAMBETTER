@@ -67,7 +67,6 @@ const fonts = ['Medium', 'Bold', 'ExtraBold', 'Black']
 function html(t, i) {
   const own = resolve(here, 'characters', `${t.char}.png`);
   const charSrc = existsSync(own) ? pathToFileURL(own).href : url(`public/characters/${t.fallback}.png`);
-  const n = String(i + 1).padStart(2, '0');
   const lines = t.lines
     .map(([txt, o]) => `<span class="${o ? 'outline' : ''}">${txt}</span>`)
     .join('');
@@ -95,7 +94,7 @@ h1 span{display:block;width:max-content;white-space:nowrap}
 .tags{position:absolute;top:1100px;left:72px;display:flex;gap:12px}
 .tags span{background:var(--white);color:var(--ink);border-radius:999px;padding:10px 20px 8px;font-weight:800;font-size:19px;letter-spacing:.1em;text-transform:uppercase}
 </style></head><body>
-<div class="top"><img class="logo" src="${url('public/brand-assets/logos/transparent/TAAM_logo_white_transparent.png')}"><div class="chip">Free tool ${n}/05</div></div>
+<div class="top"><img class="logo" src="${url('public/brand-assets/logos/transparent/TAAM_logo_white_transparent.png')}"><div class="chip">Free tool</div></div>
 <div class="eyebrow"><b></b>${t.name}</div>
 <div class="stack"><h1>${lines}</h1>
 <p class="pitch">${t.pitch}</p></div>
