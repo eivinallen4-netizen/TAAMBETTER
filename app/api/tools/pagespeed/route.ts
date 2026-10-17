@@ -7,7 +7,12 @@ import type { SpeedReport, SpeedResult } from '@/app/lib/tool-types';
 // Runs Google PageSpeed Insights for mobile and desktop in parallel and trims the (huge) Lighthouse
 // payload to what the speed-test page shows. Set PAGESPEED_API_KEY for a usable quota.
 
-export const maxDuration = 60;
+export const maxDuration = 120;
+
+// Google's API intermittently answers "Unable to process request" (500/503/429). Retry those while
+// there's time left; bad addresses and blocked sites fail fast instead.
+const BUDGET_MS = 110_000;
+const TRANSIENT = /Unable to process request|try again|backend error|internal error|quota|rate|timed? ?out|aborted/i;
 
 const speedLimiter = createRateLimiter({ windowMs: 60 * 60 * 1000, maxRequests: 12 });
 
@@ -39,17 +44,19 @@ interface PsiResponse {
   error?: { message?: string };
 }
 
-async function runPsi(url: string, strategy: 'mobile' | 'desktop'): Promise<SpeedResult> {
+async function runPsi(url: string, strategy: 'mobile' | 'desktop', timeoutMs: number): Promise<SpeedResult> {
   const api = new URL('https://www.googleapis.com/pagespeedonline/v5/runPagespeed');
   api.searchParams.set('url', url);
   api.searchParams.set('strategy', strategy);
   for (const c of ['performance', 'accessibility', 'best-practices', 'seo']) api.searchParams.append('category', c);
   if (process.env.PAGESPEED_API_KEY) api.searchParams.set('key', process.env.PAGESPEED_API_KEY);
 
-  const res = await fetch(api, { signal: AbortSignal.timeout(55_000), cache: 'no-store' });
-  const data = (await res.json()) as PsiResponse;
+  const res = await fetch(api, { signal: AbortSignal.timeout(timeoutMs), cache: 'no-store' });
+  const data = (await res.json().catch(() => ({}))) as PsiResponse;
   if (!res.ok || !data.lighthouseResult) {
-    throw new Error(data.error?.message || `PageSpeed request failed (${res.status})`);
+    const err = new Error(data.error?.message || `PageSpeed request failed (${res.status})`);
+    (err as Error & { transient?: boolean }).transient = res.status === 429 || res.status >= 500;
+    throw err;
   }
 
   const { categories = {}, audits = {} } = data.lighthouseResult;
@@ -91,6 +98,22 @@ async function runPsi(url: string, strategy: 'mobile' | 'desktop'): Promise<Spee
   };
 }
 
+async function runWithRetry(url: string, strategy: 'mobile' | 'desktop', deadline: number): Promise<SpeedResult> {
+  for (let attempt = 1; ; attempt++) {
+    const left = deadline - Date.now();
+    try {
+      return await runPsi(url, strategy, Math.min(left, 60_000));
+    } catch (err) {
+      const message = err instanceof Error ? err.message : '';
+      const transient = (err as { transient?: boolean }).transient || TRANSIENT.test(message);
+      const remaining = deadline - Date.now();
+      // Only retry if a fresh run (typically 10–30 s) still has a real chance to finish.
+      if (!transient || attempt >= 3 || remaining < 20_000) throw err;
+      await new Promise((r) => setTimeout(r, 1500 * attempt));
+    }
+  }
+}
+
 export async function POST(request: NextRequest) {
   let input = '';
   try {
@@ -116,7 +139,8 @@ export async function POST(request: NextRequest) {
   if (!limit.allowed) return handleRateLimit(limit.resetTime!);
 
   try {
-    const [mobile, desktop] = await Promise.all([runPsi(url, 'mobile'), runPsi(url, 'desktop')]);
+    const deadline = Date.now() + BUDGET_MS;
+    const [mobile, desktop] = await Promise.all([runWithRetry(url, 'mobile', deadline), runWithRetry(url, 'desktop', deadline)]);
     const report: SpeedReport = { url, mobile, desktop };
     cache.set(url, { at: Date.now(), report });
     return Response.json(report);
