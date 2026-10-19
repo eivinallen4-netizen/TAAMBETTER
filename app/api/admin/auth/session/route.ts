@@ -1,7 +1,11 @@
 import { NextResponse } from 'next/server';
-import { getAdminSession } from '@/lib/admin-auth';
+import { requireStaff, sessionRole } from '@/lib/admin-auth';
 
 export async function GET() {
-  const session = await getAdminSession();
-  return NextResponse.json({ authenticated: !!session });
+  try {
+    const session = await requireStaff();
+    return NextResponse.json({ authenticated: true, role: sessionRole(session), name: session.name ?? 'Admin', id: session.sub });
+  } catch {
+    return NextResponse.json({ authenticated: false });
+  }
 }

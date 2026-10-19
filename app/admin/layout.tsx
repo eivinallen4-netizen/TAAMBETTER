@@ -1,9 +1,9 @@
 'use client';
 
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
-import { useState } from 'react';
-import { ExternalLink, Globe, Inbox, LayoutDashboard, Menu, Share2, Video, X, type LucideIcon } from 'lucide-react';
+import { usePathname, useRouter } from 'next/navigation';
+import { useEffect, useState } from 'react';
+import { CalendarCheck, ExternalLink, Globe, Inbox, KeyRound, LayoutDashboard, Menu, Share2, Users, Video, X, type LucideIcon } from 'lucide-react';
 import { LogoutButton } from './components/LogoutButton';
 
 const NAV: { heading?: string; links: { href: string; label: string; icon: LucideIcon }[] }[] = [
@@ -18,11 +18,23 @@ const NAV: { heading?: string; links: { href: string; label: string; icon: Lucid
   {
     heading: 'Leads',
     links: [
+      { href: '/admin/appointments', label: 'Appointments', icon: CalendarCheck },
       { href: '/admin/leads', label: 'Free video offers', icon: Video },
       { href: '/admin/contacts', label: 'Contacts', icon: Inbox },
     ],
   },
+  {
+    heading: 'Settings',
+    links: [
+      { href: '/admin/team', label: 'Team', icon: Users },
+      { href: '/admin/api-keys', label: 'API & Claude', icon: KeyRound },
+    ],
+  },
 ];
+
+// Setters only see appointment links; the APIs enforce it, this just keeps the UI honest.
+const SETTER_HOME = '/admin/appointments';
+const SETTER_NAV = [{ heading: 'Leads', links: [{ href: SETTER_HOME, label: 'Appointments', icon: CalendarCheck }] }];
 
 function Logo() {
   return (
@@ -35,10 +47,29 @@ function Logo() {
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
+  const router = useRouter();
+  const [role, setRole] = useState<'admin' | 'setter' | null>(null);
   // Remember which page the mobile drawer was opened on, so navigating closes it.
   const [menuOpenOn, setMenuOpenOn] = useState<string | null>(null);
   const menuOpen = menuOpenOn === pathname;
   const setMenuOpen = (open: boolean) => setMenuOpenOn(open ? pathname : null);
+
+  useEffect(() => {
+    if (pathname === '/admin/login') return;
+    let alive = true;
+    fetch('/api/admin/auth/session')
+      .then((r) => r.json())
+      .then((s) => {
+        if (!alive) return;
+        if (!s.authenticated) return router.push('/admin/login');
+        setRole(s.role === 'setter' ? 'setter' : 'admin');
+        if (s.role === 'setter' && !pathname.startsWith(SETTER_HOME)) router.replace(SETTER_HOME);
+      })
+      .catch(() => {});
+    return () => {
+      alive = false;
+    };
+  }, [pathname, router]);
 
   if (pathname === '/admin/login') {
     return <>{children}</>;
@@ -49,7 +80,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const sidebar = (
     <>
       <nav className="flex-1 space-y-6 overflow-y-auto px-3">
-        {NAV.map((group, i) => (
+        {(role === 'setter' ? SETTER_NAV : role === 'admin' ? NAV : []).map((group, i) => (
           <div key={group.heading ?? i}>
             {group.heading && <p className="mb-2 px-3 text-[11px] font-bold uppercase tracking-[0.18em] text-gray-500">{group.heading}</p>}
             <ul className="space-y-1">

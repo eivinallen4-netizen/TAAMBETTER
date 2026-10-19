@@ -53,7 +53,7 @@ export default function Navigation() {
     };
   }, [isOpen]);
 
-  if (pathname.startsWith('/admin') || pathname.startsWith('/onboarding/')) {
+  if (pathname.startsWith('/admin') || pathname.startsWith('/onboarding/') || pathname.startsWith('/call/')) {
     return null;
   }
 

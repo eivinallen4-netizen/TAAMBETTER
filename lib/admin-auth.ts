@@ -1,12 +1,27 @@
 import { cookies } from 'next/headers';
-import { createHmac, timingSafeEqual } from 'crypto';
+import { createHash, createHmac, timingSafeEqual } from 'crypto';
+import bcrypt from 'bcrypt';
+import { getAdminDb } from './admin-db';
+import { initializeTables } from './init-tables';
 
 const ADMIN_COOKIE = 'admin_session';
 const SESSION_DURATION = 12 * 60 * 60 * 1000; // 12 hours
 
-interface AdminSessionData {
+export type CrmRole = 'admin' | 'setter';
+
+export interface AdminSessionData {
+  /** 'admin' for the owner's env login, otherwise the crm_users id. */
   sub: string;
   exp: number;
+  /** Sessions made before team logins existed have no role: they were the owner. */
+  role?: CrmRole;
+  name?: string;
+}
+
+export interface CrmUser {
+  id: string;
+  name: string;
+  role: CrmRole;
 }
 
 function getSecret(): Buffer {
@@ -47,7 +62,15 @@ function verifySessionSignature(token: string): AdminSessionData | null {
   }
 }
 
-export async function verifyCredentials(username: string, password: string): Promise<boolean> {
+/** Constant-time compare that doesn't throw on different lengths. */
+function sameText(a: string, b: string): boolean {
+  const ha = createHash('sha256').update(a).digest();
+  const hb = createHash('sha256').update(b).digest();
+  return timingSafeEqual(ha, hb);
+}
+
+/** The owner's env login first, then active team logins (crm_users). Null when nothing matches. */
+export async function verifyCredentials(username: string, password: string): Promise<CrmUser | null> {
   const expectedUsername = process.env.ADMIN_USERNAME;
   const expectedPassword = process.env.ADMIN_PASSWORD;
 
@@ -55,16 +78,27 @@ export async function verifyCredentials(username: string, password: string): Pro
     throw new Error('Admin credentials not configured');
   }
 
-  const userMatch = timingSafeEqual(Buffer.from(username), Buffer.from(expectedUsername));
-  const passMatch = timingSafeEqual(Buffer.from(password), Buffer.from(expectedPassword));
+  const userMatch = sameText(username, expectedUsername);
+  const passMatch = sameText(password, expectedPassword);
+  if (userMatch && passMatch) return { id: 'admin', name: 'Admin', role: 'admin' };
 
-  return userMatch && passMatch;
+  const db = getAdminDb();
+  await initializeTables(db);
+  const found = await db.execute({
+    sql: 'SELECT id, name, role, password_hash FROM crm_users WHERE lower(username) = lower(?) AND active = 1',
+    args: [username.trim()],
+  });
+  const row = found.rows[0];
+  if (!row || !(await bcrypt.compare(password, String(row.password_hash)))) return null;
+  return { id: String(row.id), name: String(row.name), role: row.role === 'admin' ? 'admin' : 'setter' };
 }
 
-export async function createAdminSession(): Promise<void> {
+export async function createAdminSession(user: CrmUser): Promise<void> {
   const payload: AdminSessionData = {
-    sub: 'admin',
+    sub: user.id,
     exp: Date.now() + SESSION_DURATION,
+    role: user.role,
+    name: user.name,
   };
 
   const token = signSession(payload);
@@ -94,10 +128,33 @@ export async function clearAdminSession(): Promise<void> {
   cookieStore.delete(ADMIN_COOKIE);
 }
 
+export function sessionRole(session: AdminSessionData): CrmRole {
+  return session.role ?? 'admin';
+}
+
+/** Owner and admin team logins only. Setters are turned away from everything except appointments. */
 export async function requireAdmin(): Promise<AdminSessionData> {
+  const session = await requireStaff();
+  if (sessionRole(session) !== 'admin') {
+    throw new Error('Unauthorized');
+  }
+  return session;
+}
+
+/** Anyone on the team, setters included. A deactivated team login stops working right away. */
+export async function requireStaff(): Promise<AdminSessionData> {
   const session = await getAdminSession();
   if (!session) {
     throw new Error('Unauthorized');
+  }
+  if (session.sub !== 'admin') {
+    const db = getAdminDb();
+    await initializeTables(db);
+    const found = await db.execute({ sql: 'SELECT active, role, name FROM crm_users WHERE id = ?', args: [session.sub] });
+    const row = found.rows[0];
+    if (!row || Number(row.active) !== 1) throw new Error('Unauthorized');
+    // Role changes take effect right away, not at the next login.
+    return { ...session, role: row.role === 'admin' ? 'admin' : 'setter', name: String(row.name) };
   }
   return session;
 }

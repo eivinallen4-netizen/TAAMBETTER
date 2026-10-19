@@ -1,8 +1,12 @@
-import { requireAdmin } from '@/lib/admin-auth';
+import { redirect } from 'next/navigation';
+import { requireStaff, sessionRole } from '@/lib/admin-auth';
 import { DashboardStats } from './components/DashboardStats';
 
 export default async function AdminDashboard() {
-  await requireAdmin();
+  const session = await requireStaff().catch(() => null);
+  if (!session) redirect('/admin/login');
+  // Setters only work with appointment links.
+  if (sessionRole(session) !== 'admin') redirect('/admin/appointments');
 
   return <DashboardStats />;
 }

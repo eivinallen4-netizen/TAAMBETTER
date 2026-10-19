@@ -27,7 +27,8 @@ export default function AdminLoginPage() {
         throw new Error(data.error || 'Login failed');
       }
 
-      router.push('/admin');
+      const data = await res.json();
+      router.push(data.role === 'setter' ? '/admin/appointments' : '/admin');
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An error occurred');
     } finally {

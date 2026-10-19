@@ -25,6 +25,8 @@ export const CONTACT_FIELDS = [
   'lead_fit',
   'role',
   'interests',
+  'social_url',
+  'gbp_url',
 ] as const;
 
 export type ContactField = (typeof CONTACT_FIELDS)[number];

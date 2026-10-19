@@ -49,18 +49,18 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const isValid = await verifyCredentials(username, password);
+    const user = await verifyCredentials(String(username), String(password));
 
-    if (!isValid) {
+    if (!user) {
       return NextResponse.json(
         { error: 'Invalid credentials' },
         { status: 401 }
       );
     }
 
-    await createAdminSession();
+    await createAdminSession(user);
 
-    return NextResponse.json({ ok: true });
+    return NextResponse.json({ ok: true, role: user.role });
   } catch (error) {
     console.error('Login error:', error);
     return NextResponse.json(

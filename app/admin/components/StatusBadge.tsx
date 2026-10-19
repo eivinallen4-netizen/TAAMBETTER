@@ -11,6 +11,8 @@ const STYLES: Record<string, string> = {
   partial: 'bg-amber-500/15 text-amber-300',
   pending: 'bg-amber-500/15 text-amber-300',
   contacted: 'bg-sky-500/15 text-sky-300',
+  booked: 'bg-emerald-500/15 text-emerald-300',
+  canceled: 'bg-red-500/15 text-red-300',
 };
 
 export function StatusBadge({ status }: { status: string }) {

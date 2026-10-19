@@ -16,6 +16,7 @@ import {
   type QualifierOption,
 } from '@/app/lib/cta';
 import { SendPanel } from '../../components/SendPanel';
+import { ContactAppointments } from '../../components/ContactAppointments';
 import { LogoDrop, logoUrl } from '../../components/ContactLogo';
 import { ContactStatus, FitBadge, STATUS_OPTIONS, recipientFor } from '../contact-ui';
 import { INTERESTS, interestSource, parseInterests, type Interest } from '@/lib/interests';
@@ -421,6 +422,8 @@ export default function ContactDetailsPage() {
       ) : (
         <>
           <SendPanel recipient={recipientFor(contact)} onSent={fetchContact} />
+
+          <ContactAppointments contactId={contactId} />
 
           <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_20rem]">
             <Card title="What they told us">

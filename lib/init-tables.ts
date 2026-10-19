@@ -87,11 +87,66 @@ export async function initializeTables(db: Client): Promise<void> {
     // `logo` is the company logo the team uploads in the CRM, stored as a small data: URL.
     // `interests` is the comma list behind the interest buttons (lib/interests.ts); `deck` is the
     // team's edits to that contact's marketing-plan slides, as JSON (lib/deck.ts).
-    for (const col of [...CONTACT_QUALIFIER_COLUMNS, 'logo', 'interests', 'deck']) {
+    // `social_url` / `gbp_url` come in with appointment links (lib/appointments.ts).
+    for (const col of [...CONTACT_QUALIFIER_COLUMNS, 'logo', 'interests', 'deck', 'social_url', 'gbp_url']) {
       if (!have.has(col)) {
         await db.execute(`ALTER TABLE contacts ADD COLUMN ${col} TEXT`);
       }
     }
+    // Team logins besides the owner's env login. Setters can only make and see appointment links.
+    await db.execute(`
+      CREATE TABLE IF NOT EXISTS crm_users (
+        id TEXT PRIMARY KEY,
+        name TEXT NOT NULL,
+        username TEXT UNIQUE NOT NULL,
+        password_hash TEXT NOT NULL,
+        role TEXT NOT NULL DEFAULT 'setter',
+        active INTEGER NOT NULL DEFAULT 1,
+        created_at TEXT NOT NULL
+      )
+    `);
+
+    // Appointment links: a setter makes one per prospect; it opens /call/[token], where they book
+    // the closer's Calendly. Opens are counted here, bookings come in on the Calendly webhook.
+    await db.execute(`
+      CREATE TABLE IF NOT EXISTS appointment_links (
+        id TEXT PRIMARY KEY,
+        token TEXT UNIQUE NOT NULL,
+        contact_id TEXT,
+        client_name TEXT NOT NULL,
+        business_name TEXT NOT NULL,
+        social_url TEXT,
+        gbp_url TEXT,
+        created_by TEXT,
+        created_by_name TEXT,
+        created_at TEXT NOT NULL,
+        opened_at TEXT,
+        last_opened_at TEXT,
+        open_count INTEGER NOT NULL DEFAULT 0,
+        booked_at TEXT,
+        call_start TEXT,
+        call_end TEXT,
+        invitee_email TEXT,
+        calendly_event_uri TEXT,
+        calendly_invitee_uri TEXT,
+        canceled_at TEXT,
+        status TEXT NOT NULL DEFAULT 'sent'
+      )
+    `);
+    await db.execute('CREATE INDEX IF NOT EXISTS idx_appointment_links_contact ON appointment_links(contact_id)');
+
+    // API keys for the /api/v1 REST API and the /api/mcp endpoint. Only the sha256 is stored.
+    await db.execute(`
+      CREATE TABLE IF NOT EXISTS api_keys (
+        id TEXT PRIMARY KEY,
+        name TEXT NOT NULL,
+        key_hash TEXT UNIQUE NOT NULL,
+        prefix TEXT NOT NULL,
+        created_at TEXT NOT NULL,
+        last_used_at TEXT,
+        revoked_at TEXT
+      )
+    `);
   } catch (err) {
     console.error('Failed to initialize tables:', err);
   }
