@@ -160,13 +160,11 @@ function Title({ children, size = 120 }: { children: ReactNode; size?: number })
   );
 }
 
-/** The mascot art in a big rounded card, a shade off the slide's own color. */
-function ArtCard({ src, className }: { src: string; className: string }) {
+/** A small mascot accent. The pitch carries the slide; the character only adds a wink. */
+function Accent({ src, className }: { src: string; className: string }) {
   return (
-    <div className={`absolute flex items-center justify-center rounded-[48px] bg-white/[0.08] p-[72px] ${className}`}>
-      {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img src={src} alt="" className="max-h-full max-w-full object-contain" style={{ filter: 'drop-shadow(0 24px 40px rgba(0,0,0,0.25))' }} />
-    </div>
+    // eslint-disable-next-line @next/next/no-img-element
+    <img src={src} alt="" className={`pointer-events-none absolute object-contain ${className}`} style={{ filter: 'drop-shadow(0 12px 20px rgba(0,0,0,0.2))' }} />
   );
 }
 
@@ -178,11 +176,11 @@ function titleSize(text: string, sizes: [number, number, number, number]) {
 // ---------- Slides ----------
 
 function Cover({ deck, slide, logoSrc, edit, index, total }: SlideProps) {
-  const size = titleSize(deck.client, [170, 128, 100, 76]);
+  const size = titleSize(deck.client, [230, 176, 132, 96]);
   return (
     <Frame tone={slide.tone} deck={deck} index={index} total={total} bare>
-      <ArtCard src={INTEREST_IMAGES.cover} className="right-[64px] top-[64px] h-[952px] w-[760px]" />
-      <div className="absolute bottom-[96px] left-[96px] top-[96px] flex w-[930px] flex-col justify-between gap-10">
+      <Accent src={INTEREST_IMAGES.cover} className="bottom-[88px] right-[96px] w-[260px]" />
+      <div className="absolute inset-[96px] flex flex-col justify-between gap-10">
         <div className="flex items-center gap-8">
           {logoSrc && (
             <>
@@ -198,10 +196,10 @@ function Cover({ deck, slide, logoSrc, edit, index, total }: SlideProps) {
           <h1 className="mt-4 break-words font-black uppercase leading-[0.92] tracking-[-0.02em]" style={{ fontSize: size }}>
             <E value={deck.client} onChange={edit && ((client) => edit({ client }))} />
           </h1>
-          <p className="mt-6 font-black uppercase leading-[0.95]" style={{ fontSize: 84, ...outline(slide.tone, 3) }}>
+          <p className="mt-6 max-w-[1350px] font-black uppercase leading-[0.95]" style={{ fontSize: 110, ...outline(slide.tone, 4) }}>
             <E value={deck.coverLine} onChange={edit && ((coverLine) => edit({ coverLine }))} />
           </p>
-          <p className="mt-10 max-w-[800px] text-[34px] font-semibold leading-snug">
+          <p className="mt-10 max-w-[1100px] text-[40px] font-bold leading-snug">
             <E value={deck.coverNote} onChange={edit && ((coverNote) => edit({ coverNote }))} />
           </p>
           <p className="mt-6 text-[22px] font-bold uppercase tracking-[0.2em] text-white/60">
@@ -309,25 +307,32 @@ function InterestSlide({ deck, slide, index, total, edit, interest }: SlideProps
   const set = (p: Partial<typeof copy>) => edit?.({ interestCopy: { ...deck.interestCopy, [interest]: { ...copy, ...p } } });
   const label = INTERESTS.find((x) => x.value === interest)?.label ?? '';
   return (
-    <Frame tone={slide.tone} deck={deck} index={index} total={total} footerLeft={1012}>
-      <ArtCard src={INTEREST_IMAGES[interest]} className="left-[64px] top-[64px] h-[952px] w-[860px]" />
-      <div className="absolute bottom-[140px] left-[1012px] right-[96px] top-[96px] flex flex-col justify-center">
+    <Frame tone={slide.tone} deck={deck} index={index} total={total}>
+      <Accent src={INTEREST_IMAGES[interest]} className="right-[96px] top-[80px] h-[230px] w-[300px]" />
+      <div className="absolute left-[96px] right-[440px] top-[96px]">
         <Kicker>{label}</Kicker>
-        <h2 className="mt-5 text-[112px] font-black uppercase leading-[0.9] tracking-[-0.02em]" style={outline(slide.tone)}>
+        <h2 className="mt-5 text-[140px] font-black uppercase leading-[0.9] tracking-[-0.02em]" style={{ textWrap: 'balance' }}>
           <E value={copy.headline} onChange={edit && ((headline) => set({ headline }))} />
         </h2>
-        <p className="mt-8 text-[40px] font-bold leading-[1.2]">
+        <p className="mt-8 text-[44px] font-bold leading-[1.2]" style={{ textWrap: 'balance' }}>
           <E value={copy.body} onChange={edit && ((body) => set({ body }))} />
         </p>
-        <ul className="mt-10">
-          {copy.points.map((pt, k) => (
-            <li key={k} className="border-t-[3px] border-white/30 py-5 text-[32px] font-bold leading-snug last:border-b-[3px]">
-              <E value={pt} onChange={edit && ((v) => set({ points: setItem(copy.points, k, v || null) }))} />
-            </li>
-          ))}
-        </ul>
-        {edit && copy.points.length < MAX_LINES && <AddItem className="mt-6 self-start" onClick={() => set({ points: [...copy.points, 'New point'] })} />}
       </div>
+      <ul className="absolute inset-x-[96px] bottom-[140px] grid grid-flow-col auto-cols-fr gap-[40px]">
+        {copy.points.map((pt, k) => (
+          <li key={k} className="flex min-h-[210px] flex-col justify-between gap-6 rounded-[40px] bg-white/[0.1] p-[44px]">
+            <span className="text-[56px] font-black leading-none" style={outline(slide.tone, 3)}>
+              {String(k + 1).padStart(2, '0')}
+            </span>
+            <E value={pt} className="text-[38px] font-black leading-[1.1]" onChange={edit && ((v) => set({ points: setItem(copy.points, k, v || null) }))} />
+          </li>
+        ))}
+      </ul>
+      {edit && copy.points.length < MAX_LINES && (
+        <div className="absolute right-[96px] top-[330px]">
+          <AddItem className="" label="Add point" onClick={() => set({ points: [...copy.points, 'New point'] })} />
+        </div>
+      )}
     </Frame>
   );
 }
@@ -470,21 +475,28 @@ function PromiseSlide({ deck, slide, index, total, edit }: SlideProps) {
           <E value={deck.promiseNote} onChange={edit && ((promiseNote) => edit({ promiseNote }))} />
         </p>
       </div>
-      <ul className="absolute inset-x-[96px] top-[620px] grid grid-cols-3 gap-[40px]">
+      <ul className="absolute inset-x-[96px] top-[530px] grid grid-cols-3 gap-[40px]">
         {deck.promise.map((p, i) => (
           <li key={i} className="border-t-[4px] border-white pt-6 text-[36px] font-black uppercase leading-tight tracking-wide">
             <E value={p} onChange={edit && ((v) => edit({ promise: setItem(deck.promise, i, v || null) }))} />
           </li>
         ))}
       </ul>
-      <div className="absolute inset-x-[96px] bottom-[120px] flex items-center justify-between gap-12 rounded-[40px] bg-[#111] px-[56px] py-[40px]">
-        <p className="text-[64px] font-black uppercase leading-[0.95] tracking-[-0.01em]">
-          <E value={deck.cta} onChange={edit && ((cta) => edit({ cta }))} />
-        </p>
-        <p className="shrink-0 text-right text-[28px] font-bold leading-snug text-white/80">
+      <Accent src="/characters/peek.webp" className="bottom-[298px] left-[865px] w-[190px]" />
+      <div
+        className="absolute inset-x-[96px] bottom-[120px] flex items-center justify-between gap-12 rounded-[40px] px-[56px] py-[44px]"
+        style={{ background: slide.tone === 'orange' ? INK : ORANGE }}
+      >
+        <div>
+          <p className="text-[22px] font-black uppercase tracking-[0.3em] text-white/60">Next step</p>
+          <p className="mt-3 text-[68px] font-black uppercase leading-[0.95] tracking-[-0.01em]">
+            <E value={deck.cta} onChange={edit && ((cta) => edit({ cta }))} />
+          </p>
+        </div>
+        <p className="shrink-0 text-right text-[34px] font-black leading-snug">
           702-997-6813
           <br />
-          info@taammarketing.com
+          <span className="text-[28px] font-bold text-white/80">info@taammarketing.com</span>
         </p>
       </div>
     </Frame>

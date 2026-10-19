@@ -51,27 +51,29 @@ export type DeckOverrides = Partial<DeckData>;
 
 // House rule (CLAUDE.md): one idea per slide, a big headline, at most 3–4 short lines.
 
+// One set of rates, scaled by scope (never discounted): $75 a short, $250 a long-form video.
+// Premium is the $3,000 organic package most clients start on; Growth is the $2,500 version.
 export const BASE_PLANS: Plan[] = [
   {
     id: 'starter',
     name: 'Starter',
     price: 900,
     tagline: 'Try consistent video',
-    bullets: ['10 short-form videos', '1 filming day', 'Scripts and ideas'],
+    bullets: ['12 short-form videos', '1 filming day', 'Scripts and ideas'],
   },
   {
     id: 'growth',
     name: 'Growth',
-    price: 1500,
+    price: 2500,
     tagline: 'Filmed, edited and posted',
-    bullets: ['30 short-form videos', 'Posted to all 3 platforms', 'Scripts and ideas'],
+    bullets: ['30 short-form videos', '1 long-form YouTube video', 'Posted to all 3 platforms'],
   },
   {
     id: 'premium',
     name: 'Premium',
-    price: 3500,
-    tagline: 'Own YouTube too',
-    bullets: ['Everything in Growth', '4 long-form YouTube videos', 'Priority production'],
+    price: 3000,
+    tagline: 'The full organic package',
+    bullets: ['30 short-form videos', '3 long-form YouTube videos', 'Posted to all 3 platforms'],
   },
 ];
 
@@ -118,12 +120,12 @@ export const BASE_DECK: DeckData = {
   coverLine: 'Marketing plan',
   coverNote: 'We film, edit and post. You run the business.',
   goals: [],
-  recommended: 'growth',
+  recommended: 'premium',
   cadence: '/ 4 weeks',
   plans: BASE_PLANS,
   compare: [
-    { label: 'Short-form videos', values: ['10', '30', '30'] },
-    { label: 'Long-form YouTube', values: ['—', '—', '4'] },
+    { label: 'Short-form videos', values: ['12', '30', '30'] },
+    { label: 'Long-form YouTube', values: ['—', '1', '3'] },
     { label: 'Filming days', values: ['1', '4', '6'] },
     { label: 'We post for you', values: ['—', '✓', '✓'] },
   ],
@@ -151,6 +153,9 @@ const GOAL_FOR_INTEREST: Record<Interest, string> = {
   branding: 'A sharper brand',
 };
 
+// The service a challenge already speaks for, so its goal isn't repeated in other words.
+const INTEREST_FOR_CHALLENGE: Record<string, Interest> = { website: 'website', social: 'organic', content: 'organic' };
+
 // The talk form's "biggest challenge" (CHALLENGE_OPTIONS in app/lib/cta.ts), as a short goal.
 const GOAL_FOR_CHALLENGE: Record<string, string> = {
   leads: 'More leads and sales',
@@ -171,10 +176,11 @@ export interface DeckContact {
   interests_suggested?: string | null;
 }
 
-function recommendFor(budget: string, interests: Interest[]): PlanId {
-  if (budget === '5k_plus' || budget === '2_5k_5k') return 'premium';
-  if (budget === 'under_1k') return interests.length > 1 ? 'growth' : 'starter';
-  return 'growth';
+/** The plan their budget fits; with no budget, the package most clients start on. */
+function recommendFor(budget: string): PlanId {
+  if (budget === 'under_1k') return 'starter';
+  if (budget === '1k_2_5k') return 'growth';
+  return 'premium';
 }
 
 /** The contact's interests, or the suggested ones while nobody has picked yet. */
@@ -201,7 +207,7 @@ export function defaultDeckFor(c: DeckContact): DeckData {
     ...new Set([
       GOAL_FOR_CHALLENGE[c.biggest_challenge ?? ''],
       words && `“${words}”`,
-      ...interests.map((i) => GOAL_FOR_INTEREST[i]),
+      ...interests.filter((i) => i !== INTEREST_FOR_CHALLENGE[c.biggest_challenge ?? '']).map((i) => GOAL_FOR_INTEREST[i]),
     ]),
   ].filter((g): g is string => Boolean(g));
 
@@ -209,7 +215,7 @@ export function defaultDeckFor(c: DeckContact): DeckData {
     ...BASE_DECK,
     client: (c.business_name || c.name || BASE_DECK.client).trim(),
     goals: goals.length ? goals.slice(0, 4) : ['More of the right customers', 'Content you are proud of', 'Marketing you never chase'],
-    recommended: recommendFor(c.budget ?? '', interests),
+    recommended: recommendFor(c.budget ?? ''),
     interests,
   };
 }
@@ -235,7 +241,9 @@ export function cleanOverrides(value: unknown): DeckOverrides {
   if (o.plans && (o.plans.length !== 3 || o.plans.some((p, i) => p?.id !== PLAN_IDS[i] || typeof p.price !== 'number' || !Array.isArray(p.bullets)))) {
     delete o.plans;
   }
+  // An empty list means nothing to show, so it falls back to following the contact.
   if (o.interests) o.interests = parseInterests(o.interests);
+  if (o.interests && !o.interests.length) delete o.interests;
   if (o.interestCopy) o.interestCopy = { ...BASE_INTEREST_COPY, ...o.interestCopy };
   return o;
 }

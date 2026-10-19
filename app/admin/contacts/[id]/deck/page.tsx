@@ -7,7 +7,7 @@ import { useParams } from 'next/navigation';
 import { ArrowLeft, ChevronLeft, ChevronRight, Download, Eye, EyeOff, Loader2, Play, Printer, RotateCcw, X } from 'lucide-react';
 import { useAdminAuth } from '@/lib/useAdminAuth';
 import { INTERESTS, parseInterests } from '@/lib/interests';
-import { resolveDeck, slidesFor, type DeckContact, type DeckOverrides, type PlanId } from '@/lib/deck';
+import { contactInterests, resolveDeck, slidesFor, type DeckContact, type DeckOverrides, type PlanId } from '@/lib/deck';
 import { LogoDrop, logoUrl } from '../../../components/ContactLogo';
 import { SLIDE_H, SLIDE_W, Slide } from '../../../components/deck/Slides';
 
@@ -42,14 +42,17 @@ function Scaled({ width, height, children }: { width: number; height?: number; c
   );
 }
 
+/** Width of an element, measured from whenever it mounts (the stage only appears after loading). */
 function useWidth<T extends HTMLElement>() {
-  const ref = useRef<T>(null);
   const [width, setWidth] = useState(0);
-  useEffect(() => {
-    if (!ref.current) return;
-    const ro = new ResizeObserver(([entry]) => setWidth(entry.contentRect.width));
-    ro.observe(ref.current);
-    return () => ro.disconnect();
+  const observer = useRef<ResizeObserver | null>(null);
+  const ref = useCallback((el: T | null) => {
+    observer.current?.disconnect();
+    observer.current = null;
+    if (!el) return;
+    setWidth(el.getBoundingClientRect().width);
+    observer.current = new ResizeObserver(([entry]) => setWidth(entry.contentRect.width));
+    observer.current.observe(el);
   }, []);
   return [ref, width] as const;
 }
@@ -102,7 +105,8 @@ export default function ContactDeckPage() {
   const edit = useCallback(
     (patch: DeckOverrides) => {
       setOverrides((o) => {
-        const next = { ...o, ...patch };
+        // A key patched to undefined goes back to following the contact.
+        const next = Object.fromEntries(Object.entries({ ...o, ...patch }).filter(([, v]) => v !== undefined)) as DeckOverrides;
         persist(next);
         return next;
       });
@@ -250,7 +254,7 @@ export default function ContactDeckPage() {
 
       <div className="grid gap-5 lg:grid-cols-[180px_minmax(0,1fr)_280px]">
         {/* Slide rail */}
-        <ol className="flex gap-3 overflow-x-auto pb-2 lg:max-h-[calc(100vh-10rem)] lg:flex-col lg:overflow-y-auto lg:overflow-x-visible lg:pb-0 lg:pr-1">
+        <ol className="flex gap-3 overflow-x-auto pb-2 lg:max-h-[calc(100vh-10rem)] lg:flex-col lg:overflow-y-auto lg:overflow-x-hidden lg:pb-0 lg:pr-1">
           {slides.map((s, i) => (
             <li key={s.id} className="shrink-0">
               <div className={`group relative rounded-lg ring-2 transition ${sel.id === s.id ? 'ring-[#F46325]' : 'ring-transparent hover:ring-gray-600'}`}>
@@ -377,11 +381,11 @@ export default function ContactDeckPage() {
                   <button
                     key={i.value}
                     type="button"
-                    onClick={() =>
-                      edit({
-                        interests: parseInterests(on ? deck.interests.filter((x) => x !== i.value) : [...deck.interests, i.value]),
-                      })
-                    }
+                    onClick={() => {
+                      const next = parseInterests(on ? deck.interests.filter((x) => x !== i.value) : [...deck.interests, i.value]);
+                      // Matching their contact page again means it keeps following it.
+                      edit({ interests: next.join() === contactInterests(contact).join() ? undefined : next });
+                    }}
                     className={`rounded-full border px-3 py-1 text-xs font-bold transition ${on ? 'border-[#F46325] bg-[#F46325]/15 text-white' : 'border-gray-700 text-gray-500 hover:border-gray-500 hover:text-gray-300'}`}
                   >
                     {i.label}
