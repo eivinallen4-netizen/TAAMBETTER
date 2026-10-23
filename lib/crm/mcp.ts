@@ -9,7 +9,8 @@ const SUPPORTED_VERSIONS = ['2025-06-18', '2025-03-26', '2024-11-05'];
 
 const INSTRUCTIONS = `TAAM CRM: TAAM is a Las Vegas marketing agency. Use these tools to look up and manage contacts,
 make appointment links (a private page where a prospect books a video call with the closer), track whether
-links were opened and booked, manage paid-client onboarding, and send branded emails.
+links were opened and booked, manage paid-client onboarding, send branded emails, and manage website
+cold-call leads (add_coldcall_leads to push researched leads in, log_coldcall to record what happened on a call).
 House rules: TAAM never offers discounts — never write "discount", "% off", "deal", "save" or "sale" in emails.
 Onboarding is only for clients who have paid. Confirm with the user before deleting anything or sending email.`;
 

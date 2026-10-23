@@ -1,4 +1,5 @@
 import { Client } from '@libsql/client';
+import { initColdcallTables } from './coldcall';
 
 export const CONTACT_QUALIFIER_COLUMNS = ['industry', 'business_stage', 'budget', 'timeline', 'website', 'lead_fit', 'role'] as const;
 
@@ -147,6 +148,9 @@ export async function initializeTables(db: Client): Promise<void> {
         revoked_at TEXT
       )
     `);
+
+    // Website cold-call leads the lead finder pushes in through the API, and their call log.
+    await initColdcallTables(db);
   } catch (err) {
     console.error('Failed to initialize tables:', err);
   }

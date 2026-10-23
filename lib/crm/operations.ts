@@ -9,6 +9,18 @@ import {
 } from '@/lib/appointments';
 import { createOnboarding, getOnboardingById, onboardingUrl, toOnboardingRow } from '@/lib/onboarding-store';
 import { listTeam } from '@/lib/crm-users';
+import {
+  CALL_OUTCOMES,
+  COLDCALL_STATUSES,
+  ColdcallError,
+  coldcallStats,
+  deleteColdcallLead,
+  getColdcallLead,
+  listColdcallLeads,
+  logColdcall,
+  updateColdcallLead,
+  upsertColdcallLeads,
+} from '@/lib/coldcall';
 import { SendError, sendCrmMessage } from './send';
 
 // Everything Claude (or any script) can do with the TAAM CRM, in one list. The REST API
@@ -90,6 +102,48 @@ const contactProps: Record<string, JsonSchema> = {
   business_stage: S('Business stage'),
   interests: S('Comma list of interests: website, video, social, ads, seo, branding'),
 };
+
+const coldcallLeadProps: Record<string, JsonSchema> = {
+  name: S('Business name, e.g. "Gene the Barber"'),
+  category: S('e.g. "Barber shop", "Wallpaper installer"'),
+  group: S('"Home services" or "Beauty & wellness"'),
+  address: S('Street address, or "Service area: Las Vegas"'),
+  phone: S('e.g. "(702) 449-2257"'),
+  rating: { type: 'number', description: 'Google rating, 0 if unknown' },
+  reviews: { type: 'integer', description: 'Google review count, 0 if unknown' },
+  googleUrl: S('Google Maps link'),
+  tier: S('"Hot" or "Warm"'),
+  gap: S('Free text, e.g. "No website on Google", "Website link is a booking page"'),
+  websiteHost: S('e.g. "getsquire.com", "booksy.com", or "NONE"'),
+  hook: S('1–2 sentences on why they are a good prospect'),
+  activity: S('"Very active", "Active", "Slowing down", "Quiet", "Unverified"'),
+  activityNote: S('How recent their reviews are'),
+  checked: S('Date researched, YYYY-MM-DD'),
+  contactName: S('Owner / contact first name, empty if unknown'),
+  contactRole: S('e.g. "Owner"'),
+  contactSource: S('Where the name came from'),
+  contactConfidence: S('"Confirmed", "Likely", "Possible", "Not found"'),
+  dm: S('Outreach message 1'),
+  dm2: S('Outreach message 2 (may contain line breaks)'),
+  status: S(`Pipeline status, usually one of: ${COLDCALL_STATUSES.join(', ')}`),
+  notes: S('Free-text notes'),
+  order: { type: 'integer', description: 'Sort position on the board' },
+  instagramUrl: S('Optional Instagram URL'),
+  facebookUrl: S('Optional Facebook URL'),
+  gbpClaimed: { type: 'boolean', description: 'Optional: is the Google Business Profile claimed' },
+  lastReviewDays: { type: 'integer', description: 'Optional: days since the last Google review' },
+  source: S('Optional: where the lead came from, e.g. "cloud-finder"'),
+  followUp: S('Optional: call-back date, YYYY-MM-DD'),
+};
+
+async function coldcall<T>(fn: () => Promise<T>): Promise<T> {
+  try {
+    return await fn();
+  } catch (err) {
+    if (err instanceof ColdcallError) throw new OpError(err.status, err.message);
+    throw err;
+  }
+}
 
 function rows(result: { rows: unknown[] }) {
   return result.rows.map((r) => ({ ...(r as Record<string, unknown>) }));
@@ -454,6 +508,122 @@ export const OPERATIONS: Operation[] = [
         args: [email],
       });
       return { data: rows(result) };
+    },
+  },
+
+  // ---------- Website cold-call leads ----------
+  {
+    name: 'add_coldcall_leads',
+    description:
+      "Add website cold-call leads (businesses with no real website), one or many (up to 250 per call) in `leads`. A lead already on file (same phone, or same name + address, or its id) is updated instead of duplicated: only the fields you send change, and status / notes / order / followUp are kept unless update_tracking is true, so the team's call results are never undone by a re-sync.",
+    method: 'POST',
+    path: '/coldcall-leads',
+    input: {
+      type: 'object',
+      properties: {
+        leads: { type: 'array', description: 'The leads to add or update', items: { type: 'object', properties: coldcallLeadProps, required: ['name'] } },
+        update_tracking: { type: 'boolean', description: 'Also overwrite status, notes, order and followUp on leads already on file (default false)' },
+      },
+      required: ['leads'],
+    },
+    async run(input, { db, actor }) {
+      const leads = Array.isArray(input.leads) ? input.leads : input.name ? [input] : [];
+      return coldcall(() => upsertColdcallLeads(db, leads as Record<string, unknown>[], { by: actor.name, updateTracking: input.update_tracking === true }));
+    },
+  },
+  {
+    name: 'list_coldcall_leads',
+    description:
+      'Website cold-call leads in board order, with counts by status / tier / group and how many follow-ups are due. Leaves out the long fields (dm, dm2, hook, activityNote, contactSource) unless full is true.',
+    method: 'GET',
+    path: '/coldcall-leads',
+    readOnly: true,
+    input: {
+      type: 'object',
+      properties: {
+        search: S('Search name, category, phone, address, contact name and notes'),
+        status: S('Only this status'),
+        tier: S('Only this tier, e.g. Hot'),
+        group: S('Only this group'),
+        due: { type: 'boolean', description: 'Only leads with a follow-up due today or earlier' },
+        full: { type: 'boolean', description: 'Include the long text fields' },
+        limit: { type: 'integer', description: 'Max rows (default 500, max 1000)' },
+        offset: { type: 'integer', description: 'Rows to skip' },
+      },
+    },
+    async run(input, { db }) {
+      const [list, stats] = await Promise.all([
+        listColdcallLeads(db, {
+          search: str(input.search, 100) || undefined,
+          status: str(input.status, 100) || undefined,
+          tier: str(input.tier, 50) || undefined,
+          group: str(input.group, 100) || undefined,
+          dueBy: input.due === true || input.due === 'true' ? new Date().toISOString().slice(0, 10) : undefined,
+          full: input.full === true || input.full === 'true',
+          limit: num(input.limit, 500, 1, 1000),
+          offset: num(input.offset, 0, 0, 1_000_000),
+        }),
+        coldcallStats(db),
+      ]);
+      return { ...list, stats };
+    },
+  },
+  {
+    name: 'get_coldcall_lead',
+    description: 'One cold-call lead with every field, plus its history (calls, messages, notes, status changes).',
+    method: 'GET',
+    path: '/coldcall-leads/{id}',
+    readOnly: true,
+    input: { type: 'object', properties: ID, required: ['id'] },
+    async run(input, { db }) {
+      const lead = await getColdcallLead(db, needId(input));
+      if (!lead) throw new OpError(404, 'Lead not found');
+      return lead;
+    },
+  },
+  {
+    name: 'update_coldcall_lead',
+    description: 'Change fields on a cold-call lead (any lead field, including status, notes and followUp). Only the fields you send change.',
+    method: 'PATCH',
+    path: '/coldcall-leads/{id}',
+    input: { type: 'object', properties: { ...ID, ...coldcallLeadProps }, required: ['id'] },
+    async run(input, { db, actor }) {
+      const id = needId(input);
+      return coldcall(() => updateColdcallLead(db, id, input, actor.name));
+    },
+  },
+  {
+    name: 'log_coldcall',
+    description: `Record what happened on a call or message to a cold-call lead. outcome sets the status (${Object.entries(CALL_OUTCOMES)
+      .map(([o, st]) => `${o} → ${st}`)
+      .join('; ')}); send status to override. Calls and DMs count as attempts. followUp (YYYY-MM-DD) sets a call-back date.`,
+    method: 'POST',
+    path: '/coldcall-leads/{id}/log',
+    input: {
+      type: 'object',
+      properties: {
+        ...ID,
+        outcome: S('What happened', { enum: Object.keys(CALL_OUTCOMES) }),
+        note: S('What was said / anything worth remembering'),
+        status: S('Optional status to set instead of the one the outcome gives'),
+        followUp: S('Optional call-back date, YYYY-MM-DD'),
+      },
+      required: ['id'],
+    },
+    async run(input, { db, actor }) {
+      const id = needId(input);
+      return coldcall(() => logColdcall(db, id, input, actor.name));
+    },
+  },
+  {
+    name: 'delete_coldcall_lead',
+    description: 'Permanently delete a cold-call lead and its history. Cannot be undone; prefer status "Not a fit".',
+    method: 'DELETE',
+    path: '/coldcall-leads/{id}',
+    input: { type: 'object', properties: ID, required: ['id'] },
+    async run(input, { db }) {
+      if (!(await deleteColdcallLead(db, needId(input)))) throw new OpError(404, 'Lead not found');
+      return { deleted: true };
     },
   },
 

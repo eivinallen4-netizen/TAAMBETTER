@@ -18,7 +18,8 @@ async function handle(request: NextRequest, { params }: { params: Promise<{ path
   let body: Record<string, unknown> = {};
   if (request.method === 'POST' || request.method === 'PATCH') {
     const raw = await request.text();
-    if (raw.length > 100_000) return apiJson({ error: 'Body too large' }, 413);
+    // Cold-call lead batches carry two DMs each, so allow a big board in one call.
+    if (raw.length > 2_000_000) return apiJson({ error: 'Body too large' }, 413);
     if (raw) {
       try {
         const parsed = JSON.parse(raw);

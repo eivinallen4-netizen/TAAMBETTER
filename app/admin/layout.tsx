@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
-import { CalendarCheck, ExternalLink, Globe, Inbox, KeyRound, LayoutDashboard, Menu, Share2, Users, Video, X, type LucideIcon } from 'lucide-react';
+import { CalendarCheck, ExternalLink, Globe, Inbox, KeyRound, LayoutDashboard, Menu, PhoneCall, Share2, Users, Video, X, type LucideIcon } from 'lucide-react';
 import { LogoutButton } from './components/LogoutButton';
 
 const NAV: { heading?: string; links: { href: string; label: string; icon: LucideIcon }[] }[] = [
@@ -19,6 +19,7 @@ const NAV: { heading?: string; links: { href: string; label: string; icon: Lucid
     heading: 'Leads',
     links: [
       { href: '/admin/appointments', label: 'Appointments', icon: CalendarCheck },
+      { href: '/admin/coldcall', label: 'Website cold calls', icon: PhoneCall },
       { href: '/admin/leads', label: 'Free video offers', icon: Video },
       { href: '/admin/contacts', label: 'Contacts', icon: Inbox },
     ],
@@ -32,9 +33,18 @@ const NAV: { heading?: string; links: { href: string; label: string; icon: Lucid
   },
 ];
 
-// Setters only see appointment links; the APIs enforce it, this just keeps the UI honest.
+// Setters only see appointment links and cold-call leads; the APIs enforce it, this just keeps the UI honest.
 const SETTER_HOME = '/admin/appointments';
-const SETTER_NAV = [{ heading: 'Leads', links: [{ href: SETTER_HOME, label: 'Appointments', icon: CalendarCheck }] }];
+const SETTER_PAGES = [SETTER_HOME, '/admin/coldcall'];
+const SETTER_NAV = [
+  {
+    heading: 'Leads',
+    links: [
+      { href: SETTER_HOME, label: 'Appointments', icon: CalendarCheck },
+      { href: '/admin/coldcall', label: 'Website cold calls', icon: PhoneCall },
+    ],
+  },
+];
 
 function Logo() {
   return (
@@ -63,7 +73,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         if (!alive) return;
         if (!s.authenticated) return router.push('/admin/login');
         setRole(s.role === 'setter' ? 'setter' : 'admin');
-        if (s.role === 'setter' && !pathname.startsWith(SETTER_HOME)) router.replace(SETTER_HOME);
+        if (s.role === 'setter' && !SETTER_PAGES.some((p) => pathname.startsWith(p))) router.replace(SETTER_HOME);
       })
       .catch(() => {});
     return () => {
