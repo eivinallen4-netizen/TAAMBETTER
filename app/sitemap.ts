@@ -3,6 +3,7 @@ import siteContent from './content/siteContent.json';
 import { FREE_TOOLS } from './lib/tools';
 import { safeGetAllArticles } from './blog/lib/articles';
 import { LOCAL_POSTS } from './blog/local-posts';
+import { CAREER_ROLES } from './lib/careers';
 
 const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://taammarketing.com';
 
@@ -65,6 +66,18 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       changeFrequency: 'monthly' as const,
       priority: 0.7,
     },
+    {
+      url: `${baseUrl}/careers`,
+      lastModified: new Date().toISOString(),
+      changeFrequency: 'monthly' as const,
+      priority: 0.6,
+    },
+    ...CAREER_ROLES.map((role) => ({
+      url: `${baseUrl}/careers/${role.slug}`,
+      lastModified: new Date().toISOString(),
+      changeFrequency: 'monthly' as const,
+      priority: 0.6,
+    })),
     ...FREE_TOOLS.map((tool) => ({
       url: `${baseUrl}/tools/${tool.slug}`,
       lastModified: new Date().toISOString(),

@@ -39,6 +39,7 @@ export default function Footer() {
               <li><Link href="/tools" className="link-line">Free tools</Link></li>
               <li><Link href="/free-video-offer" className="link-line">Free video</Link></li>
               <li><Link href="/blog" className="link-line">Blog</Link></li>
+              <li><Link href="/careers" className="link-line">Careers</Link></li>
               <li><Link href="/blog/dont-let-your-agency-hold-you-back" className="link-line">Is your agency holding you back?</Link></li>
             </ul>
           </div>
