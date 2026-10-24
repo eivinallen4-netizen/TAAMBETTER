@@ -5,6 +5,7 @@ import Navigation from "./components/Navigation";
 import Footer from "./components/Footer";
 import ContactFormProvider from "./components/ContactForm/ContactFormProvider";
 import { Analytics } from "@vercel/analytics/next"
+import Script from "next/script";
 
 // Static weight instances (not the variable font): their glyphs have no overlapping
 // contours, so outlined display type (-webkit-text-stroke) renders cleanly.
@@ -133,6 +134,18 @@ export default function RootLayout({
           <Footer />
         </ContactFormProvider>
         <Analytics />
+        <Script
+          src="https://www.googletagmanager.com/gtag/js?id=G-CBYFLMQZ0Z"
+          strategy="afterInteractive"
+        />
+        <Script id="google-analytics" strategy="afterInteractive">
+          {`
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){dataLayer.push(arguments);}
+            gtag('js', new Date());
+            gtag('config', 'G-CBYFLMQZ0Z');
+          `}
+        </Script>
       </body>
     </html>
   );
