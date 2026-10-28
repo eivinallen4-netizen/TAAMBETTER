@@ -1,15 +1,12 @@
 import type { MetadataRoute } from 'next';
 import siteContent from './content/siteContent.json';
 import { FREE_TOOLS } from './lib/tools';
-import { safeGetAllArticles } from './blog/lib/articles';
-import { LOCAL_POSTS } from './blog/local-posts';
 import { CAREER_ROLES } from './lib/careers';
+import { SITE_URL } from '@/lib/site-url';
 
-const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://taammarketing.com';
+const baseUrl = SITE_URL;
 
-export const revalidate = 86400;
-
-export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
+export default function sitemap(): MetadataRoute.Sitemap {
   const publishedProjects = siteContent.projects.filter((p) => p.published !== false);
 
   const projectUrls = publishedProjects.map((project) => ({
@@ -18,16 +15,6 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     changeFrequency: 'monthly' as const,
     priority: 0.8,
   }));
-
-  const localSlugs = new Set(LOCAL_POSTS.map((p) => p.slug));
-  const articleUrls = (await safeGetAllArticles())
-    .filter((a) => !localSlugs.has(a.slug))
-    .map((a) => ({
-      url: `${baseUrl}/blog/${a.slug}`,
-      lastModified: new Date(a.updated_at || a.published_at).toISOString(),
-      changeFrequency: 'monthly' as const,
-      priority: 0.7,
-    }));
 
   return [
     {
@@ -53,6 +40,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       lastModified: new Date().toISOString(),
       changeFrequency: 'monthly' as const,
       priority: 0.9,
+    },
+    {
+      url: `${baseUrl}/free-video-offer`,
+      lastModified: new Date().toISOString(),
+      changeFrequency: 'monthly' as const,
+      priority: 0.8,
     },
     {
       url: `${baseUrl}/blog`,
@@ -85,6 +78,5 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       priority: 0.8,
     })),
     ...projectUrls,
-    ...articleUrls,
   ];
 }

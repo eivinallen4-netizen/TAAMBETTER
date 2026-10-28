@@ -4,12 +4,13 @@ import PageHero from '@/components/sections/PageHero';
 import CTASection from '@/components/sections/CTASection';
 import Section from '@/components/editorial/Section';
 import WorkGrid from './WorkGrid';
+import { SITE_URL } from '@/lib/site-url';
 
 export const metadata: Metadata = {
-  title: 'Work',
+  title: 'Our Work: Video and Content Marketing',
   description: 'Case studies from TAAM: creative that made real customers say WOW, for businesses that were already great at what they do.',
   alternates: {
-    canonical: 'https://taammarketing.com/work',
+    canonical: `${SITE_URL}/work`,
   },
 };
 

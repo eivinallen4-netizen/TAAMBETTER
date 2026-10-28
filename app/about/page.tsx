@@ -11,10 +11,11 @@ import MediaCard from '@/components/editorial/MediaCard';
 import Reveal from '@/components/editorial/Reveal';
 import { maintenanceAmericaCredit } from '@/components/editorial/ShortCredit';
 import Arrow from '@/components/editorial/Arrow';
+import { SITE_URL } from '@/lib/site-url';
 
 export const metadata: Metadata = {
   title: "About TAAM | Content Marketing Agency",
-  description: "TAAM is a proven content marketing team that's always hungry for the next big problem. We can't make you good at what you do. We show it to the people who need to see it.",
+  description: "A proven Las Vegas content marketing team, hungry for the next big problem. We can't make you good at what you do. We show it to the people who need to see it.",
   openGraph: {
     title: "About TAAM | Our Story & Team",
     description: "Better marketing for the best businesses. Meet the team that makes your customers say WOW.",
@@ -29,7 +30,7 @@ export const metadata: Metadata = {
     ],
   },
   alternates: {
-    canonical: "https://taammarketing.com/about",
+    canonical: `${SITE_URL}/about`,
   },
 };
 

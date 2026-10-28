@@ -20,7 +20,7 @@ const M = 48;
 const COL = W - M * 2;
 const FOOTER = 40;
 
-const SITE = (process.env.NEXT_PUBLIC_SITE_URL || 'https://taammarketing.com').replace(/\/$/, '');
+const SITE = (process.env.NEXT_PUBLIC_SITE_URL || 'https://www.taammarketing.com').replace(/\/$/, '');
 const REPLY_TO = process.env.TOOL_EMAIL_REPLY_TO || 'info@taammarketing.com';
 const PHONE = '702-997-6813';
 

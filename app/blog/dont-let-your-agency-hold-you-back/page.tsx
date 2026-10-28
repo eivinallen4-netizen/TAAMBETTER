@@ -7,8 +7,9 @@ import Section from '@/components/editorial/Section';
 import Arrow from '@/components/editorial/Arrow';
 import Tower from '../Tower';
 import Street from '../Street';
+import { SITE_URL } from '@/lib/site-url';
 
-const url = 'https://taammarketing.com/blog/dont-let-your-agency-hold-you-back';
+const url = `${SITE_URL}/blog/dont-let-your-agency-hold-you-back`;
 
 export const metadata: Metadata = {
   title: "Don't Let Your Marketing Agency Hold You Back",
@@ -54,8 +55,8 @@ const schema = {
       description: 'The signs your marketing agency (or the employee you handed social media to) is holding your business back, and what better marketing looks like.',
       datePublished: '2026-10-16',
       dateModified: '2026-10-16',
-      author: { '@type': 'Organization', name: 'TAAM', url: 'https://taammarketing.com' },
-      publisher: { '@type': 'Organization', name: 'TAAM', url: 'https://taammarketing.com' },
+      author: { '@type': 'Organization', name: 'TAAM', url: SITE_URL },
+      publisher: { '@type': 'Organization', name: 'TAAM', url: SITE_URL },
       mainEntityOfPage: url,
     },
     {

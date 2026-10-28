@@ -9,6 +9,7 @@ import Reveal from '@/components/editorial/Reveal';
 import Arrow from '@/components/editorial/Arrow';
 import { CAREER_ROLES, getRole } from '@/app/lib/careers';
 import ApplicationForm from '../ApplicationForm';
+import { SITE_URL } from '@/lib/site-url';
 
 export function generateStaticParams() {
   return CAREER_ROLES.map((r) => ({ slug: r.slug }));
@@ -44,7 +45,7 @@ export default async function CareerRolePage({ params }: { params: Promise<{ slu
         value: { '@type': 'QuantitativeValue', minValue: 20, unitText: 'HOUR' },
       },
     }),
-    hiringOrganization: { '@type': 'Organization', name: 'TAAM', sameAs: 'https://taammarketing.com' },
+    hiringOrganization: { '@type': 'Organization', name: 'TAAM', sameAs: SITE_URL },
     jobLocation: {
       '@type': 'Place',
       address: { '@type': 'PostalAddress', addressLocality: 'Las Vegas', addressRegion: 'NV', addressCountry: 'US' },

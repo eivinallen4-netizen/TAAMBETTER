@@ -1,12 +1,10 @@
 import Link from 'next/link';
-import type { BlogArticleSummary } from 'babylovegrowth-next-js-blog';
 import Arrow from '@/components/editorial/Arrow';
 import { BLOG_BASE_PATH } from '../constants';
 import { formatDate } from '../format';
+import type { BlogPost } from '../local-posts';
 
-type CardArticle = Pick<BlogArticleSummary, 'slug' | 'title' | 'meta_description' | 'published_at'>;
-
-export function ArticleCard({ article }: { article: CardArticle }) {
+export function ArticleCard({ article }: { article: BlogPost }) {
   return (
     <li className="border-b-2 rule">
       <Link

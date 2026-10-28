@@ -63,7 +63,7 @@ export function toAppointmentLink(row: Record<string, unknown>): AppointmentLink
 }
 
 export function appointmentUrl(token: string, origin?: string): string {
-  const base = process.env.NEXT_PUBLIC_SITE_URL || origin || 'https://taammarketing.com';
+  const base = process.env.NEXT_PUBLIC_SITE_URL || origin || 'https://www.taammarketing.com';
   return `${base.replace(/\/$/, '')}/call/${token}`;
 }
 

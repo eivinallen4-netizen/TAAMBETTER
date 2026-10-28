@@ -1,14 +1,15 @@
 import type { MetadataRoute } from 'next';
+import { SITE_URL } from '@/lib/site-url';
 
 export default function robots(): MetadataRoute.Robots {
-  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://taammarketing.com';
+  const baseUrl = SITE_URL;
 
   return {
     rules: [
       {
         userAgent: '*',
         allow: ['/'],
-        disallow: ['/admin', '/onboarding/', '/call/', '/*.json$', '/__*', '/.next/'],
+        disallow: ['/admin', '/onboarding/', '/call/', '/intake/', '/intake-management', '/*.json$', '/__*', '/.next/'],
       },
       {
         userAgent: 'Googlebot',

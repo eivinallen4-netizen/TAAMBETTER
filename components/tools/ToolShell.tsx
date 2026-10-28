@@ -5,8 +5,9 @@ import Icon from '@/components/editorial/Icon';
 import Reveal from '@/components/editorial/Reveal';
 import Section from '@/components/editorial/Section';
 import { FREE_TOOLS, type FreeTool } from '@/app/lib/tools';
+import { SITE_URL } from '@/lib/site-url';
 
-const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://taammarketing.com';
+const baseUrl = SITE_URL;
 
 export interface ToolFaq {
   q: string;

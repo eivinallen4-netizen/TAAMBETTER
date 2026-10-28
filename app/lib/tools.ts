@@ -28,7 +28,7 @@ export const FREE_TOOLS: FreeTool[] = [
     pitch: 'Mobile and desktop scores, Core Web Vitals and the fixes that matter most.',
     metaTitle: 'Free Website Speed Test (Mobile + Desktop)',
     metaDescription:
-      'Test your website speed for free. Get mobile and desktop scores, Core Web Vitals, and a plain-English list of what to fix first. Powered by Google PageSpeed data.',
+      'Test your website speed for free. Get mobile and desktop scores, Core Web Vitals and a plain-English list of what to fix first, from Google PageSpeed data.',
     icon: 'optimization',
     challenge: 'website',
     services: ['website_dev'],

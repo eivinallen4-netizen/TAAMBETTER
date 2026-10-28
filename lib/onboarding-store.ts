@@ -98,7 +98,7 @@ export async function getOnboardingById(db: Client, id: string): Promise<Onboard
 }
 
 export function onboardingUrl(token: string, origin?: string): string {
-  const base = process.env.NEXT_PUBLIC_SITE_URL || origin || 'https://taammarketing.com';
+  const base = process.env.NEXT_PUBLIC_SITE_URL || origin || 'https://www.taammarketing.com';
   return `${base.replace(/\/$/, '')}/onboarding/${token}`;
 }
 

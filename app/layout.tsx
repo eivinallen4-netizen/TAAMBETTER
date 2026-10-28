@@ -6,6 +6,7 @@ import Footer from "./components/Footer";
 import ContactFormProvider from "./components/ContactForm/ContactFormProvider";
 import { Analytics } from "@vercel/analytics/next"
 import Script from "next/script";
+import { SITE_URL } from "@/lib/site-url";
 
 // Static weight instances (not the variable font): their glyphs have no overlapping
 // contours, so outlined display type (-webkit-text-stroke) renders cleanly.
@@ -15,7 +16,7 @@ const montserrat = Montserrat({
   weight: ["400", "500", "600", "700", "800", "900"],
 });
 
-const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://taammarketing.com";
+const baseUrl = SITE_URL;
 
 export const metadata: Metadata = {
   metadataBase: new URL(baseUrl),
@@ -74,9 +75,6 @@ export const metadata: Metadata = {
     title: "TAAM | Better Marketing for the Best Businesses",
     description: "Creative that makes your customers say WOW.",
     images: ["/twitter-image.png"],
-  },
-  alternates: {
-    canonical: baseUrl,
   },
 };
 

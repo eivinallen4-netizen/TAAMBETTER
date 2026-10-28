@@ -240,7 +240,7 @@ export default function FreeVideoOfferPage() {
 function StepName({ value, onChange }: { value: string; onChange: (v: string) => void }) {
   return (
     <div>
-      <h2 className="display display-md mb-5">LET'S GET YOU A FREE WEEK OF VIDEO</h2>
+      <h1 className="display display-md mb-5">LET'S GET YOU A FREE WEEK OF VIDEO</h1>
       <p className="lede mb-4 text-white/85">
         A full week of content for your business, on us. This offer is only for businesses that are already open
         and making sales.
@@ -282,7 +282,7 @@ function StepCompanyInfo({
 
   return (
     <div>
-      <h2 className="display display-md mb-5">You're almost there</h2>
+      <h1 className="display display-md mb-5">You're almost there</h1>
       <p className="lede mb-10 text-white/85">Confirm important info</p>
       <div className="space-y-5">
         <div>
@@ -329,7 +329,7 @@ function StepSalesRange({
 }) {
   return (
     <div>
-      <h2 className="display display-md mb-5">LAST STEP - IT'S ALL OR NOTHING</h2>
+      <h1 className="display display-md mb-5">LAST STEP - IT'S ALL OR NOTHING</h1>
       <p className="lede mb-10 text-white/85">How many sales have you made this year?</p>
       <div className="space-y-3" role="radiogroup" aria-label="Sales range">
         {[
@@ -368,7 +368,7 @@ function Confirmation({ name, noSalesYet }: { name: string; noSalesYet: boolean 
   if (noSalesYet) {
     return (
       <div className="text-center py-10">
-        <h2 className="display display-lg mb-6">Not quite yet</h2>
+        <h1 className="display display-lg mb-6">Not quite yet</h1>
         <p className="lede max-w-lg mx-auto mb-10">
           The free week of video is only for businesses that are already open and making sales. Once the first
           sales are in, come back and we&apos;ll get you filmed.
@@ -390,7 +390,7 @@ function Confirmation({ name, noSalesYet }: { name: string; noSalesYet: boolean 
 
   return (
     <div className="text-center py-10">
-      <h2 className="display display-lg mb-6">Thanks for Attending</h2>
+      <h1 className="display display-lg mb-6">Thanks for Attending</h1>
       <p className="lede max-w-lg mx-auto mb-10">We will reach out shortly.</p>
       <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
         <Link

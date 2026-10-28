@@ -8,6 +8,7 @@ import { FREE_TOOLS, type FreeTool } from '@/app/lib/tools';
 import { resolveToolReport } from '@/lib/tool-report-input';
 import { sendToolEmail } from '@/lib/tool-email';
 import { syncToolLeadToHubSpot } from '@/lib/hubspot';
+import { SITE_URL } from '@/lib/site-url';
 
 // Email gate for the free tools. Leads land in the same contacts table as the main form, tagged
 // with the tool's page as source_page, so they show up in /admin/contacts with the result attached.
@@ -116,7 +117,7 @@ async function deliverReport(lead: { tool: FreeTool; email: string; name: string
       firstName: name,
       website: report?.website ?? lead.website,
       toolName: tool.name,
-      toolUrl: `${process.env.NEXT_PUBLIC_SITE_URL || 'https://taammarketing.com'}/tools/${tool.slug}`,
+      toolUrl: `${SITE_URL}/tools/${tool.slug}`,
       summary: report?.summary ?? lead.summary,
       emailed,
     });

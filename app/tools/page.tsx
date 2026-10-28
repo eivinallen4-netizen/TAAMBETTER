@@ -8,13 +8,14 @@ import Section from '@/components/editorial/Section';
 import PageHero from '@/components/sections/PageHero';
 import CTASection from '@/components/sections/CTASection';
 import Arrow from '@/components/editorial/Arrow';
+import { SITE_URL } from '@/lib/site-url';
 
-const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://taammarketing.com';
+const baseUrl = SITE_URL;
 
 export const metadata: Metadata = {
   title: 'Free Marketing Tools for Small Businesses',
   description:
-    'Free website speed test, SEO grader, ad budget calculator, Google Business Profile audit and SERP preview. Instant results, no signup, built by TAAM in Las Vegas.',
+    'Free website speed test, SEO grader, ad budget calculator, Google Business Profile audit and SERP preview. Instant results, no signup, built by TAAM.',
   alternates: { canonical: '/tools' },
   openGraph: {
     title: 'Free Marketing Tools for Small Businesses | TAAM',

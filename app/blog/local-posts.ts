@@ -1,7 +1,12 @@
-import type { BlogArticleSummary } from 'babylovegrowth-next-js-blog';
+export interface BlogPost {
+  slug: string;
+  title: string;
+  meta_description: string;
+  published_at: string;
+}
 
-/** Hand-built posts that live in their own route folders, listed alongside the BabyLoveGrowth articles. */
-export const LOCAL_POSTS: Pick<BlogArticleSummary, 'slug' | 'title' | 'meta_description' | 'published_at'>[] = [
+/** Hand-built posts, each in its own route folder under /blog. */
+export const LOCAL_POSTS: BlogPost[] = [
   {
     slug: 'dont-let-your-agency-hold-you-back',
     title: "Don't Let Your Marketing Agency Hold You Back",

@@ -13,10 +13,11 @@ import FitSection from '@/components/sections/FitSection';
 import CTASection from '@/components/sections/CTASection';
 import StickyTalkBar from '@/components/sections/StickyTalkBar';
 import Arrow from '@/components/editorial/Arrow';
+import { SITE_URL } from '@/lib/site-url';
 
 export const metadata: Metadata = {
   title: "TAAM | Better Marketing for the Best Businesses",
-  description: "Creative that makes your customers say WOW. TAAM is a proven content marketing team in Las Vegas: strategy, video, social and web for businesses that are already great at what they do.",
+  description: "Creative that makes your customers say WOW. TAAM is a Las Vegas content marketing team: video, social and web for businesses already great at what they do.",
   openGraph: {
     title: "TAAM | Better Marketing for the Best Businesses",
     description: "You already got good at what you do. We show it to the people who need to see it.",
@@ -31,7 +32,7 @@ export const metadata: Metadata = {
     ],
   },
   alternates: {
-    canonical: "https://taammarketing.com",
+    canonical: SITE_URL,
   },
 };
 

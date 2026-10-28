@@ -11,6 +11,7 @@ import Headline from '@/components/editorial/Headline';
 import MediaCard from '@/components/editorial/MediaCard';
 import Reveal from '@/components/editorial/Reveal';
 import ReelStrip from './ReelStrip';
+import { SITE_URL } from '@/lib/site-url';
 
 export async function generateMetadata({ params }: { params: Promise<{ id: string }> }): Promise<Metadata> {
   const { id } = await params;
@@ -22,7 +23,7 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
     };
   }
 
-  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://taammarketing.com";
+  const baseUrl = SITE_URL;
   const description = stripHtml(project.description).substring(0, 160);
 
   return {

@@ -8,13 +8,13 @@ export const RULE = '#2d2d2d';
 export const MUTED = '#b3b3b3';
 export const FONT = "Montserrat, 'Helvetica Neue', Helvetica, Arial, sans-serif";
 
-export const SITE = (process.env.NEXT_PUBLIC_SITE_URL || 'https://taammarketing.com').replace(/\/$/, '');
+export const SITE = (process.env.NEXT_PUBLIC_SITE_URL || 'https://www.taammarketing.com').replace(/\/$/, '');
 export const REPLY_TO = process.env.TOOL_EMAIL_REPLY_TO || 'info@taammarketing.com';
 export const PHONE = '702-997-6813';
 const TEL = `tel:+1${PHONE.replace(/\D/g, '')}`;
 
 // Inboxes can't reach localhost, so images always come from a public host.
-const ASSETS = /localhost|127\.0\.0\.1/.test(SITE) ? 'https://taammarketing.com' : SITE;
+const ASSETS = /localhost|127\.0\.0\.1/.test(SITE) ? 'https://www.taammarketing.com' : SITE;
 const asset = (file: string) => `${ASSETS}/email/${file}`;
 
 /** TAAM characters, pre-sized in /public/email. */

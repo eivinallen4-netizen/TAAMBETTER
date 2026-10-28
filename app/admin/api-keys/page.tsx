@@ -16,7 +16,7 @@ interface ApiKey {
 }
 
 // Claude connects to the live site, so the snippets use its public URL.
-const origin = (process.env.NEXT_PUBLIC_SITE_URL || 'https://taammarketing.com').replace(/\/$/, '');
+const origin = (process.env.NEXT_PUBLIC_SITE_URL || 'https://www.taammarketing.com').replace(/\/$/, '');
 
 const fmt = (iso: string | null) => (iso ? new Date(iso).toLocaleString() : '—');
 
