@@ -64,6 +64,11 @@ const nextConfig: NextConfig = {
           },
         ],
       },
+      // Private page previews (/admin/pages) must never be indexed.
+      {
+        source: "/insights/preview/:path*",
+        headers: [{ key: "X-Robots-Tag", value: "noindex, nofollow" }],
+      },
       // Cache static images for SEO
       {
         source: "/og-:path(.*)",

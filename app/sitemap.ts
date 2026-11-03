@@ -3,10 +3,14 @@ import siteContent from './content/siteContent.json';
 import { FREE_TOOLS } from './lib/tools';
 import { CAREER_ROLES } from './lib/careers';
 import { SITE_URL } from '@/lib/site-url';
+import { publishedPages } from './insights/data';
 
 const baseUrl = SITE_URL;
 
-export default function sitemap(): MetadataRoute.Sitemap {
+// Published /insights pages come from the database; publishing or unpublishing one revalidates this.
+export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
+  const insights = await publishedPages();
+
   const publishedProjects = siteContent.projects.filter((p) => p.published !== false);
 
   const projectUrls = publishedProjects.map((project) => ({
@@ -78,5 +82,17 @@ export default function sitemap(): MetadataRoute.Sitemap {
       priority: 0.8,
     })),
     ...projectUrls,
+    {
+      url: `${baseUrl}/insights`,
+      lastModified: new Date().toISOString(),
+      changeFrequency: 'weekly' as const,
+      priority: 0.7,
+    },
+    ...insights.map((page) => ({
+      url: `${baseUrl}/insights/${page.slug}`,
+      lastModified: new Date(page.updated_at).toISOString(),
+      changeFrequency: 'monthly' as const,
+      priority: 0.7,
+    })),
   ];
 }

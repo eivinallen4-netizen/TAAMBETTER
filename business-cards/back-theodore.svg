@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+  width="86mm" height="54mm" viewBox="0 0 86 54">
+  <rect width="86" height="54" fill="#fff"/>
+  
+  <text x="6" y="13.5" font-family="Montserrat" font-weight="900" font-size="8.6" fill="#000">THEODORE</text>
+  <text x="6.2" y="18.2" font-family="Montserrat" font-weight="600" font-size="2" letter-spacing="0.55" fill="#000">CHIEF OPERATING OFFICER</text>
+  <text x="80.6" y="38.6" text-anchor="end" font-family="Montserrat" font-weight="900" font-size="25" letter-spacing="0.6"
+    fill="none" stroke="#000" stroke-width="0.4" stroke-linejoin="round">COO</text>
+  <rect x="6" y="41.6" width="74" height="0.45" fill="#000"/>
+  <g font-family="Montserrat" font-size="2.55" fill="#000">
+    <text x="6" y="46.4" font-weight="600">702-997-6813</text>
+    <text x="6" y="49.9" font-weight="600">info@taammarketing.com</text>
+    <text x="80" y="49.9" text-anchor="end" font-weight="800">taammarketing.com</text>
+  </g>
+</svg>

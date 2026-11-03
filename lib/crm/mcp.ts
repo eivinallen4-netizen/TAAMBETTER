@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { authenticateApiKey, bearerKey } from '@/lib/api-auth';
+import { logActivity } from '@/lib/activity-log';
 import { OPERATIONS, OpError, findOperation } from './operations';
 
 // A stateless MCP server (Streamable HTTP transport, JSON responses, no SSE) over the CRM
@@ -10,7 +11,9 @@ const SUPPORTED_VERSIONS = ['2025-06-18', '2025-03-26', '2024-11-05'];
 const INSTRUCTIONS = `TAAM CRM: TAAM is a Las Vegas marketing agency. Use these tools to look up and manage contacts,
 make appointment links (a private page where a prospect books a video call with the closer), track whether
 links were opened and booked, manage paid-client onboarding, send branded emails, and manage website
-cold-call leads (add_coldcall_leads to push researched leads in, log_coldcall to record what happened on a call).
+cold-call leads (add_coldcall_leads to push researched leads in, log_coldcall to record what happened on a call),
+and draft SEO pages for /insights (list_pages first: it covers the whole site and shows rejection notes on pages
+the team turned down; create_page always saves for review, publish only when the user asks).
 House rules: TAAM never offers discounts — never write "discount", "% off", "deal", "save" or "sale" in emails.
 Onboarding is only for clients who have paid. Confirm with the user before deleting anything or sending email.`;
 
@@ -37,6 +40,12 @@ function toolList() {
   }));
 }
 
+/** What a call was about, for the activity log. */
+export function activityTarget(args: Record<string, unknown>): string {
+  for (const k of ['slug', 'id', 'email', 'name', 'business_name']) if (typeof args[k] === 'string' && args[k]) return String(args[k]);
+  return '';
+}
+
 async function handleOne(msg: RpcRequest, ctx: Parameters<(typeof OPERATIONS)[number]['run']>[1]) {
   const isNotification = msg.id === undefined;
   switch (msg.method) {
@@ -57,8 +66,11 @@ async function handleOne(msg: RpcRequest, ctx: Parameters<(typeof OPERATIONS)[nu
       const op = findOperation(String(msg.params?.name ?? ''));
       if (!op) return rpcError(msg.id, -32602, `Unknown tool: ${String(msg.params?.name)}`);
       const args = (msg.params?.arguments ?? {}) as Record<string, unknown>;
+      const log = (ok: boolean, error?: string) =>
+        logActivity(ctx.db, { source: 'mcp', actor: ctx.actor.name, action: op.name, target: activityTarget(args), detail: args, ok, error });
       try {
         const result = await op.run(args, ctx);
+        await log(true);
         return rpcResult(msg.id, {
           content: [{ type: 'text', text: JSON.stringify(result, null, 2) }],
           structuredContent: result && typeof result === 'object' && !Array.isArray(result) ? result : { result },
@@ -67,6 +79,7 @@ async function handleOne(msg: RpcRequest, ctx: Parameters<(typeof OPERATIONS)[nu
       } catch (error) {
         const message = error instanceof OpError ? error.message : 'Internal error';
         if (!(error instanceof OpError)) console.error(`MCP ${op.name} error:`, error);
+        await log(false, message);
         return rpcResult(msg.id, { content: [{ type: 'text', text: message }], isError: true });
       }
     }

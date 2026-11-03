@@ -1,6 +1,8 @@
 import { NextRequest } from 'next/server';
 import { apiJson, authenticateApiKey } from '@/lib/api-auth';
 import { OpError, matchOperation } from '@/lib/crm/operations';
+import { activityTarget } from '@/lib/crm/mcp';
+import { logActivity } from '@/lib/activity-log';
 
 // The TAAM CRM REST API. Every route is an operation in lib/crm/operations.ts; the spec is at
 // /api/v1/openapi.json. Auth: Authorization: Bearer taam_… (make keys at /admin/api-keys).
@@ -32,13 +34,15 @@ async function handle(request: NextRequest, { params }: { params: Promise<{ path
   }
   const query = Object.fromEntries(request.nextUrl.searchParams.entries());
 
+  const input = { ...query, ...body, ...match.params };
+  const log = (ok: boolean, error?: string) =>
+    logActivity(auth.db, { source: 'api', actor: auth.key.name, action: match.op.name, target: activityTarget(input), detail: input, ok, error });
   try {
-    const result = await match.op.run(
-      { ...query, ...body, ...match.params },
-      { db: auth.db, origin: request.nextUrl.origin, actor: auth.key }
-    );
+    const result = await match.op.run(input, { db: auth.db, origin: request.nextUrl.origin, actor: auth.key });
+    await log(true);
     return apiJson(result, request.method === 'POST' ? 201 : 200);
   } catch (error) {
+    await log(false, error instanceof OpError ? error.message : 'Internal server error');
     if (error instanceof OpError) return apiJson({ error: error.message }, error.status);
     console.error(`API v1 ${match.op.name} error:`, error);
     return apiJson({ error: 'Internal server error' }, 500);

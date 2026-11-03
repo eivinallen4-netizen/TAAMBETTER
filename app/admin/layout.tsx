@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
-import { CalendarCheck, ExternalLink, Globe, Inbox, KeyRound, LayoutDashboard, Menu, PhoneCall, Share2, Users, Video, X, type LucideIcon } from 'lucide-react';
+import { CalendarCheck, ExternalLink, FileText, Globe, Inbox, KeyRound, LayoutDashboard, Menu, PhoneCall, Share2, Users, Video, X, type LucideIcon } from 'lucide-react';
 import { LogoutButton } from './components/LogoutButton';
 
 const NAV: { heading?: string; links: { href: string; label: string; icon: LucideIcon }[] }[] = [
@@ -23,6 +23,10 @@ const NAV: { heading?: string; links: { href: string; label: string; icon: Lucid
       { href: '/admin/leads', label: 'Free video offers', icon: Video },
       { href: '/admin/contacts', label: 'Contacts', icon: Inbox },
     ],
+  },
+  {
+    heading: 'Website',
+    links: [{ href: '/admin/pages', label: 'SEO pages', icon: FileText }],
   },
   {
     heading: 'Settings',
@@ -59,6 +63,8 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const pathname = usePathname();
   const router = useRouter();
   const [role, setRole] = useState<'admin' | 'setter' | null>(null);
+  // Claude's drafts waiting in /admin/pages, as a badge on the nav link.
+  const [needsReview, setNeedsReview] = useState(0);
   // Remember which page the mobile drawer was opened on, so navigating closes it.
   const [menuOpenOn, setMenuOpenOn] = useState<string | null>(null);
   const menuOpen = menuOpenOn === pathname;
@@ -80,6 +86,18 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       alive = false;
     };
   }, [pathname, router]);
+
+  useEffect(() => {
+    if (role !== 'admin') return;
+    let alive = true;
+    fetch('/api/admin/pages/count', { cache: 'no-store' })
+      .then((r) => r.json())
+      .then((d) => alive && setNeedsReview(Number(d.needs_review) || 0))
+      .catch(() => {});
+    return () => {
+      alive = false;
+    };
+  }, [role, pathname]);
 
   if (pathname === '/admin/login') {
     return <>{children}</>;
@@ -106,6 +124,11 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                     >
                       <Icon className={`h-4 w-4 ${active ? 'text-[#F46325]' : ''}`} />
                       {label}
+                      {href === '/admin/pages' && needsReview > 0 && (
+                        <span className="ml-auto rounded-full bg-amber-400 px-2 py-0.5 text-[11px] font-black text-black" title="Needs review">
+                          {needsReview}
+                        </span>
+                      )}
                     </Link>
                   </li>
                 );

@@ -1,5 +1,7 @@
 import { Client } from '@libsql/client';
 import { initColdcallTables } from './coldcall';
+import { initPagesTables } from './pages/store';
+import { initActivityTable } from './activity-log';
 
 export const CONTACT_QUALIFIER_COLUMNS = ['industry', 'business_stage', 'budget', 'timeline', 'website', 'lead_fit', 'role'] as const;
 
@@ -151,6 +153,11 @@ export async function initializeTables(db: Client): Promise<void> {
 
     // Website cold-call leads the lead finder pushes in through the API, and their call log.
     await initColdcallTables(db);
+
+    // SEO pages at /insights (drafted by Claude over MCP, published from /admin/pages), their
+    // revisions, and the log of every MCP tool call and admin page action.
+    await initPagesTables(db);
+    await initActivityTable(db);
   } catch (err) {
     console.error('Failed to initialize tables:', err);
   }

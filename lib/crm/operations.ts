@@ -22,6 +22,21 @@ import {
   upsertColdcallLeads,
 } from '@/lib/coldcall';
 import { SendError, sendCrmMessage } from './send';
+import {
+  PageError,
+  changePageStatus,
+  createPage,
+  getPageBySlug,
+  listPages,
+  previewPath,
+  publicPageUrl,
+  updatePage,
+  type Actor,
+  type Page,
+} from '@/lib/pages/store';
+import { META_DESCRIPTION_MAX, META_TITLE_MAX, MIN_BODY_WORDS, PAGE_STATUSES, countWords, keywordKey } from '@/lib/pages/rules';
+import { sitePages } from '@/lib/pages/site-pages';
+import { SITE_URL } from '@/lib/site-url';
 
 // Everything Claude (or any script) can do with the TAAM CRM, in one list. The REST API
 // (/api/v1, app/api/v1/[...path]) routes to these by method + path, the MCP endpoint (/api/mcp)
@@ -144,6 +159,63 @@ async function coldcall<T>(fn: () => Promise<T>): Promise<T> {
     throw err;
   }
 }
+
+async function pages<T>(fn: () => Promise<T>): Promise<T> {
+  try {
+    return await fn();
+  } catch (err) {
+    if (err instanceof PageError) {
+      // A taken slug / keyword hands back the page that has it, so Claude can update that one instead.
+      const existing = err.conflicts.map((c) => c.existing);
+      throw new OpError(err.status, existing.length ? `${err.message}. Existing: ${JSON.stringify(existing)}` : err.message);
+    }
+    throw err;
+  }
+}
+
+const claude = (actor: OpContext['actor']): Actor => ({ name: actor.name, kind: 'claude' });
+
+function needSlug(input: Record<string, unknown>): string {
+  const slug = str(input.slug, 200).toLowerCase();
+  if (!slug) throw new OpError(400, 'slug is required');
+  return slug;
+}
+
+async function pageBySlug(ctx: OpContext, slug: string): Promise<Page> {
+  const page = await getPageBySlug(ctx.db, slug);
+  if (!page) throw new OpError(404, `No page with slug "${slug}"`);
+  return page;
+}
+
+function fullPage(p: Page, origin: string) {
+  const { preview_token, ...rest } = p;
+  return {
+    ...rest,
+    url: publicPageUrl(p.slug),
+    preview_url: `${origin}${previewPath(preview_token)}`,
+    word_count: countWords(p.body),
+    admin_url: `${origin}/admin/pages/${p.id}`,
+  };
+}
+
+const pageProps: Record<string, JsonSchema> = {
+  slug: S('URL slug, lowercase-hyphenated; the page lives at /insights/<slug>'),
+  title: S('On-page H1 title'),
+  meta_title: S(`<title> tag, max ${META_TITLE_MAX} characters`),
+  meta_description: S(`Meta description, max ${META_DESCRIPTION_MAX} characters`),
+  main_keyword: S('The one keyword this page targets. Must not be targeted by any other live or draft page'),
+  secondary_keywords: { type: 'array', items: { type: 'string' }, description: 'Supporting keywords' },
+  body: S(`Markdown body, at least ${MIN_BODY_WORDS} words. Use ## for sections (the title is the H1). No images, no raw HTML`),
+  faq: {
+    type: 'array',
+    description: 'FAQ shown under the body and used for FAQPage schema',
+    items: { type: 'object', properties: { question: S('Question'), answer: S('Answer') }, required: ['question', 'answer'] },
+  },
+  schema_jsonld: S('Optional JSON-LD (a JSON string or object). Left empty, Article + FAQPage schema is generated'),
+  source_videos: { type: 'array', items: { type: 'string' }, description: 'YouTube URLs the page was built from' },
+};
+
+const PAGE_RULES = `Rejected if it uses "discount", "deal", "sale", "coupon", "% off", "save"/"savings", "promo code" or a crossed-out price anywhere (TAAM never discounts), if meta_title > ${META_TITLE_MAX} or meta_description > ${META_DESCRIPTION_MAX} characters, or if the body is under ${MIN_BODY_WORDS} words.`;
 
 function rows(result: { rows: unknown[] }) {
   return result.rows.map((r) => ({ ...(r as Record<string, unknown>) }));
@@ -626,6 +698,127 @@ export const OPERATIONS: Operation[] = [
       return { deleted: true };
     },
   },
+
+  // ---------- SEO pages (/insights) ----------
+  {
+    name: 'list_pages',
+    description:
+      'Every page on the site: the /insights SEO pages (any status, with rejection notes on pages the team turned down) AND the hand-built pages (home, about, tools, blog, careers, work), so a duplicate check sees the whole site. Read the rejection notes before suggesting new pages.',
+    method: 'GET',
+    path: '/pages',
+    readOnly: true,
+    input: {
+      type: 'object',
+      properties: {
+        status: S('Only this status. Hand-built pages count as published', { enum: [...PAGE_STATUSES] }),
+        query: S('Search title, slug and keywords'),
+      },
+    },
+    async run(input, { db, origin }) {
+      const status = str(input.status, 30);
+      const query = str(input.query, 100);
+      const { data, counts } = await listPages(db, { status, query, sort: 'updated', limit: 1000 });
+      const q = keywordKey(query);
+      const handBuilt =
+        status && status !== 'published'
+          ? []
+          : sitePages()
+              .filter((p) => !q || keywordKey(`${p.title} ${p.path} ${p.main_keyword}`).includes(q))
+              .map((p) => ({
+                kind: 'hand-built',
+                slug: p.path,
+                title: p.title,
+                main_keyword: p.main_keyword,
+                status: 'published',
+                url: `${SITE_URL}${p.path === '/' ? '' : p.path}`,
+              }));
+      return {
+        counts,
+        data: [
+          ...data.map((p) => ({
+            kind: 'insight',
+            slug: p.slug,
+            title: p.title,
+            main_keyword: p.main_keyword,
+            secondary_keywords: p.secondary_keywords,
+            status: p.status,
+            url: publicPageUrl(p.slug),
+            admin_url: `${origin}/admin/pages/${p.id}`,
+            updated_at: p.updated_at,
+            ...(p.rejection_note ? { rejection_note: p.rejection_note, rejected_at: p.rejected_at } : {}),
+          })),
+          ...handBuilt,
+        ],
+      };
+    },
+  },
+  {
+    name: 'get_page',
+    description: 'One /insights page with every field, its status, word count, preview link and any rejection note.',
+    method: 'GET',
+    path: '/pages/{slug}',
+    readOnly: true,
+    input: { type: 'object', properties: { slug: S('Page slug') }, required: ['slug'] },
+    async run(input, ctx) {
+      return fullPage(await pageBySlug(ctx, needSlug(input)), ctx.origin);
+    },
+  },
+  {
+    name: 'create_page',
+    description: `Draft a new SEO page at /insights/<slug>. It is ALWAYS saved as "needs review" (never live) for the team to check at /admin/pages. If the slug or main keyword is already used (including by a hand-built page), it is rejected and the existing page is returned so you can update_page it instead. ${PAGE_RULES}`,
+    method: 'POST',
+    path: '/pages',
+    input: {
+      type: 'object',
+      properties: pageProps,
+      required: ['slug', 'title', 'meta_title', 'meta_description', 'main_keyword', 'body'],
+    },
+    async run(input, { db, origin, actor }) {
+      return fullPage(await pages(() => createPage(db, input, claude(actor))), origin);
+    },
+  },
+  {
+    name: 'update_page',
+    description: `Change fields on an /insights page (draft or live). Only the fields you send change; a live page updates on the site right away. Send new_slug to change the slug. Same guardrails as create_page: ${PAGE_RULES}`,
+    method: 'PATCH',
+    path: '/pages/{slug}',
+    input: {
+      type: 'object',
+      properties: { ...pageProps, slug: S('Slug of the page to change'), new_slug: S('Optional: a new slug for it') },
+      required: ['slug'],
+    },
+    async run(input, ctx) {
+      const page = await pageBySlug(ctx, needSlug(input));
+      const { slug: _slug, new_slug, ...fields } = input;
+      void _slug;
+      if (new_slug !== undefined) fields.slug = new_slug;
+      return fullPage(await pages(() => updatePage(ctx.db, page.id, fields, claude(ctx.actor))), ctx.origin);
+    },
+  },
+  {
+    name: 'publish_page',
+    description:
+      'Make an /insights page live and add it to the sitemap. Only call this when the user explicitly asks to publish a page; normally the team publishes from /admin/pages after review.',
+    method: 'POST',
+    path: '/pages/{slug}/publish',
+    input: { type: 'object', properties: { slug: S('Page slug') }, required: ['slug'] },
+    async run(input, ctx) {
+      const page = await pageBySlug(ctx, needSlug(input));
+      return fullPage(await pages(() => changePageStatus(ctx.db, page.id, 'publish', claude(ctx.actor))), ctx.origin);
+    },
+  },
+  {
+    name: 'unpublish_page',
+    description: 'Take a live /insights page off the site (back to draft) and out of the sitemap.',
+    method: 'POST',
+    path: '/pages/{slug}/unpublish',
+    input: { type: 'object', properties: { slug: S('Page slug') }, required: ['slug'] },
+    async run(input, ctx) {
+      const page = await pageBySlug(ctx, needSlug(input));
+      return fullPage(await pages(() => changePageStatus(ctx.db, page.id, 'unpublish', claude(ctx.actor))), ctx.origin);
+    },
+  },
+
 
   // ---------- Leads, overview, team ----------
   {

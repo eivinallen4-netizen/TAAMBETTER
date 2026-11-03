@@ -1,0 +1,65 @@
+<title>Backlinks Storyboard</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anton&family=Oswald:wght@400;700&family=Russo+One&family=Montserrat:wght@400;600;700&display=block">
+<style>
+:root{--paper:#e9dcbc;--paper-2:#dfcfa8;--ink:#111111;--ink-2:#3a332a;--orange:#F46325;color-scheme:light}
+*{box-sizing:border-box}
+body{background:var(--paper);color:var(--ink);font:400 15px/1.55 Montserrat,system-ui,sans-serif;padding-inline:clamp(16px,4vw,48px);padding-block:32px 64px}
+header{max-width:1280px;margin:0 auto 28px;display:grid;gap:10px}
+.kicker{font:700 13px/1 Oswald,sans-serif;letter-spacing:.18em;text-transform:uppercase;color:var(--ink-2)}
+h1{font:400 clamp(44px,8vw,96px)/.92 Anton,Impact,sans-serif;letter-spacing:.01em;margin:0;text-wrap:balance}
+h1 span{color:var(--orange)}
+.meta{display:flex;flex-wrap:wrap;gap:8px 18px;font:400 14px/1.4 Oswald,sans-serif;letter-spacing:.06em;text-transform:uppercase}
+.meta b{font-weight:700}
+.intro{max-width:68ch;margin:6px 0 0;color:var(--ink-2)}
+.grid{max-width:1280px;margin:0 auto;display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,290px),1fr));gap:40px 26px}
+.panel{display:grid;gap:10px;align-content:start}
+.frame{position:relative;background:var(--paper-2);aspect-ratio:9/16;max-width:100%;outline:3px solid var(--ink)}
+.frame canvas{width:100%;height:100%;display:block}
+.frame .wait{position:absolute;inset:0;display:grid;place-items:center;font:700 14px Oswald,sans-serif;letter-spacing:.15em;color:var(--ink-2)}
+.row{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap}
+.num{font:400 34px/1 Anton,Impact,sans-serif;background:var(--ink);color:var(--paper);padding:4px 10px 2px;transform:rotate(-3deg)}
+.name{font:400 20px/1.1 "Russo One",sans-serif;text-transform:uppercase}
+.time{flex-basis:100%;font:700 14px/1 Oswald,sans-serif;letter-spacing:.06em;font-variant-numeric:tabular-nums;color:var(--ink-2)}
+.chip{font:700 12px/1 Oswald,sans-serif;letter-spacing:.12em;text-transform:uppercase;padding:5px 8px 4px;border:2px solid var(--ink)}
+.chip.cut{background:var(--orange);border-color:var(--orange);color:var(--ink)}
+dl{margin:0;display:grid;grid-template-columns:1fr;gap:2px 12px}dd{margin-bottom:6px}
+dt{font:700 12px/1.6 Oswald,sans-serif;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-2)}
+dd{margin:0}
+.ost{font:400 15px/1.7 "Russo One",sans-serif;letter-spacing:.03em}
+.ost i{font-style:normal;color:var(--paper);background:var(--ink);padding:1px 6px;margin-right:3px;white-space:nowrap}
+section.notes{max-width:1280px;margin:56px auto 0;border-top:3px solid var(--ink);padding-top:22px;display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,420px),1fr));gap:28px}
+h2{font:400 34px/1 Anton,Impact,sans-serif;margin:0 0 12px;letter-spacing:.01em}
+ul{margin:0;padding-left:1.1em;display:grid;gap:8px;max-width:68ch}
+code{font:600 13px/1.3 ui-monospace,Consolas,monospace;background:var(--paper-2);padding:1px 4px}
+@media (max-width:560px){dl{grid-template-columns:1fr}dt{margin-top:4px}.time{margin-left:0}}
+</style>
+<header>
+  <div class="kicker">TAAM · Constructivist explainer · storyboard for approval</div>
+  <h1>Why Google ranks <span>them</span> above you</h1>
+  <div class="meta"><span><b>Runtime</b> 54.2 s</span><span><b>Format</b> 9:16 vertical · 720 × 1280</span><span><b>Beats</b> 11 · 13 key frames</span><span><b>Scene changes</b> 4 orange wedges</span></div>
+  <p class="intro">Every panel below is rendered live by the same explainer code the animation will use: paper, ink mottle, halftone mascot, wedge and grain included. Times come from your word-level transcript. Orange chips mark full scene changes; everything else carries over continuously.</p>
+</header>
+<main class="grid" id="grid"></main>
+<section class="notes">
+  <div>
+    <h2>Assumptions to check</h2>
+    <ul>
+      <li><b>"The first guy" is the one with the 10 references.</b> The script says "this guy has 10 references… obviously the first guy", which is ambiguous. I put the referenced mascot on the left so he reads as first and gets HIRED.</li>
+      <li><b>&lt;1% reach page 2.</b> Used as spoken. It matches the widely cited Backlinko click-through study (about 0.63% of searchers click a page-2 result). It's drawn as 1 cursor out of 200 (0.5%), so the picture stays under 1%.</li>
+      <li><b>"1 trusted link is worth more than 50 random ones"</b> is the script's illustration, not a measured ratio. It's shown as a balance that 50 can't tip, plus <code>1 &gt; 50</code>.</li>
+      <li><b>Real brand logos.</b> Google's G replaces the word "Google". The ten reference letters carry Apple, Amazon, Netflix, Nike, Tesla, Spotify, Coca-Cola, Starbucks, McDonald's and adidas. The news site is the New York Times and the directory is Yelp. These are the official marks (vector paths from Simple Icons), printed in one ink so they sit in the 3-colour style. Say if you want Google's full four-colour G instead. They're trademarks of their owners: fine for an educational explainer, but the video shouldn't suggest those brands endorse TAAM.</li>
+      <li><b>9:16 at 720 × 1280.</b> That's the same pixel count as the 16:9 reference, so frame speed and texture strength stay the same. I'll upscale to 1080 × 1920 when encoding the MP4. Key content sits between y≈100 and y≈1150 so the Shorts/Reels buttons don't cover it.</li>
+      <li><b>Voiceover audio:</b> I'm assuming <code>Downloads/579121e1….m4a</code> (saved today at 01:59) is this take, and I'll mux it into the MP4. ffmpeg isn't installed on this machine yet, so I'll add it at render time.</li>
+    </ul>
+  </div>
+  <div>
+    <h2>Brand inside the style</h2>
+    <ul>
+      <li><b>TAAM orange #F46325</b> replaces the agitprop red everywhere: disc, wedge, beams, slabs. <b>TAAM ink #111111</b> replaces the black. The cream litho paper stays, so it still reads as a 1920s poster.</li>
+      <li><b>The TAAM wordmark</b> (<code>public/brand/taam-wordmark.svg</code>) is the poster's corner imprint on every scene, and it stamps in on the end card.</li>
+      <li><b>The photomontage is the TAAM mascot</b>: the wave, trophy and phone poses from <code>public/characters</code>, cut out and halftone-screened like the reference robot. No people, hands or silhouettes are drawn. The "two guys" are mascots and the searchers are cursors.</li>
+      <li><b>Lettering</b> stays Anton / Russo One / Oswald, which carries the style. Montserrat only appears on this page.</li>
+      <li><b>On-screen text</b> is key words and numbers only. No subtitles, since you're adding captions in the edit.</li>
+    </ul>
+  </div>
+</section>
