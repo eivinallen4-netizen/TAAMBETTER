@@ -8,6 +8,7 @@ import HomeHero from '@/components/sections/HomeHero';
 import ManifestoSection from '@/components/sections/ManifestoSection';
 import ServicesSection from '@/components/sections/ServicesSection';
 import WorkSection from '@/components/sections/WorkSection';
+import WorkedWithStrip from '@/components/sections/WorkedWithStrip';
 import ProcessSection from '@/components/sections/ProcessSection';
 import FitSection from '@/components/sections/FitSection';
 import CTASection from '@/components/sections/CTASection';
@@ -94,6 +95,8 @@ export default function Home() {
           <Marquee items={['Say WOW', 'Proven team', 'Always hungry', 'Las Vegas']} />
         </div>
       </div>
+
+      <WorkedWithStrip />
 
       <WorkSection projects={publishedProjects} index="01" showReels />
 
