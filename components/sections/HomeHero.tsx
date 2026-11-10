@@ -2,9 +2,7 @@
 
 import Image from 'next/image';
 import { useEffect, useRef, type CSSProperties, type ReactNode } from 'react';
-import ContactCTA from '@/app/components/ContactCTA';
 import LoopVideo from '@/components/editorial/LoopVideo';
-import Arrow from '@/components/editorial/Arrow';
 import useInViewOnce from '@/components/editorial/useInViewOnce';
 
 interface Stat {
@@ -20,14 +18,18 @@ interface HomeHeroProps {
   subtitle: string;
   /** `src` is the still; `video` (optional) loops over it. */
   image: { src: string; alt: string; position?: string; video?: string };
-  /** Pill label next to the last headline line. */
+  /** Label pinned to the top of the video card. */
   pillLabel?: string;
-  /** Credit line under the reel. */
+  /** Credit line for the footage, shown beside the stats. */
   caption?: ReactNode;
   stats: Stat[];
   actions: ReactNode;
-  /** Proof line laid over the reel (featured case study). */
-  note?: ReactNode;
+  /** Proof card stuck onto the bottom of the video card (e.g. the latest case-study result). */
+  proof?: ReactNode;
+  /** Top-left eyebrow (shown on every screen size, so it carries the audience). */
+  eyebrow?: string;
+  /** Top-right eyebrow, hidden on phones. */
+  eyebrowRight?: string;
 }
 
 /** Close match for the site's cubic-bezier(0.16, 1, 0.3, 1). */
@@ -36,7 +38,7 @@ const easeOutExpo = (t: number) => (t >= 1 ? 1 : 1 - 2 ** (-10 * t));
 const prefersReducedMotion = () => window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
 /** Timeline (seconds after first paint): lines rise, then the strike, then the outlined lines fill solid. */
-const T = { rise: 0, strike: 0.6, fill: 0.7, pill: 0.5, rest: 0.5 };
+const T = { rise: 0, strike: 0.6, fill: 0.7, card: 0.25, rest: 0.5 };
 
 /** Delay for the CSS `.enter-*` entrances in globals.css. */
 const d = (s: number) => ({ '--d': `${s}s` }) as CSSProperties;
@@ -67,27 +69,10 @@ function CountUp({ value }: { value: string }) {
   return <span ref={ref}>{value}</span>;
 }
 
-/** Circular "let's talk" sticker that slowly spins; opens the contact form. */
-function TalkBadge() {
-  return (
-    <ContactCTA className="talk-badge group">
-      <svg viewBox="0 0 200 200" className="talk-badge-ring" aria-hidden="true">
-        <defs>
-          <path id="talk-ring" d="M100,100 m-78,0 a78,78 0 1,1 156,0 a78,78 0 1,1 -156,0" />
-        </defs>
-        <text className="fill-current text-[15px] font-extrabold uppercase">
-          <textPath href="#talk-ring" textLength="486" lengthAdjust="spacing">Give us a call • Say wow • Give us a call • Say wow •</textPath>
-        </text>
-      </svg>
-      <span className="talk-badge-core" aria-hidden="true"><Arrow /></span>
-      <span className="sr-only">Give us a call</span>
-    </ContactCTA>
-  );
-}
-
 /**
- * Homepage opener. Fits the first screen: the promise rises in and its outlined lines fill solid,
- * with the ask and the proof visible before any scroll. Below, the cinematic reel opens up as you scroll.
+ * Homepage opener, split in two: the promise and the ask on the left, the footage on the right
+ * with the latest result stuck onto it like a sticker. The numbers and the footage credit run
+ * along the bottom rule. Everything fits the first screen on a laptop.
  */
 export default function HomeHero({
   title,
@@ -97,46 +82,17 @@ export default function HomeHero({
   image,
   stats,
   actions,
-  note,
+  proof,
   pillLabel = 'On set, Las Vegas',
   caption,
+  eyebrow = 'Content marketing agency',
+  eyebrowRight = 'Las Vegas, NV',
 }: HomeHeroProps) {
   const lines = title.split('\n');
-
-  // The reel opens up as its top travels from the bottom of the viewport to 15% from the top.
-  const reelRef = useRef<HTMLDivElement>(null);
-  const reelCardRef = useRef<HTMLDivElement>(null);
-  const reelImgRef = useRef<HTMLDivElement>(null);
-  useEffect(() => {
-    const reel = reelRef.current;
-    const card = reelCardRef.current;
-    const img = reelImgRef.current;
-    if (!reel || !card || !img || prefersReducedMotion()) return;
-    let frame = 0;
-    const update = () => {
-      frame = 0;
-      const vh = window.innerHeight;
-      const p = Math.min(1, Math.max(0, (vh - reel.getBoundingClientRect().top) / (vh * 0.85)));
-      card.style.transform = `scale(${0.82 + 0.18 * p})`;
-      img.style.transform = `translateY(${-8 * (1 - p)}%)`;
-    };
-    const onScroll = () => {
-      if (!frame) frame = requestAnimationFrame(update);
-    };
-    update();
-    window.addEventListener('scroll', onScroll, { passive: true });
-    window.addEventListener('resize', onScroll);
-    return () => {
-      cancelAnimationFrame(frame);
-      window.removeEventListener('scroll', onScroll);
-      window.removeEventListener('resize', onScroll);
-    };
-  }, []);
 
   const renderLine = (text: string, i: number) => {
     const isFill = i >= fillFrom;
     const isStrike = i === strikeLine;
-    const isLast = i === lines.length - 1;
 
     let content: ReactNode = text;
     if (isStrike) {
@@ -172,48 +128,71 @@ export default function HomeHero({
     }
 
     return (
-      <span key={i} aria-hidden="true" className="flex items-center gap-[0.18em] [overflow-y:clip] pb-[0.06em] -mb-[0.06em]">
-        <span className="enter-rise block shrink-0" style={d(T.rise + 0.06 * i)}>
+      <span key={i} aria-hidden="true" className="block [overflow-y:clip] pb-[0.06em] -mb-[0.06em]">
+        <span className="enter-rise block" style={d(T.rise + 0.06 * i)}>
           {content}
         </span>
-        {isLast && (
-          <span className="enter-pill hero-pill hidden sm:block" style={d(T.pill)}>
-            <Image src={image.src} alt="" fill priority sizes="60vw" className="object-cover" style={{ objectPosition: "center 30%" }} />
-            {image.video && <LoopVideo src={image.video} position="center 30%" />}
-            <span className="hero-pill-label">
-              <span className="live-dot" /> {pillLabel}
-            </span>
-          </span>
-        )}
       </span>
     );
   };
 
   return (
     <section className="tone-orange relative overflow-clip">
-      <div className="gutter flex min-h-svh flex-col pt-28 md:pt-32 pb-8 md:pb-10">
+      {/* Extra bottom room: the tilted ribbon below overlaps this section's last ~5rem. */}
+      <div className="gutter flex min-h-svh flex-col pt-28 md:pt-32 pb-20 md:pb-28">
         <div className="enter-fade flex items-baseline justify-between gap-6" style={d(0.05)}>
-          <p className="eyebrow">Content marketing agency</p>
-          <p className="eyebrow hidden sm:block">Las Vegas, NV</p>
+          <p className="eyebrow">{eyebrow}</p>
+          <p className="eyebrow hidden sm:block">{eyebrowRight}</p>
         </div>
 
-        <div className="relative my-auto py-10 md:py-12">
-          <h1 className="display hero-type" aria-label={lines.join(' ')}>
-            {lines.map(renderLine)}
-          </h1>
-          <div className="enter-pop absolute right-0 top-[8%] hidden lg:block" style={d(T.rest + 0.2)}>
-            <TalkBadge />
+        <div className="my-auto grid grid-cols-12 items-center gap-x-6 lg:gap-x-14 gap-y-12 py-10 md:py-12 lg:py-8">
+          {/* The promise and the ask. */}
+          <div className="col-span-12 lg:col-span-7">
+            <h1 className="display hero-type" aria-label={lines.join(' ')}>
+              {lines.map(renderLine)}
+            </h1>
+            <p
+              className="enter-fade mt-8 md:mt-10 max-w-xl font-medium leading-relaxed text-[0.98rem] md:text-[1.1rem]"
+              style={d(T.rest)}
+            >
+              {subtitle}
+            </p>
+            <div
+              className="enter-fade mt-7 flex flex-col sm:flex-row sm:items-center lg:flex-col lg:items-start xl:flex-row xl:items-center gap-x-6 gap-y-3"
+              style={d(T.rest + 0.1)}
+            >
+              {actions}
+            </div>
+          </div>
+
+          {/* The footage, with the latest result stuck onto it. */}
+          <div className="enter-fade relative col-span-12 sm:col-span-10 sm:col-start-2 md:col-span-8 md:col-start-3 lg:col-span-5 lg:col-start-8" style={d(T.card)}>
+            {/* Pinned right on desktop; the card's width follows its height (see .hero-card). */}
+            <div className="relative lg:ml-auto lg:w-fit">
+              <div className="media-card hero-card aspect-[4/5] bg-black">
+                <Image
+                  src={image.src}
+                  alt={image.alt}
+                  fill
+                  priority
+                  sizes="(min-width: 1024px) 40vw, 90vw"
+                  className="object-cover"
+                  style={{ objectPosition: image.position }}
+                />
+                {image.video && <LoopVideo src={image.video} position={image.position} />}
+                <div className="absolute inset-0 bg-gradient-to-b from-black/35 via-transparent to-black/45" aria-hidden="true" />
+                <span className="hero-pill-label hero-card-label">
+                  <span className="live-dot" /> {pillLabel}
+                </span>
+              </div>
+              {proof && <div className="hero-sticker">{proof}</div>}
+            </div>
           </div>
         </div>
 
-        <div className="grid grid-cols-12 gap-x-6 gap-y-8 items-end border-t rule pt-6 md:pt-8">
-          <p className="enter-fade col-span-12 md:col-span-6 lg:col-span-4 font-medium leading-relaxed text-[0.98rem] md:text-[1.05rem]" style={d(T.rest)}>
-            {subtitle}
-          </p>
-          <div className="enter-fade col-span-12 md:col-span-6 lg:col-span-4 flex flex-wrap gap-3 md:justify-end lg:justify-start" style={d(T.rest + 0.1)}>
-            {actions}
-          </div>
-          <dl className="enter-fade col-span-12 lg:col-span-4 grid grid-cols-3 gap-4" style={d(T.rest + 0.2)}>
+        {/* The numbers and the footage credit, along the bottom rule. */}
+        <div className="enter-fade grid grid-cols-12 items-end gap-x-6 gap-y-6 border-t rule pt-6 md:pt-8" style={d(T.rest + 0.2)}>
+          <dl className="col-span-12 lg:col-span-6 grid grid-cols-3 gap-4">
             {stats.slice(0, 3).map((s) => (
               <div key={s.label} className="flex flex-col">
                 <dt className="eyebrow text-[0.62rem] mt-1 order-2 text-[color:var(--tone-muted)]">{s.label}</dt>
@@ -223,25 +202,12 @@ export default function HomeHero({
               </div>
             ))}
           </dl>
-        </div>
-      </div>
-
-      {/* The reel: starts inset, opens to full width as it scrolls up. */}
-      <div ref={reelRef} className="gutter pb-[var(--gutter)]">
-        <div ref={reelCardRef} className="media-card aspect-[4/5] sm:aspect-[16/9] lg:aspect-[21/9] origin-top">
-          <div ref={reelImgRef} className="absolute inset-[-8%_0]">
-            <Image src={image.src} alt={image.alt} fill sizes="100vw" className="object-cover" style={{ objectPosition: image.position }} />
-            {image.video && <LoopVideo src={image.video} position={image.position} />}
-          </div>
-          <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent" aria-hidden="true" />
-          {note && (
-            <div className="absolute inset-x-0 bottom-0 z-10 flex flex-wrap items-end justify-between gap-4 p-6 md:p-10">
-              <span className="eyebrow">Latest result</span>
-              <div className="text-base md:text-xl font-bold max-w-xl md:text-right">{note}</div>
+          {caption && (
+            <div className="col-span-12 lg:col-span-5 lg:col-start-8 text-sm font-semibold leading-relaxed text-[color:var(--tone-muted)]">
+              {caption}
             </div>
           )}
         </div>
-        {caption && <div className="mt-4 text-sm font-semibold leading-relaxed text-[color:var(--tone-muted)]">{caption}</div>}
       </div>
     </section>
   );

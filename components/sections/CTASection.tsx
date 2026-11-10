@@ -22,6 +22,8 @@ interface CTASectionProps {
   faqs?: { q: string; a: ReactNode }[];
 }
 
+const norm = (s: string) => s.replace(/\s+/g, ' ').trim().toLowerCase();
+
 /** Closing poster: a giant two-line call, copy and a single action, off-axis. */
 export default function CTASection({
   title,
@@ -38,7 +40,8 @@ export default function CTASection({
   return (
     <section className={`tone-${tone} relative overflow-clip`}>
       <div className="gutter section-pad">
-        <p className="eyebrow mb-10 max-w-md">{title}</p>
+        {/* Skip the small line when it just repeats the poster headline underneath it. */}
+        {norm(title) !== norm(headline) && <p className="eyebrow mb-10 max-w-md">{title}</p>}
         <div className="relative">
           <Headline text={headline} outlineFrom={1} className="display-mega" />
           {/* On the phone, waiting for yours. */}
@@ -50,11 +53,7 @@ export default function CTASection({
         <div className="grid grid-cols-12 gap-x-6 gap-y-14 mt-16 md:mt-24">
           {nextSteps && nextSteps.length > 0 && (
             <Reveal className="col-span-12 md:col-span-6 lg:col-span-5">
-              <div className="relative">
-                <p className="eyebrow mb-6">What happens next</p>
-                {/* Sitting on the list, flipping a coin. */}
-                <Mascot pose="sitting" size={128} className="absolute z-10 bottom-0 right-4 translate-y-[26%] w-24 md:w-28 h-auto" />
-              </div>
+              <p className="eyebrow mb-6">What happens next</p>
               <ol className="border-t-2 rule">
                 {nextSteps.map((item, i) => (
                   <li key={item} className="flex gap-6 border-b-2 rule py-5">

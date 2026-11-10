@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, type ReactNode } from 'react';
 import Script from 'next/script';
 import Mascot from '@/components/editorial/Mascot';
 
@@ -19,8 +19,12 @@ interface Props {
   token: string;
   eventUrl: string;
   name: string;
+  /** Prefills Calendly so they don't type it twice (the website form already has it). */
+  email?: string;
   phone: string;
   initial: { callStart: string | null } | null;
+  /** Replaces the default "Video call / Pick a time." heading (the website form brings its own). */
+  heading?: ReactNode;
 }
 
 function formatCall(iso: string | null): string {
@@ -38,7 +42,7 @@ function post(token: string, body: Record<string, unknown>) {
   });
 }
 
-export default function CallBooking({ token, eventUrl, name, phone, initial }: Props) {
+export default function CallBooking({ token, eventUrl, name, email, phone, initial, heading }: Props) {
   const [booked, setBooked] = useState<{ callStart: string | null } | null>(initial);
   const widget = useRef<HTMLDivElement>(null);
   const started = useRef(false);
@@ -71,7 +75,7 @@ export default function CallBooking({ token, eventUrl, name, phone, initial }: P
     window.Calendly.initInlineWidget({
       url: url.toString(),
       parentElement: widget.current,
-      prefill: { name },
+      prefill: email ? { name, email } : { name },
       utm: { utmSource: 'taam', utmMedium: 'appointment-link', utmContent: token },
     });
   }
@@ -112,10 +116,14 @@ export default function CallBooking({ token, eventUrl, name, phone, initial }: P
 
   return (
     <div>
-      <p className="eyebrow mb-6">Video call</p>
-      <h2 className="display display-lg mb-10">
-        Pick a <span className="outline-type">time.</span>
-      </h2>
+      {heading ?? (
+        <>
+          <p className="eyebrow mb-6">Video call</p>
+          <h2 className="display display-lg mb-10">
+            Pick a <span className="outline-type">time.</span>
+          </h2>
+        </>
+      )}
       <div className="overflow-hidden rounded-[var(--radius-card)] bg-white">
         <div ref={widget} className="h-[1100px] w-full md:h-[760px]" />
       </div>

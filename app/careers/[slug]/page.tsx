@@ -5,6 +5,8 @@ import PageHero from '@/components/sections/PageHero';
 import Section from '@/components/editorial/Section';
 import Headline from '@/components/editorial/Headline';
 import Mascot from '@/components/editorial/Mascot';
+import MediaCard from '@/components/editorial/MediaCard';
+import { avantGuardCredit } from '@/components/editorial/ShortCredit';
 import Reveal from '@/components/editorial/Reveal';
 import Arrow from '@/components/editorial/Arrow';
 import { CAREER_ROLES, getRole } from '@/app/lib/careers';
@@ -94,6 +96,16 @@ export default async function CareerRolePage({ params }: { params: Promise<{ slu
             We can&apos;t train yet. This seat is for someone who already does this job well and can prove it.
           </p>
         </div>
+        {role.slug === 'videographer' && (
+          <div className="mt-20 md:mt-28 grid grid-cols-1 sm:grid-cols-2 gap-6">
+            <Reveal y={60}>
+              <MediaCard src="/avant-guard/revuelto.jpg" video="/avant-guard/revuelto.mp4" alt="An Avant Guard short TAAM filmed and edited: a Lamborghini Revuelto" credit={avantGuardCredit} aspect="aspect-[4/5]" sizes="(min-width: 640px) 50vw, 100vw" />
+            </Reveal>
+            <Reveal y={60} delay={0.1} className="sm:mt-24">
+              <MediaCard src="/avant-guard/21c.jpg" video="/avant-guard/21c.mp4" alt="An Avant Guard short TAAM filmed and edited: a Czinger 21C" credit={avantGuardCredit} aspect="aspect-[4/5]" sizes="(min-width: 640px) 50vw, 100vw" />
+            </Reveal>
+          </div>
+        )}
       </Section>
 
       <Section tone="orange" index="02" label="Apply" id="apply" className="scroll-mt-20">

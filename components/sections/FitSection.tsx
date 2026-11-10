@@ -1,4 +1,3 @@
-import Link from 'next/link';
 import ContactCTA from '@/app/components/ContactCTA';
 import Headline from '@/components/editorial/Headline';
 import Mascot from '@/components/editorial/Mascot';
@@ -11,6 +10,8 @@ interface FitSectionProps {
   notFit?: string[];
   tone?: Tone;
   index?: string;
+  /** Label for the form button (the homepage uses one label everywhere). */
+  ctaLabel?: string;
 }
 
 const defaultGoodFit = [
@@ -35,6 +36,7 @@ export default function FitSection({
   notFit = defaultNotFit,
   tone = 'orange',
   index = '02',
+  ctaLabel = "Sounds like us. Let's talk",
 }: FitSectionProps) {
   return (
     <Section tone={tone} index={index} label="Is this you?">
@@ -45,9 +47,6 @@ export default function FitSection({
             Better marketing for the best businesses. If the first list sounds like you, we should talk. If it
             doesn&apos;t, call anyway. We&apos;ll point you to someone who fits.
           </p>
-          <Link href="/blog/dont-let-your-agency-hold-you-back" className="link-line mt-4 inline-block text-sm font-semibold">
-            Same agency for years? Learn more <Arrow />
-          </Link>
         </Reveal>
       </div>
 
@@ -58,18 +57,9 @@ export default function FitSection({
 
       <Reveal className="mt-20 md:mt-28 flex flex-col sm:flex-row sm:items-center gap-x-10 gap-y-6">
         <ContactCTA className="btn btn-solid self-start">
-          Sounds like us. Let&apos;s talk <Arrow />
+          {ctaLabel} <Arrow />
         </ContactCTA>
-        <p className="font-semibold">
-          Not ready for a retainer?{' '}
-          <Link href="/tools" className="link-line">
-            Check your site free
-          </Link>
-          . Already open and selling?{' '}
-          <Link href="/free-video-offer" className="link-line">
-            Get a free week of video <Arrow />
-          </Link>
-        </p>
+        <p className="font-semibold">Month to month, no contract. Not a fit? We&apos;ll tell you, and point you to someone who is.</p>
       </Reveal>
     </Section>
   );

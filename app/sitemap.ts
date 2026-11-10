@@ -69,6 +69,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       changeFrequency: 'monthly' as const,
       priority: 0.6,
     },
+    {
+      url: `${baseUrl}/privacy`,
+      lastModified: new Date('2026-11-09').toISOString(),
+      changeFrequency: 'yearly' as const,
+      priority: 0.2,
+    },
     ...CAREER_ROLES.map((role) => ({
       url: `${baseUrl}/careers/${role.slug}`,
       lastModified: new Date().toISOString(),

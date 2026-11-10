@@ -31,10 +31,18 @@ interface WorkSectionProps {
   index?: string;
   /** Play the featured project's reels inline, so the proof doesn't take a click. */
   showReels?: boolean;
+  /** Label for the form button under the reels (the homepage uses one label everywhere). */
+  ctaLabel?: string;
 }
 
 /** Featured case study: a full-bleed card, then title and hard numbers split asymmetrically. */
-export default function WorkSection({ projects, tone = 'ink', index = '03', showReels = false }: WorkSectionProps) {
+export default function WorkSection({
+  projects,
+  tone = 'ink',
+  index = '03',
+  showReels = false,
+  ctaLabel = 'Want this for your business?',
+}: WorkSectionProps) {
   const [featured, ...rest] = projects;
   if (!featured) return null;
   const reels = showReels ? (featured.videos ?? []).slice(0, 4) : [];
@@ -99,12 +107,14 @@ export default function WorkSection({ projects, tone = 'ink', index = '03', show
           </div>
           <Reveal className="relative mt-12 flex flex-col sm:flex-row sm:items-center gap-x-10 gap-y-5">
             <ContactCTA className="btn btn-solid self-start">
-              Want this for your business? <Arrow />
+              {ctaLabel} <Arrow />
             </ContactCTA>
             <p className="font-semibold text-[color:var(--tone-muted)]">
               Same team, same process. About two minutes to tell us about yours.
             </p>
-            <Mascot pose="money-gun" size={176} className="mascot-bob hidden md:block ml-auto w-36 lg:w-44 h-auto" />
+            {rest.length === 0 && (
+              <Link href="/work" className="eyebrow link-line sm:ml-auto">All work <Arrow /></Link>
+            )}
           </Reveal>
         </div>
       )}
@@ -123,9 +133,12 @@ export default function WorkSection({ projects, tone = 'ink', index = '03', show
         </div>
       )}
 
-      <div className="mt-20 flex justify-end">
-        <Link href="/work" className="eyebrow link-line">All work <Arrow /></Link>
-      </div>
+      {/* With reels and no other projects, "All work" already sits in the CTA row above. */}
+      {(reels.length === 0 || rest.length > 0) && (
+        <div className="mt-20 flex justify-end">
+          <Link href="/work" className="eyebrow link-line">All work <Arrow /></Link>
+        </div>
+      )}
     </Section>
   );
 }

@@ -10,6 +10,14 @@ export function calendlyEventUrl(): string {
   return (process.env.CALENDLY_EVENT_URL || '').trim();
 }
 
+/**
+ * The call a qualified lead books straight from the website form. CALENDLY_DISCOVERY_URL can point at
+ * its own event type; until it's set, they book the same event the appointment links use.
+ */
+export function discoveryCallUrl(): string {
+  return (process.env.CALENDLY_DISCOVERY_URL || '').trim() || calendlyEventUrl();
+}
+
 export function calendlyConfigured() {
   return {
     token: Boolean(process.env.CALENDLY_TOKEN),

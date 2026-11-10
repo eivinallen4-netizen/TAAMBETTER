@@ -12,6 +12,13 @@ export const maintenanceAmericaCredit: Credit = {
   note: 'From their socials · Idea, filmed & edited by TAAM',
 };
 
+/** Avant Guard Coatings: supercar reels we shot and cut for them. */
+export const avantGuardCredit: Credit = {
+  client: 'Avant Guard',
+  href: 'https://www.agprocoatings.com/',
+  note: 'Filmed & edited by TAAM',
+};
+
 /** Client credit pinned to the bottom of a short: who it's for, where it came from, who made it. */
 export default function ShortCredit({ client, href, note }: Credit) {
   return (

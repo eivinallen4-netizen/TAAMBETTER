@@ -4,6 +4,8 @@ import PageHero from '@/components/sections/PageHero';
 import Section from '@/components/editorial/Section';
 import Headline from '@/components/editorial/Headline';
 import Mascot from '@/components/editorial/Mascot';
+import MediaCard from '@/components/editorial/MediaCard';
+import { avantGuardCredit } from '@/components/editorial/ShortCredit';
 import Reveal from '@/components/editorial/Reveal';
 import Arrow from '@/components/editorial/Arrow';
 import { CAREER_ROLES } from '@/app/lib/careers';
@@ -31,16 +33,19 @@ export default function CareersPage() {
       />
 
       <Section tone="ink" index="01" label="Senior only">
-        <div className="grid grid-cols-12 gap-x-6 gap-y-14 items-end">
-          <div className="col-span-12 lg:col-span-7">
-            <Headline text={"We can't\ntrain you\nyet."} outlineFrom={2} className="display-lg" />
-          </div>
-          <Reveal className="col-span-12 md:col-span-8 lg:col-span-5">
-            <p className="lede text-[color:var(--tone-muted)]">
-              We&apos;re a hungry team growing fast, and we don&apos;t have a training program yet. So every seat is
-              senior: you walk in knowing the job, with numbers or a reel to prove it, and you run with it on day one.
-            </p>
+        <div className="grid grid-cols-12 gap-x-6 gap-y-14">
+          <Reveal className="col-span-12 md:col-span-6 lg:col-span-5" y={60}>
+            <MediaCard src="/avant-guard/car-edit.jpg" video="/avant-guard/car-edit.mp4" alt="An Avant Guard short TAAM filmed and edited: a supercar rolling off the delivery truck" credit={avantGuardCredit} aspect="aspect-[4/5]" sizes="(min-width: 768px) 45vw, 100vw" />
           </Reveal>
+          <div className="col-span-12 md:col-span-6 lg:col-span-6 lg:col-start-7 self-end">
+            <Headline text={"We can't\ntrain you\nyet."} outlineFrom={2} className="display-lg" />
+            <Reveal className="mt-10 max-w-lg">
+              <p className="lede text-[color:var(--tone-muted)]">
+                We&apos;re a hungry team growing fast, and we don&apos;t have a training program yet. So every seat is
+                senior: you walk in knowing the job, with numbers or a reel to prove it, and you run with it on day one.
+              </p>
+            </Reveal>
+          </div>
         </div>
       </Section>
 

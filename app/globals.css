@@ -235,6 +235,38 @@ body {
   .hero-type {
     font-size: min(12.4vw, 14.2svh);
   }
+  /* Split hero: the headline shares the row with the footage card. */
+  @media (min-width: 1024px) {
+    .hero-type {
+      font-size: min(6.5vw, 10.4svh);
+    }
+    /* Height-led, so the 4:5 card always fits the first screen; its width follows the ratio. */
+    .hero-card {
+      height: min(58svh, 40rem);
+    }
+  }
+  .hero-pill-label.hero-card-label {
+    top: 1rem;
+    bottom: auto;
+    left: 1rem;
+  }
+  /* Latest result, stuck onto the footage: overlaps the card's bottom edge on phones,
+     hangs off its lower-left corner on desktop. */
+  .hero-sticker {
+    position: relative;
+    z-index: 2;
+    margin: -3rem 1rem 0;
+    transform: rotate(-2deg);
+  }
+  @media (min-width: 1024px) {
+    .hero-sticker {
+      position: absolute;
+      left: -2.5rem;
+      bottom: 2rem;
+      width: min(24rem, 92%);
+      margin: 0;
+    }
+  }
   .strike-bar {
     position: absolute;
     left: -0.04em;
@@ -244,17 +276,6 @@ body {
     background: var(--taam-near-black);
     transform-origin: left center;
     border-radius: 999px;
-  }
-  .hero-pill {
-    position: relative;
-    flex: 1 1 auto;
-    min-width: 0;
-    height: 0.74em;
-    overflow: hidden;
-    border-radius: 999px;
-    background: #000;
-    align-self: center;
-    margin-top: 0.02em;
   }
   .hero-pill-label {
     position: absolute;
@@ -284,50 +305,6 @@ body {
   @keyframes live-pulse {
     50% {
       opacity: 0.25;
-    }
-  }
-
-  /* Spinning "let's talk" sticker */
-  .talk-badge {
-    position: relative;
-    display: grid;
-    place-items: center;
-    width: clamp(8.5rem, 11vw, 11.5rem);
-    aspect-ratio: 1;
-    border-radius: 999px;
-    background: var(--taam-near-black);
-    color: var(--taam-white);
-    cursor: pointer;
-    transition: transform 0.5s var(--ease-out-expo), background-color 0.3s;
-  }
-  .talk-badge:hover {
-    transform: scale(1.08);
-    background: var(--taam-white);
-    color: var(--taam-near-black);
-  }
-  .talk-badge:focus-visible {
-    outline: 2px solid var(--taam-white);
-    outline-offset: 6px;
-  }
-  .talk-badge-ring {
-    position: absolute;
-    inset: 0;
-    animation: spin 16s linear infinite;
-  }
-  .talk-badge:hover .talk-badge-ring {
-    animation-duration: 5s;
-  }
-  .talk-badge-core {
-    font-size: clamp(1.75rem, 2.4vw, 2.5rem);
-    font-weight: 900;
-    transition: transform 0.5s var(--ease-out-expo);
-  }
-  .talk-badge:hover .talk-badge-core {
-    transform: rotate(45deg);
-  }
-  @keyframes spin {
-    to {
-      transform: rotate(360deg);
     }
   }
 
@@ -425,12 +402,6 @@ body {
   .enter-strike {
     animation: enter-strike 0.6s var(--ease-out-expo) var(--d, 0s) both;
   }
-  .enter-pill {
-    animation: enter-pill 1s var(--ease-out-expo) var(--d, 0s) both;
-  }
-  .enter-pop {
-    animation: enter-pop 0.9s var(--ease-out-expo) var(--d, 0s) both;
-  }
   @keyframes enter-rise {
     from {
       transform: translateY(105%);
@@ -458,29 +429,16 @@ body {
       transform: scaleX(0);
     }
   }
-  @keyframes enter-pill {
-    from {
-      clip-path: inset(0 100% 0 0 round 999px);
-    }
-  }
-  @keyframes enter-pop {
-    from {
-      transform: scale(0) rotate(-90deg);
-    }
-  }
 }
 
 @media (prefers-reduced-motion: reduce) {
   .marquee,
-  .talk-badge-ring,
   .live-dot,
   .mascot-pop,
   .mascot-bob,
   .enter-rise,
   .enter-fade,
-  .enter-strike,
-  .enter-pill,
-  .enter-pop {
+  .enter-strike {
     animation: none;
   }
   .enter-unfill {

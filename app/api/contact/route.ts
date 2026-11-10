@@ -3,6 +3,8 @@ import type { NextRequest } from 'next/server';
 import { createClient } from '@libsql/client';
 import { initializeTables } from '@/lib/init-tables';
 import { saveContact } from '@/lib/contacts';
+import { createAppointmentLink } from '@/lib/appointments';
+import { discoveryCallUrl } from '@/lib/calendly';
 import { getClientIp, logger } from '@/lib/logger';
 import { createRateLimiter, handleRateLimit } from '@/lib/ratelimit';
 import {
@@ -68,20 +70,20 @@ function getDb() {
   return db;
 }
 
-async function writeToTurso(contact: Contact): Promise<{ success: boolean; error?: string }> {
+async function writeToTurso(contact: Contact): Promise<{ success: boolean; contactId?: string; error?: string }> {
   try {
     const servicesStr = Array.isArray(contact.services_interested)
       ? contact.services_interested.join(', ')
       : (contact.services_interested || '');
 
-    await saveContact(getDb(), {
+    const contactId = await saveContact(getDb(), {
       ...contact,
       biggest_challenge: contact.biggest_challenge || '',
       services_interested: servicesStr,
       business_name: contact.business_name || '',
     });
 
-    return { success: true };
+    return { success: true, contactId };
   } catch (err) {
     return { success: false, error: err instanceof Error ? err.message : 'Unknown Turso error' };
   }
@@ -176,5 +178,26 @@ export async function POST(request: NextRequest) {
     console.error('Turso write failed:', tursoResult.error);
   }
 
-  return Response.json({ success: true, completion_status: contact.completion_status, lead_fit: contact.lead_fit });
+  // Speed to lead: a qualified lead books the call right on the confirmation screen. The booking runs
+  // through an appointment link like the setters' ones, so it lands on this contact in the CRM.
+  let booking: { token: string; eventUrl: string } | null = null;
+  const qualified = contact.lead_fit === 'strong' || contact.lead_fit === 'possible';
+  const eventUrl = discoveryCallUrl();
+  if (isFinalSubmit && isComplete && qualified && eventUrl && tursoResult.contactId) {
+    try {
+      const link = await createAppointmentLink(getDb(), {
+        clientName: name,
+        businessName,
+        socialUrl: website,
+        contactId: tursoResult.contactId,
+        createdBy: 'website-form',
+        createdByName: 'Website form',
+      });
+      booking = { token: link.token, eventUrl };
+    } catch (err) {
+      console.error('Booking link failed, falling back to a callback:', err);
+    }
+  }
+
+  return Response.json({ success: true, completion_status: contact.completion_status, lead_fit: contact.lead_fit, booking });
 }
