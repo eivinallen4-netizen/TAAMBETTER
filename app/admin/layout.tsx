@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
-import { CalendarCheck, ExternalLink, FileText, Globe, Inbox, KeyRound, LayoutDashboard, Menu, PhoneCall, Share2, Users, Video, X, type LucideIcon } from 'lucide-react';
+import { CalendarCheck, ExternalLink, FileText, Globe, Inbox, KeyRound, LayoutDashboard, Menu, PhoneCall, Presentation, Share2, Users, Video, X, type LucideIcon } from 'lucide-react';
 import { LogoutButton } from './components/LogoutButton';
 
 const NAV: { heading?: string; links: { href: string; label: string; icon: LucideIcon }[] }[] = [
@@ -20,6 +20,7 @@ const NAV: { heading?: string; links: { href: string; label: string; icon: Lucid
     links: [
       { href: '/admin/appointments', label: 'Appointments', icon: CalendarCheck },
       { href: '/admin/coldcall', label: 'Website cold calls', icon: PhoneCall },
+      { href: '/admin/website-deck', label: 'Website slides', icon: Presentation },
       { href: '/admin/leads', label: 'Free video offers', icon: Video },
       { href: '/admin/contacts', label: 'Contacts', icon: Inbox },
     ],

@@ -11,8 +11,8 @@ import { INTEREST_IMAGES, money, type DeckData, type DeckOverrides, type SlideRe
 export const SLIDE_W = 1920;
 export const SLIDE_H = 1080;
 
-const ORANGE = '#F46325';
-const INK = '#111111';
+export const ORANGE = '#F46325';
+export const INK = '#111111';
 
 /** Most lines a list on a slide can grow to in the editor. */
 const MAX_LINES = 4;
@@ -99,12 +99,12 @@ function AddItem({ onClick, label = 'Add line', className = 'mt-6' }: { onClick:
 }
 
 /** The TAAM wordmark in white, as a plain image so it survives the .pptx export. */
-function Wordmark({ height }: { height: number }) {
+export function Wordmark({ height }: { height: number }) {
   // eslint-disable-next-line @next/next/no-img-element
   return <img src="/brand/deck/taam-wordmark-white.svg" alt="TAAM" style={{ height, width: (height * 1447.89) / 361.08 }} />;
 }
 
-function Frame({
+export function Frame({
   tone,
   children,
   deck,
@@ -115,7 +115,8 @@ function Frame({
 }: {
   tone: SlideRef['tone'];
   children: ReactNode;
-  deck: DeckData;
+  /** Only the name in the footer is read, so other decks can pass just that. */
+  deck: Pick<DeckData, 'client'>;
   index: number;
   total: number;
   bare?: boolean;
@@ -142,17 +143,17 @@ function Frame({
 }
 
 /** Outlined display type (stroke painted under the fill, so Montserrat's overlaps don't show). */
-const outline = (tone: SlideRef['tone'], width = 4): CSSProperties => ({
+export const outline = (tone: SlideRef['tone'], width = 4): CSSProperties => ({
   color: tone === 'orange' ? ORANGE : INK,
   WebkitTextStroke: `${width}px #fff`,
   paintOrder: 'stroke fill',
 });
 
-function Kicker({ children }: { children: ReactNode }) {
+export function Kicker({ children }: { children: ReactNode }) {
   return <p className="text-[24px] font-black uppercase tracking-[0.3em] text-white/70">{children}</p>;
 }
 
-function Title({ children, size = 120 }: { children: ReactNode; size?: number }) {
+export function Title({ children, size = 120 }: { children: ReactNode; size?: number }) {
   return (
     <h2 className="mt-5 font-black uppercase leading-[0.9] tracking-[-0.02em]" style={{ fontSize: size }}>
       {children}
@@ -161,7 +162,7 @@ function Title({ children, size = 120 }: { children: ReactNode; size?: number })
 }
 
 /** A small mascot accent. The pitch carries the slide; the character only adds a wink. */
-function Accent({ src, className }: { src: string; className: string }) {
+export function Accent({ src, className }: { src: string; className: string }) {
   return (
     // eslint-disable-next-line @next/next/no-img-element
     <img src={src} alt="" className={`pointer-events-none absolute object-contain ${className}`} style={{ filter: 'drop-shadow(0 12px 20px rgba(0,0,0,0.2))' }} />
