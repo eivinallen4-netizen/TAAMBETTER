@@ -76,7 +76,7 @@ export default function Home() {
         fillFrom={2}
         subtitle={hero.subtitle}
         stats={content.stats}
-        image={{ src: hero.imageSrc, video: hero.videoSrc, alt: 'An Avant Guard short TAAM filmed and edited: a supercar rolling off the delivery truck' }}
+        image={{ src: hero.imageSrc, video: hero.videoSrc, alt: 'An Avant Guard short TAAM filmed and edited: a Czinger 21C' }}
         pillLabel="Filmed by TAAM"
         caption={
           <>
@@ -84,7 +84,7 @@ export default function Home() {
             <a href={avantGuardCredit.href} target="_blank" rel="noopener noreferrer" className="link-line">
               Avant Guard Coatings
             </a>
-            , Las Vegas: a supercar rolling off the delivery truck, cut for their socials.
+            , Las Vegas: a Czinger 21C, cut for their socials.
           </>
         }
         actions={

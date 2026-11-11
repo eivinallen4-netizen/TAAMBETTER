@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react';
 import ContactCTA from '@/app/components/ContactCTA';
+import HalftoneField from '@/components/editorial/HalftoneField';
 import Headline from '@/components/editorial/Headline';
 import Mascot from '@/components/editorial/Mascot';
 import Reveal from '@/components/editorial/Reveal';
@@ -38,7 +39,8 @@ export default function CTASection({
   faqs,
 }: CTASectionProps) {
   return (
-    <section className={`tone-${tone} relative overflow-clip`}>
+    <section className={`tone-${tone} relative isolate overflow-clip`}>
+      {tone === 'orange' && <HalftoneField />}
       <div className="gutter section-pad">
         {/* Skip the small line when it just repeats the poster headline underneath it. */}
         {norm(title) !== norm(headline) && <p className="eyebrow mb-10 max-w-md">{title}</p>}

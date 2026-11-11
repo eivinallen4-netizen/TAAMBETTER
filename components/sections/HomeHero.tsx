@@ -2,6 +2,7 @@
 
 import Image from 'next/image';
 import { useEffect, useRef, type CSSProperties, type ReactNode } from 'react';
+import HalftoneField from '@/components/editorial/HalftoneField';
 import LoopVideo from '@/components/editorial/LoopVideo';
 import useInViewOnce from '@/components/editorial/useInViewOnce';
 
@@ -137,7 +138,8 @@ export default function HomeHero({
   };
 
   return (
-    <section className="tone-orange relative overflow-clip">
+    <section className="tone-orange relative isolate overflow-clip">
+      <HalftoneField />
       {/* Extra bottom room: the tilted ribbon below overlaps this section's last ~5rem. */}
       <div className="gutter flex min-h-svh flex-col pt-28 md:pt-32 pb-20 md:pb-28">
         <div className="enter-fade flex items-baseline justify-between gap-6" style={d(0.05)}>

@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react';
+import HalftoneField from './HalftoneField';
 
 export type Tone = 'orange' | 'ink';
 
@@ -19,7 +20,8 @@ export default function Section({ children, tone, label, index, id, className = 
   const caption = [index, label].filter(Boolean).join(' — ');
 
   return (
-    <section id={id} className={`tone-${tone} relative overflow-clip ${className}`}>
+    <section id={id} className={`tone-${tone} relative isolate overflow-clip ${className}`}>
+      {tone === 'orange' && <HalftoneField />}
       {caption && (
         <div
           aria-hidden="true"
