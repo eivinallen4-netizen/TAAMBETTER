@@ -69,8 +69,9 @@ export default function Footer() {
 
         <div className="mt-24 flex flex-col sm:flex-row justify-between gap-2 border-t rule pt-6 text-sm text-[color:var(--tone-muted)]">
           <span>
-            © {new Date().getFullYear()} {content.company.name}. All rights reserved. ·{' '}
-            <Link href="/privacy" className="link-line">Privacy policy</Link>
+            © {new Date().getFullYear()} TAAM Media LLC. All rights reserved. ·{' '}
+            <Link href="/privacy" className="link-line">Privacy policy</Link> ·{' '}
+            <Link href="/terms" className="link-line">Terms</Link>
           </span>
           <span className="uppercase tracking-[0.2em] text-xs font-bold">Better marketing for the best businesses</span>
         </div>
