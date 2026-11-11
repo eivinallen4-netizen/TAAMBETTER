@@ -27,6 +27,7 @@ import {
   type LeadFit,
   type QualifierOption,
 } from '../../lib/cta';
+import { SMS_CONSENT_TEXT } from '../../lib/legal';
 import type { ContactFormPrefill } from './ContactFormProvider';
 import Arrow from '@/components/editorial/Arrow';
 import CallBooking from '@/app/call/[token]/CallBooking';
@@ -81,6 +82,8 @@ const emptyFormState = {
   businessName: '',
   website: '',
   message: '',
+  // 'yes' only when the visitor ticks the optional text-message box. Never pre-checked.
+  smsConsent: '',
   // Honeypot: hidden from people, irresistible to form-filling bots.
   companyFax: '',
 };
@@ -154,6 +157,7 @@ export default function ContactFormModal({ prefill, onClose }: ContactFormModalP
       business_name: form.businessName.trim(),
       website: form.website.trim(),
       message: form.message.trim(),
+      sms_consent: form.smsConsent === 'yes',
       source_page: sourcePage,
       company_fax: form.companyFax,
       elapsed_ms: Date.now() - openedAt.current,
@@ -667,11 +671,28 @@ function StepContactInfo({
           />
         </div>
       </div>
-      <p className="mt-8 text-sm text-white/80">
-        No spam, no newsletter sign-up. Your info goes to our team and nowhere else.{' '}
+      <label htmlFor="cf-sms" className="mt-8 flex items-start gap-3 cursor-pointer text-sm leading-relaxed text-white/85">
+        <input
+          id="cf-sms"
+          type="checkbox"
+          checked={form.smsConsent === 'yes'}
+          onChange={(e) => onChange('smsConsent', e.target.checked ? 'yes' : '')}
+          className="mt-0.5 h-5 w-5 shrink-0 accent-taam-near-black cursor-pointer"
+        />
+        <span>
+          {SMS_CONSENT_TEXT} {optional}
+        </span>
+      </label>
+      <p className="mt-6 text-sm text-white/80">
+        No spam, no newsletter sign-up. Your info goes to our team and nowhere else. By sending this you agree to our{' '}
+        <Link href="/terms" target="_blank" rel="noopener" className="underline underline-offset-2 hover:text-white">
+          Terms
+        </Link>{' '}
+        and{' '}
         <Link href="/privacy" target="_blank" rel="noopener" className="underline underline-offset-2 hover:text-white">
           Privacy policy
         </Link>
+        .
       </p>
       {submitError && <p className="mt-4 inline-block rounded-lg bg-taam-near-black px-4 py-3 text-sm font-semibold">{submitError}</p>}
     </div>

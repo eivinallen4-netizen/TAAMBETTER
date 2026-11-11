@@ -1,0 +1,74 @@
+<template>
+  <style>
+    #root {
+      position: absolute;
+      inset: 0;
+      container-type: size;
+      overflow: hidden;
+      background: transparent;
+      pointer-events: none;
+    }
+    .tr-slab {
+      position: absolute;
+      top: -20cqh;
+      left: 0;
+      width: 150cqw;
+      height: 140cqh;
+    }
+    .tr-orange { background: #f46325; }
+    .tr-ink { background: #111111; }
+    .tr-mark {
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      width: 22cqmin;
+      height: 22cqmin;
+      margin: -11cqmin 0 0 -11cqmin;
+      border-radius: 50%;
+      background: #f46325;
+      display: grid;
+      place-items: center;
+    }
+    .tr-mark img { width: 14cqmin; display: block; }
+  </style>
+  <div
+    id="root"
+    data-composition-id="taam-transition"
+    data-width="1920"
+    data-height="1080"
+    data-composition-variables='[
+      {"id":"mark","type":"boolean","label":"Show the TAAM mark at the cut","default":true}
+    ]'
+  >
+    <div class="tr-slab tr-orange" data-layout-allow-occlusion data-layout-allow-overflow></div>
+    <div class="tr-slab tr-ink" data-layout-allow-occlusion data-layout-allow-overflow></div>
+    <div class="tr-mark" data-layout-allow-occlusion><img src="assets/brand/taam-mark-white.svg" alt="" /></div>
+    <div class="tr-drv clip" data-start="0" data-duration="1.2" style="position:absolute;width:1px;height:1px;opacity:0"></div>
+  </div>
+  <script>
+    (function () {
+      // GSAP can't tween container units, so frame-relative distances are converted to px here.
+      function cq(n, u) { var w = window.innerWidth || 1920, h = window.innerHeight || 1080; return n * (u === "w" ? w : u === "h" ? h : Math.min(w, h)) / 100; }
+      // A 1.2 s wipe. Mount it so its host starts 0.55 s before your cut: the frame is fully
+      // covered from 0.45 s to 0.75 s, so the cut underneath is never seen.
+      var v = (window.__hyperframes && window.__hyperframes.getVariables && window.__hyperframes.getVariables()) || {};
+      var markEl = Array.prototype.filter.call(document.querySelectorAll(".tr-mark"), function (w) { return !w.hasAttribute("data-bound"); })[0];
+      markEl.setAttribute("data-bound", "");
+      var root = markEl.parentNode;
+      var orange = root.querySelector(".tr-orange");
+      var ink = root.querySelector(".tr-ink");
+      var showMark = v.mark !== false && v.mark !== "false";
+
+      var tl = gsap.timeline({ paused: true });
+      // Slabs are skewed so the leading edge reads as a slash, the site's motion language.
+      tl.fromTo(orange, { x: cq(-160, "w"), skewX: -14 }, { x: cq(-25, "w"), skewX: -14, duration: 0.42, ease: "power3.in" }, 0);
+      tl.fromTo(ink, { x: cq(-160, "w"), skewX: -14 }, { x: cq(-25, "w"), skewX: -14, duration: 0.42, ease: "power3.in" }, 0.08);
+      tl.fromTo(markEl, { scale: 0, rotation: -120 }, { scale: showMark ? 1 : 0, rotation: 0, duration: 0.3, ease: "back.out(2.2)" }, 0.42);
+      tl.to(markEl, { scale: 0, rotation: 90, duration: 0.18, ease: "power3.in" }, 0.72);
+      tl.to(ink, { x: cq(110, "w"), duration: 0.42, ease: "power3.out" }, 0.75);
+      tl.to(orange, { x: cq(110, "w"), duration: 0.42, ease: "power3.out" }, 0.81);
+
+      window.__timelines["taam-transition"] = tl;
+    })();
+  </script>
+</template>

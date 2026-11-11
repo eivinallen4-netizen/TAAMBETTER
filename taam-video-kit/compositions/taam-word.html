@@ -1,0 +1,125 @@
+<template>
+  <style>
+    #root {
+      position: absolute;
+      inset: 0;
+      container-type: size;
+      overflow: hidden;
+      font-family: "Montserrat", sans-serif;
+      color: #fff;
+    }
+    .wd-bg { position: absolute; inset: 0; background: var(--wd-bg, #111111); }
+    .wd-echo {
+      position: absolute;
+      left: 0;
+      right: 0;
+      top: 50%;
+      text-align: center;
+      font-weight: 900;
+      text-transform: uppercase;
+      letter-spacing: -0.05em;
+      line-height: 0.82;
+      font-size: var(--wd-size, 26cqmin);
+      color: var(--wd-bg, #111111);
+      -webkit-text-stroke: 0.45cqmin rgba(255, 255, 255, 0.22);
+      paint-order: stroke fill;
+      white-space: nowrap;
+    }
+    .wd-main {
+      position: absolute;
+      left: 0;
+      right: 0;
+      top: 50%;
+      text-align: center;
+      white-space: nowrap;
+    }
+    .wd-word {
+      display: inline-block;
+      position: relative;
+      font-weight: 900;
+      text-transform: uppercase;
+      letter-spacing: -0.05em;
+      line-height: 0.82;
+      font-size: var(--wd-size, 26cqmin);
+      padding: 0 2cqmin;
+    }
+    .wd-mark {
+      position: absolute;
+      left: 0;
+      right: 0;
+      bottom: 4%;
+      height: 34%;
+      background: #f46325;
+      z-index: 0;
+      transform-origin: 0 50%;
+    }
+    .wd-word span { position: relative; z-index: 1; }
+    .wd-sub {
+      position: absolute;
+      left: 0;
+      right: 0;
+      top: 63%;
+      text-align: center;
+      font-weight: 700;
+      font-size: 2.8cqmin;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+      color: rgba(255, 255, 255, 0.75);
+    }
+  </style>
+  <div
+    id="root"
+    data-composition-id="taam-word"
+    data-width="1920"
+    data-height="1080"
+    data-composition-variables='[
+      {"id":"word","type":"string","label":"The word (1 to 2 words)","default":"Leads"},
+      {"id":"sub","type":"string","label":"Small line under it (optional)","default":"not likes"},
+      {"id":"tone","type":"enum","label":"Ground","default":"ink","options":[{"value":"ink","label":"Ink"},{"value":"orange","label":"Orange"}]},
+      {"id":"hold","type":"number","label":"Seconds on screen (match the host data-duration)","default":2,"min":1,"max":10,"step":0.5,"unit":"s"}
+    ]'
+  >
+    <div class="wd-bg"></div>
+    <div class="wd-echo wd-echo-1" data-layout-ignore>Leads</div>
+    <div class="wd-echo wd-echo-2" data-layout-ignore>Leads</div>
+    <div class="wd-main"><div class="wd-word"><div class="wd-mark"></div><span>Leads</span></div></div>
+    <div class="wd-sub">not likes</div>
+    <div class="wd-drv clip" data-start="0" data-duration="10" style="position:absolute;width:1px;height:1px;opacity:0"></div>
+  </div>
+  <script>
+    (function () {
+      // GSAP can't tween container units, so frame-relative distances are converted to px here.
+      function cq(n, u) { var w = window.innerWidth || 1920, h = window.innerHeight || 1080; return n * (u === "w" ? w : u === "h" ? h : Math.min(w, h)) / 100; }
+      // A one-word punch card: the brand's outline type stacked as an echo, the word solid, an orange marker under it.
+      var v = (window.__hyperframes && window.__hyperframes.getVariables && window.__hyperframes.getVariables()) || {};
+      var main = Array.prototype.filter.call(document.querySelectorAll(".wd-main"), function (w) { return !w.hasAttribute("data-bound"); })[0];
+      main.setAttribute("data-bound", "");
+      var root = main.parentNode;
+      var q = function (s) { return root.querySelector(s); };
+      var hold = Number(v.hold) || 2;
+      var word = v.word || "Leads";
+      q(".wd-word span").textContent = word;
+      q(".wd-echo-1").textContent = word;
+      q(".wd-echo-2").textContent = word;
+      if (word.length > 8) root.style.setProperty("--wd-size", Math.max(10, 26 * 8 / word.length) + "cqmin");
+      if (v.sub != null) q(".wd-sub").textContent = v.sub;
+      if (!v.sub) q(".wd-sub").style.display = "none";
+      if (v.tone === "orange") {
+        root.style.setProperty("--wd-bg", "#f46325");
+        q(".wd-mark").style.background = "#111111";
+      }
+
+      var tl = gsap.timeline({ paused: true });
+      tl.fromTo(main, { yPercent: -50, scale: 1.35, filter: "blur(10px)" }, { yPercent: -50, scale: 1, filter: "blur(0px)", duration: 0.32, ease: "expo.out" }, 0);
+      tl.fromTo(q(".wd-echo-1"), { yPercent: -50, y: 0, opacity: 0 }, { yPercent: -50, y: cq(-31, "min"), opacity: 1, duration: 0.5, ease: "expo.out" }, 0.08);
+      tl.fromTo(q(".wd-echo-2"), { yPercent: -50, y: 0, opacity: 0 }, { yPercent: -50, y: cq(31, "min"), opacity: 1, duration: 0.5, ease: "expo.out" }, 0.08);
+      tl.fromTo(q(".wd-mark"), { scaleX: 0 }, { scaleX: 1, duration: 0.35, ease: "power3.out" }, 0.22);
+      tl.fromTo(q(".wd-sub"), { opacity: 0, filter: "blur(6px)" }, { opacity: 1, filter: "blur(0px)", duration: 0.2, ease: "power4.out" }, 0.4);
+      tl.to([q(".wd-echo-1"), q(".wd-echo-2")], { y: 0, opacity: 0, duration: 0.2, ease: "power3.in" }, hold - 0.3);
+      tl.to(main, { scale: 0.85, opacity: 0, filter: "blur(8px)", duration: 0.2, ease: "power3.in" }, hold - 0.25);
+      tl.to(q(".wd-sub"), { opacity: 0, duration: 0.15 }, hold - 0.25);
+
+      window.__timelines["taam-word"] = tl;
+    })();
+  </script>
+</template>

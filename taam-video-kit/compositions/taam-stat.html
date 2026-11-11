@@ -1,0 +1,137 @@
+<template>
+  <style>
+    #root {
+      position: absolute;
+      inset: 0;
+      container-type: size;
+      overflow: hidden;
+      font-family: "Montserrat", sans-serif;
+      color: #fff;
+    }
+    .st-bg { position: absolute; inset: 0; background: var(--st-bg, #f46325); }
+    .st-ht {
+      position: absolute;
+      left: -30%;
+      top: -30%;
+      width: 160%;
+      height: 160%;
+      background-image: radial-gradient(circle, var(--st-dot, rgba(17, 17, 17, 0.14)) 0 30%, transparent 33%);
+      background-size: 1.5cqmin 1.5cqmin;
+      -webkit-mask-image: radial-gradient(40% 36% at 30% 70%, #000, transparent 75%), radial-gradient(36% 40% at 80% 25%, #000, transparent 75%);
+      mask-image: radial-gradient(40% 36% at 30% 70%, #000, transparent 75%), radial-gradient(36% 40% at 80% 25%, #000, transparent 75%);
+    }
+    .st-copy { position: absolute; left: 8cqw; top: 50%; }
+    .st-num {
+      font-weight: 900;
+      font-size: 30cqmin;
+      line-height: 0.82;
+      letter-spacing: -0.06em;
+      white-space: nowrap;
+      font-variant-numeric: tabular-nums;
+    }
+    .st-mask { overflow: hidden; padding-bottom: 0.6cqmin; }
+    .st-label {
+      margin-top: 3cqmin;
+      font-weight: 900;
+      text-transform: uppercase;
+      letter-spacing: -0.035em;
+      line-height: 0.9;
+      font-size: 7cqmin;
+      color: var(--st-bg, #f46325);
+      -webkit-text-stroke: 0.4cqmin #fff;
+      paint-order: stroke fill;
+      max-width: 52cqw;
+    }
+    .st-hero { position: absolute; right: 5cqw; bottom: 9cqh; width: 42cqmin; }
+    .st-hero img { display: block; width: 100%; }
+  </style>
+  <div
+    id="root"
+    data-composition-id="taam-stat"
+    data-width="1920"
+    data-height="1080"
+    data-composition-variables='[
+      {"id":"value","type":"number","label":"Number","default":312},
+      {"id":"decimals","type":"number","label":"Decimals","default":0,"min":0,"max":2,"step":1},
+      {"id":"prefix","type":"string","label":"Before the number","default":"+"},
+      {"id":"suffix","type":"string","label":"After the number","default":"%"},
+      {"id":"label","type":"string","label":"What it measures","default":"more calls in 90 days"},
+      {"id":"tone","type":"enum","label":"Ground","default":"orange","options":[{"value":"orange","label":"Orange"},{"value":"ink","label":"Ink"}]},
+      {"id":"pose","type":"enum","label":"Mascot pose or prop","default":"counting","options":[{"value":"counting","label":"Counting money"},{"value":"famous","label":"Trophy"},{"value":"money-gun","label":"Money gun"},{"value":"phone","label":"Phone"},{"value":"phone-ringing","label":"Prop: Ringing phone"},{"value":"map-pin","label":"Prop: Map pin"},{"value":"search-bar","label":"Prop: Search bar"},{"value":"megaphone","label":"Prop: Megaphone"},{"value":"stars","label":"Prop: Five stars"},{"value":"browser","label":"Prop: Website"},{"value":"growth","label":"Prop: Growth chart"},{"value":"calendar","label":"Prop: Booked calendar"},{"value":"clapper","label":"Prop: Clapperboard"},{"value":"notify","label":"Prop: Social heart"},{"value":"coffee-cup","label":"Prop: Coffee"},{"value":"none","label":"No mascot"}]},
+      {"id":"hold","type":"number","label":"Seconds on screen (match the host data-duration)","default":4,"min":2,"max":30,"step":0.5,"unit":"s"}
+    ]'
+  >
+    <div class="st-bg"></div>
+    <div class="st-ht" data-layout-ignore></div>
+    <div class="st-copy">
+      <div class="st-mask"><div class="st-num">+312%</div></div>
+      <div class="st-mask"><div class="st-label">more calls in 90 days</div></div>
+    </div>
+    <div class="st-hero"><img src="assets/characters/counting.webp" alt="" /></div>
+    <div class="st-drv clip" data-start="0" data-duration="30" style="position:absolute;width:1px;height:1px;opacity:0"></div>
+  </div>
+  <script>
+    (function () {
+      // GSAP can't tween container units, so frame-relative distances are converted to px here.
+      function cq(n, u) { var w = window.innerWidth || 1920, h = window.innerHeight || 1080; return n * (u === "w" ? w : u === "h" ? h : Math.min(w, h)) / 100; }
+      var v = (window.__hyperframes && window.__hyperframes.getVariables && window.__hyperframes.getVariables()) || {};
+      var copy = Array.prototype.filter.call(document.querySelectorAll(".st-copy"), function (w) { return !w.hasAttribute("data-bound"); })[0];
+      copy.setAttribute("data-bound", "");
+      var root = copy.parentNode;
+      var q = function (s) { return root.querySelector(s); };
+
+      var hold = Number(v.hold) || 4;
+      var target = v.value != null ? Number(v.value) : 312;
+      var dec = Number(v.decimals) || 0;
+      var pre = v.prefix != null ? v.prefix : "+";
+      var suf = v.suffix != null ? v.suffix : "%";
+      if (v.label != null) q(".st-label").textContent = v.label;
+      if (v.tone === "ink") {
+        root.style.setProperty("--st-bg", "#111111");
+        root.style.setProperty("--st-dot", "rgba(255,255,255,0.07)");
+      }
+      var pose = v.pose || "counting";
+      if (pose === "none") q(".st-hero").style.display = "none";
+      else q(".st-hero img").src = (["phone-ringing","map-pin","search-bar","megaphone","stars","browser","growth","calendar","clapper","notify","coffee-cup"].indexOf(pose) >= 0 ? "assets/props/" : "assets/characters/") + pose + ".webp";
+
+      var num = q(".st-num");
+      var fmt = function (n) { return pre + n.toLocaleString("en-US", { minimumFractionDigits: dec, maximumFractionDigits: dec }) + suf; };
+      num.textContent = fmt(target);
+
+      function boil(tl, el, t0, t1, amp, seed) {
+        for (var t = t0; t < t1; t += 1 / 12) {
+          var r = Math.sin((Math.floor(t * 12) + seed) * 12.9898) * 43758.5453;
+          tl.set(el, { rotation: ((r - Math.floor(r)) - 0.5) * 2 * amp }, t);
+        }
+      }
+
+      var tl = gsap.timeline({ paused: true });
+      var out = hold - 0.45;
+      var counter = { n: 0 };
+
+      tl.fromTo(copy, { yPercent: -50 }, { yPercent: -50, duration: 0.01 }, 0);
+      tl.fromTo(q(".st-ht"), { rotation: 45, x: 0 }, { rotation: 45, x: cq(5, "min"), duration: hold, ease: "none" }, 0);
+      tl.fromTo(num, { yPercent: 100 }, { yPercent: 0, duration: 0.6, ease: "expo.out" }, 0.05);
+      // The count runs on the timeline, so any frame renders the same number.
+      tl.fromTo(counter, { n: 0 }, {
+        n: target, duration: 1.4, ease: "power3.out",
+        onUpdate: function () { num.textContent = fmt(Math.round(counter.n * Math.pow(10, dec)) / Math.pow(10, dec)); },
+      }, 0.1);
+      tl.fromTo(num, { scale: 1 }, { scale: 1.06, duration: 0.1, ease: "power2.out", transformOrigin: "0% 100%" }, 1.5);
+      tl.to(num, { scale: 1, duration: 0.35, ease: "elastic.out(1, 0.5)" }, 1.6);
+      tl.fromTo(q(".st-label"), { yPercent: 105 }, { yPercent: 0, duration: 0.6, ease: "expo.out" }, 0.45);
+
+      if (pose !== "none") {
+        var hero = q(".st-hero");
+        tl.fromTo(hero, { y: cq(60, "h"), scaleX: 1, scaleY: 1, transformOrigin: "50% 100%" }, { y: cq(-3, "h"), scaleX: 0.92, scaleY: 1.08, duration: 0.42, ease: "power3.out" }, 0.25);
+        tl.to(hero, { y: 0, scaleX: 1.07, scaleY: 0.93, duration: 0.13, ease: "power2.in" }, 0.67);
+        tl.to(hero, { scaleX: 1, scaleY: 1, duration: 0.45, ease: "elastic.out(1, 0.45)" }, 0.8);
+        boil(tl, hero.querySelector("img"), 0.8, out, 1.2, 5);
+        tl.to(hero, { y: cq(70, "h"), duration: 0.35, ease: "power3.in" }, out);
+      }
+      tl.to([num, q(".st-label")], { yPercent: -105, duration: 0.3, ease: "power3.in", stagger: 0.05 }, out + 0.05);
+
+      window.__timelines["taam-stat"] = tl;
+    })();
+  </script>
+</template>

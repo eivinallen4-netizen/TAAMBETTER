@@ -1,0 +1,112 @@
+<template>
+  <style>
+    #root {
+      position: absolute;
+      inset: 0;
+      container-type: size;
+      overflow: visible;
+      font-family: "Montserrat", sans-serif;
+      background: transparent;
+      pointer-events: none;
+    }
+    .cp-group {
+      position: absolute;
+      left: 0;
+      right: 0;
+      bottom: var(--cp-bottom, 11cqh);
+      text-align: center;
+      opacity: 0;
+      overflow: visible;
+    }
+    .cp-word {
+      display: inline-block;
+      margin: 0 0.6cqmin;
+      padding: 0.5cqmin 1.4cqmin 0.7cqmin;
+      border-radius: 1.4cqmin;
+      font-weight: 900;
+      text-transform: uppercase;
+      letter-spacing: -0.03em;
+      line-height: 1;
+      font-size: var(--cp-size, 6.6cqmin);
+      color: #fff;
+      -webkit-text-stroke: 1cqmin #111111;
+      paint-order: stroke fill;
+      background: rgba(244, 99, 37, 0);
+    }
+  </style>
+  <div
+    id="root"
+    data-composition-id="taam-captions"
+    data-width="1920"
+    data-height="1080"
+    data-composition-variables='[
+      {"id":"words","type":"string","label":"Words: a JSON list of {text,start,end} in seconds (the transcribe output)","default":"[{\"text\":\"Most\",\"start\":0.2,\"end\":0.45},{\"text\":\"websites\",\"start\":0.45,\"end\":0.9},{\"text\":\"look\",\"start\":0.9,\"end\":1.1},{\"text\":\"fine.\",\"start\":1.1,\"end\":1.6},{\"text\":\"They\",\"start\":1.9,\"end\":2.05},{\"text\":\"just\",\"start\":2.05,\"end\":2.3},{\"text\":\"never\",\"start\":2.3,\"end\":2.6},{\"text\":\"ring\",\"start\":2.6,\"end\":2.85},{\"text\":\"the\",\"start\":2.85,\"end\":2.95},{\"text\":\"phone.\",\"start\":2.95,\"end\":3.6}]"},
+      {"id":"maxWords","type":"number","label":"Words per caption","default":3,"min":1,"max":6,"step":1},
+      {"id":"placement","type":"enum","label":"Placement","default":"low","options":[{"value":"low","label":"Bottom (16:9)"},{"value":"vertical","label":"Lower middle (9:16 Shorts/Reels)"}]}
+    ]'
+  >
+    <div class="cp-stage"></div>
+    <div class="cp-drv clip" data-start="0" data-duration="600" style="position:absolute;width:1px;height:1px;opacity:0"></div>
+  </div>
+  <script>
+    (function () {
+      // GSAP can't tween container units, so frame-relative distances are converted to px here.
+      function cq(n, u) { var w = window.innerWidth || 1920, h = window.innerHeight || 1080; return n * (u === "w" ? w : u === "h" ? h : Math.min(w, h)) / 100; }
+      var v = (window.__hyperframes && window.__hyperframes.getVariables && window.__hyperframes.getVariables()) || {};
+      var stage = Array.prototype.filter.call(document.querySelectorAll(".cp-stage"), function (w) { return !w.hasAttribute("data-bound"); })[0];
+      stage.setAttribute("data-bound", "");
+      var root = stage.parentNode;
+
+      var words = [];
+      try { words = JSON.parse(v.words || "[]"); } catch (e) { words = []; }
+      words = words.filter(function (w) { return w && String(w.text || "").trim(); });
+      var maxWords = Math.max(1, Number(v.maxWords) || 3);
+      if (v.placement === "vertical") {
+        root.style.setProperty("--cp-bottom", "32cqh");
+        root.style.setProperty("--cp-size", "5.6cqmin");
+      }
+
+      // Groups break at the word limit, at a sentence end, or at a pause of 150 ms or more.
+      var groups = [];
+      var cur = [];
+      words.forEach(function (w, i) {
+        cur.push(w);
+        var next = words[i + 1];
+        var endsSentence = /[.!?]$/.test(String(w.text).trim());
+        var pause = next ? next.start - w.end >= 0.15 : true;
+        if (cur.length >= maxWords || endsSentence || pause) { groups.push(cur); cur = []; }
+      });
+
+      var tl = gsap.timeline({ paused: true });
+      groups.forEach(function (g, gi) {
+        var el = document.createElement("div");
+        el.className = "cp-group";
+        var spans = g.map(function (w) {
+          var s = document.createElement("span");
+          s.className = "cp-word";
+          s.textContent = String(w.text).trim();
+          el.appendChild(s);
+          el.appendChild(document.createTextNode(" "));
+          return s;
+        });
+        stage.appendChild(el);
+
+        var start = Math.max(0, g[0].start - 0.05);
+        var nextStart = groups[gi + 1] ? groups[gi + 1][0].start - 0.05 : Infinity;
+        var end = Math.min(g[g.length - 1].end + 0.15, nextStart);
+
+        tl.fromTo(el, { opacity: 0, scale: 0.9, y: cq(1, "min") }, { opacity: 1, scale: 1, y: 0, duration: 0.14, ease: "back.out(2)" }, start);
+        // The spoken word lights up orange, the way the site highlights one word.
+        g.forEach(function (w, wi) {
+          var off = wi < g.length - 1 ? g[wi + 1].start : end;
+          tl.fromTo(spans[wi], { backgroundColor: "rgba(244,99,37,0)", scale: 1 }, { backgroundColor: "rgba(244,99,37,1)", scale: 1.06, duration: 0.06, ease: "power2.out", immediateRender: false }, w.start);
+          tl.to(spans[wi], { backgroundColor: "rgba(244,99,37,0)", scale: 1, duration: 0.06, ease: "power2.in" }, Math.max(w.start + 0.07, off - 0.06));
+        });
+        tl.to(el, { opacity: 0, duration: 0.1, ease: "power2.in" }, end - 0.1);
+        tl.set(el, { opacity: 0, visibility: "hidden" }, end);
+      });
+
+      window.__timelines["taam-captions"] = tl;
+    })();
+  </script>
+</template>

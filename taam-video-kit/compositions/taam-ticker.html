@@ -1,0 +1,87 @@
+<template>
+  <style>
+    #root {
+      position: absolute;
+      inset: 0;
+      container-type: size;
+      overflow: hidden;
+      font-family: "Montserrat", sans-serif;
+      background: transparent;
+      pointer-events: none;
+    }
+    .tk-band {
+      position: absolute;
+      left: -10cqw;
+      width: 120cqw;
+      top: var(--tk-top, 72cqh);
+      background: #f46325;
+      border-top: 0.5cqmin solid #111111;
+      border-bottom: 0.5cqmin solid #111111;
+      padding: 1.6cqmin 0;
+      overflow: hidden;
+    }
+    .tk-row { display: flex; align-items: center; white-space: nowrap; width: max-content; }
+    .tk-item {
+      font-weight: 900;
+      text-transform: uppercase;
+      letter-spacing: -0.03em;
+      font-size: 5.2cqmin;
+      line-height: 1;
+      color: #111111;
+      padding: 0 2.6cqmin;
+    }
+    .tk-item.is-outline { color: #f46325; -webkit-text-stroke: 0.36cqmin #111111; paint-order: stroke fill; }
+    .tk-sep { width: 4.6cqmin; height: 4.6cqmin; display: block; flex: none; }
+  </style>
+  <div
+    id="root"
+    data-composition-id="taam-ticker"
+    data-width="1920"
+    data-height="1080"
+    data-composition-variables='[
+      {"id":"items","type":"string","label":"Items, separated by commas","default":"Websites, SEO, Google Ads, Social media, Video"},
+      {"id":"position","type":"enum","label":"Where the band sits","default":"low","options":[{"value":"low","label":"Lower third"},{"value":"middle","label":"Middle"},{"value":"top","label":"Top"}]},
+      {"id":"hold","type":"number","label":"Seconds on screen (match the host data-duration)","default":5,"min":2,"max":30,"step":0.5,"unit":"s"}
+    ]'
+  >
+    <div class="tk-band" data-layout-allow-overflow>
+      <div class="tk-row"></div>
+    </div>
+    <div class="tk-drv clip" data-start="0" data-duration="30" style="position:absolute;width:1px;height:1px;opacity:0"></div>
+  </div>
+  <script>
+    (function () {
+      // GSAP can't tween container units, so frame-relative distances are converted to px here.
+      function cq(n, u) { var w = window.innerWidth || 1920, h = window.innerHeight || 1080; return n * (u === "w" ? w : u === "h" ? h : Math.min(w, h)) / 100; }
+      var v = (window.__hyperframes && window.__hyperframes.getVariables && window.__hyperframes.getVariables()) || {};
+      var band = Array.prototype.filter.call(document.querySelectorAll(".tk-band"), function (w) { return !w.hasAttribute("data-bound"); })[0];
+      band.setAttribute("data-bound", "");
+      var root = band.parentNode;
+      var row = band.querySelector(".tk-row");
+
+      var hold = Number(v.hold) || 5;
+      var items = String(v.items || "Websites, SEO, Google Ads, Social media, Video").split(",").map(function (s) { return s.trim(); }).filter(Boolean);
+      var tops = { low: "72cqh", middle: "44cqh", top: "10cqh" };
+      root.style.setProperty("--tk-top", tops[v.position] || tops.low);
+
+      // Enough copies to cover the band for the whole hold; alternate solid and outline like the site's marquee.
+      var html = "";
+      for (var rep = 0; rep < 6; rep++) {
+        items.forEach(function (it, i) {
+          html += '<span class="tk-item' + ((i + rep) % 2 ? " is-outline" : "") + '"></span><img class="tk-sep" src="assets/brand/taam-mark-ink.svg" alt="" />';
+        });
+      }
+      row.innerHTML = html;
+      var spans = row.querySelectorAll(".tk-item");
+      for (var k = 0; k < spans.length; k++) spans[k].textContent = items[k % items.length];
+
+      var tl = gsap.timeline({ paused: true });
+      tl.fromTo(band, { rotation: -3, yPercent: 0, clipPath: "inset(0% 100% 0% 0%)" }, { rotation: -3, clipPath: "inset(0% 0% 0% 0%)", duration: 0.55, ease: "expo.out" }, 0.05);
+      // Constant speed is the point of a ticker, so it runs linear.
+      tl.fromTo(row, { x: 0 }, { x: cq(-55, "w"), duration: hold, ease: "none" }, 0);
+      tl.to(band, { clipPath: "inset(0% 0% 0% 100%)", duration: 0.35, ease: "power3.in" }, hold - 0.4);
+
+      window.__timelines["taam-ticker"] = tl;
+    })();
+  </script>
+</template>

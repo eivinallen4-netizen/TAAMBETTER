@@ -1,0 +1,139 @@
+<template>
+  <style>
+    #root {
+      position: absolute;
+      inset: 0;
+      container-type: size;
+      overflow: hidden;
+      font-family: "Montserrat", sans-serif;
+      color: #fff;
+    }
+    .tt-bg { position: absolute; inset: 0; background: var(--tt-bg, #f46325); }
+    .tt-ht {
+      position: absolute;
+      left: -30%;
+      top: -30%;
+      width: 160%;
+      height: 160%;
+      background-image: radial-gradient(circle, var(--tt-dot, rgba(17, 17, 17, 0.14)) 0 30%, transparent 33%);
+      background-size: 1.5cqmin 1.5cqmin;
+      -webkit-mask-image: radial-gradient(38% 34% at 22% 30%, #000, transparent 75%), radial-gradient(42% 40% at 78% 72%, #000, transparent 75%);
+      mask-image: radial-gradient(38% 34% at 22% 30%, #000, transparent 75%), radial-gradient(42% 40% at 78% 72%, #000, transparent 75%);
+    }
+    .tt-copy {
+      position: absolute;
+      left: 8cqw;
+      top: 50%;
+      width: 60cqw;
+    }
+    .tt-eyebrow {
+      display: inline-block;
+      font-weight: 700;
+      font-size: 2.6cqmin;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+      padding: 1cqmin 2.4cqmin;
+      border: 0.3cqmin solid rgba(255, 255, 255, 0.7);
+      border-radius: 999px;
+      margin-bottom: 3cqmin;
+    }
+    .tt-mask { overflow: hidden; padding: 0.6cqmin 1cqmin 0.6cqmin 0; margin-left: -0.6cqmin; padding-left: 0.6cqmin; }
+    .tt-line {
+      font-weight: 900;
+      text-transform: uppercase;
+      letter-spacing: -0.045em;
+      line-height: 0.86;
+      font-size: 12.5cqmin;
+      white-space: nowrap;
+    }
+    /* Outline type, as on the site: double-width stroke with the ground filling its inner half. */
+    .tt-outline {
+      color: var(--tt-bg, #f46325);
+      -webkit-text-stroke: 0.55cqmin #fff;
+      paint-order: stroke fill;
+    }
+    .tt-hero {
+      position: absolute;
+      right: 4cqw;
+      bottom: 8cqh;
+      width: 44cqmin;
+    }
+    .tt-hero img { display: block; width: 100%; }
+  </style>
+  <div
+    id="root"
+    data-composition-id="taam-title"
+    data-width="1920"
+    data-height="1080"
+    data-composition-variables='[
+      {"id":"eyebrow","type":"string","label":"Eyebrow pill","default":"TAAM · Episode 01"},
+      {"id":"line1","type":"string","label":"Line 1 (solid)","default":"Your website"},
+      {"id":"line2","type":"string","label":"Line 2 (outline)","default":"should sell"},
+      {"id":"tone","type":"enum","label":"Ground","default":"orange","options":[{"value":"orange","label":"Orange"},{"value":"ink","label":"Ink"}]},
+      {"id":"pose","type":"enum","label":"Mascot pose or prop","default":"famous","options":[{"value":"famous","label":"Trophy"},{"value":"wave","label":"Wave"},{"value":"chill","label":"Pointing"},{"value":"phone","label":"Phone"},{"value":"counting","label":"Counting money"},{"value":"money-gun","label":"Money gun"},{"value":"sitting","label":"Coin flip"},{"value":"fishing","label":"Fishing"},{"value":"phone-ringing","label":"Prop: Ringing phone"},{"value":"map-pin","label":"Prop: Map pin"},{"value":"search-bar","label":"Prop: Search bar"},{"value":"megaphone","label":"Prop: Megaphone"},{"value":"stars","label":"Prop: Five stars"},{"value":"browser","label":"Prop: Website"},{"value":"growth","label":"Prop: Growth chart"},{"value":"calendar","label":"Prop: Booked calendar"},{"value":"clapper","label":"Prop: Clapperboard"},{"value":"notify","label":"Prop: Social heart"},{"value":"coffee-cup","label":"Prop: Coffee"},{"value":"none","label":"No mascot"}]},
+      {"id":"hold","type":"number","label":"Seconds on screen (match the host data-duration)","default":4,"min":2,"max":30,"step":0.5,"unit":"s"}
+    ]'
+  >
+    <div class="tt-bg"></div>
+    <div class="tt-ht" data-layout-ignore></div>
+    <div class="tt-copy">
+      <div class="tt-mask"><div class="tt-eyebrow">TAAM · Episode 01</div></div>
+      <div class="tt-mask"><div class="tt-line tt-l1">Your website</div></div>
+      <div class="tt-mask"><div class="tt-line tt-outline tt-l2">should sell</div></div>
+    </div>
+    <div class="tt-hero"><img src="assets/characters/famous.webp" alt="" /></div>
+    <div class="tt-drv clip" data-start="0" data-duration="30" style="position:absolute;width:1px;height:1px;opacity:0"></div>
+  </div>
+  <script>
+    (function () {
+      // GSAP can't tween container units, so frame-relative distances are converted to px here.
+      function cq(n, u) { var w = window.innerWidth || 1920, h = window.innerHeight || 1080; return n * (u === "w" ? w : u === "h" ? h : Math.min(w, h)) / 100; }
+      var v = (window.__hyperframes && window.__hyperframes.getVariables && window.__hyperframes.getVariables()) || {};
+      var root = Array.prototype.filter.call(document.querySelectorAll(".tt-copy"), function (w) { return !w.hasAttribute("data-bound"); })[0].parentNode;
+      root.querySelector(".tt-copy").setAttribute("data-bound", "");
+      var q = function (s) { return root.querySelector(s); };
+
+      var hold = Number(v.hold) || 4;
+      if (v.eyebrow != null) q(".tt-eyebrow").textContent = v.eyebrow;
+      if (!v.eyebrow) q(".tt-eyebrow").parentNode.style.display = "none";
+      if (v.line1 != null) q(".tt-l1").textContent = v.line1;
+      if (v.line2 != null) q(".tt-l2").textContent = v.line2;
+      if (v.tone === "ink") {
+        root.style.setProperty("--tt-bg", "#111111");
+        root.style.setProperty("--tt-dot", "rgba(255,255,255,0.07)");
+      }
+      var pose = v.pose || "famous";
+      if (pose === "none") q(".tt-hero").style.display = "none";
+      else q(".tt-hero img").src = (["phone-ringing","map-pin","search-bar","megaphone","stars","browser","growth","calendar","clapper","notify","coffee-cup"].indexOf(pose) >= 0 ? "assets/props/" : "assets/characters/") + pose + ".webp";
+
+      function boil(tl, el, t0, t1, amp, seed) {
+        for (var t = t0; t < t1; t += 1 / 12) {
+          var r = Math.sin((Math.floor(t * 12) + seed) * 12.9898) * 43758.5453;
+          tl.set(el, { rotation: ((r - Math.floor(r)) - 0.5) * 2 * amp }, t);
+        }
+      }
+
+      var tl = gsap.timeline({ paused: true });
+      var out = hold - 0.5;
+
+      // Frame 0 already reads as a title (thumbnail-safe): the copy is printed, the mascot jumps in, the world drifts.
+      tl.fromTo(q(".tt-copy"), { yPercent: -50 }, { yPercent: -50, duration: 0.01 }, 0);
+      tl.fromTo(q(".tt-ht"), { rotation: 45, x: 0, y: 0 }, { rotation: 45, x: cq(-6, "min"), y: cq(-3, "min"), duration: hold, ease: "none" }, 0);
+      tl.fromTo([q(".tt-eyebrow"), q(".tt-l1"), q(".tt-l2")], { yPercent: 0 }, { yPercent: 0, duration: 0.01 }, 0);
+
+      if (pose !== "none") {
+        var hero = q(".tt-hero");
+        // Anticipation below frame, a stretched jump, a squash on landing, a settle.
+        tl.fromTo(hero, { y: cq(80, "h"), scaleX: 1, scaleY: 1, transformOrigin: "50% 100%" }, { y: cq(-4, "h"), scaleX: 0.9, scaleY: 1.1, duration: 0.42, ease: "power3.out" }, 0.25);
+        tl.to(hero, { y: 0, scaleX: 1.08, scaleY: 0.92, duration: 0.14, ease: "power2.in" }, 0.67);
+        tl.to(hero, { scaleX: 1, scaleY: 1, duration: 0.45, ease: "elastic.out(1, 0.45)" }, 0.81);
+        boil(tl, hero.querySelector("img"), 0.81, out, 1.2, 3);
+        tl.to(hero, { y: cq(-80, "h"), scaleY: 1.15, scaleX: 0.9, duration: 0.4, ease: "power3.in" }, out);
+      }
+
+      tl.to([q(".tt-eyebrow"), q(".tt-l1"), q(".tt-l2")], { yPercent: -105, duration: 0.3, ease: "power3.in", stagger: 0.05 }, out + 0.05);
+
+      window.__timelines["taam-title"] = tl;
+    })();
+  </script>
+</template>

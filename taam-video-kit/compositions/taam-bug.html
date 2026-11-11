@@ -1,0 +1,88 @@
+<template>
+  <style>
+    #root {
+      position: absolute;
+      inset: 0;
+      container-type: size;
+      font-family: "Montserrat", sans-serif;
+      background: transparent;
+      pointer-events: none;
+    }
+    .bg-wrap {
+      position: absolute;
+      top: 5cqh;
+      right: 4cqw;
+      display: flex;
+      align-items: center;
+      gap: 1.2cqmin;
+    }
+    .bg-wrap.is-bl { top: auto; right: auto; bottom: 5cqh; left: 4cqw; }
+    .bg-wrap.is-tl { right: auto; left: 4cqw; }
+    .bg-mark {
+      width: 7cqmin;
+      height: 7cqmin;
+      border-radius: 50%;
+      background: #f46325;
+      display: grid;
+      place-items: center;
+      box-shadow: 0 0 0 0.35cqmin #fff;
+    }
+    .bg-mark img { width: 4.6cqmin; display: block; }
+    .bg-label-mask { overflow: hidden; }
+    .bg-label {
+      font-weight: 900;
+      font-size: 2.8cqmin;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      color: #fff;
+      -webkit-text-stroke: 0.5cqmin #111111;
+      paint-order: stroke fill;
+      white-space: nowrap;
+    }
+  </style>
+  <div
+    id="root"
+    data-composition-id="taam-bug"
+    data-width="1920"
+    data-height="1080"
+    data-composition-variables='[
+      {"id":"label","type":"string","label":"Text beside the mark (empty for none)","default":"TAAM"},
+      {"id":"corner","type":"enum","label":"Corner","default":"tr","options":[{"value":"tr","label":"Top right"},{"value":"tl","label":"Top left"},{"value":"bl","label":"Bottom left"}]},
+      {"id":"hold","type":"number","label":"Seconds on screen (match the host data-duration)","default":20,"min":2,"max":600,"step":0.5,"unit":"s"}
+    ]'
+  >
+    <div class="bg-wrap">
+      <div class="bg-mark"><img src="assets/brand/taam-mark-white.svg" alt="" /></div>
+      <div class="bg-label-mask"><div class="bg-label">TAAM</div></div>
+    </div>
+    <div class="bg-drv clip" data-start="0" data-duration="600" style="position:absolute;width:1px;height:1px;opacity:0"></div>
+  </div>
+  <script>
+    (function () {
+      // A persistent corner bug: the cheapest way to keep the brand on every frame of a long edit.
+      var v = (window.__hyperframes && window.__hyperframes.getVariables && window.__hyperframes.getVariables()) || {};
+      var wrap = Array.prototype.filter.call(document.querySelectorAll(".bg-wrap"), function (w) { return !w.hasAttribute("data-bound"); })[0];
+      wrap.setAttribute("data-bound", "");
+      var q = function (s) { return wrap.querySelector(s); };
+      var hold = Number(v.hold) || 20;
+      if (v.corner === "bl") wrap.classList.add("is-bl");
+      if (v.corner === "tl") wrap.classList.add("is-tl");
+      var label = v.label != null ? v.label : "TAAM";
+      q(".bg-label").textContent = label;
+      if (!label) q(".bg-label-mask").style.display = "none";
+
+      var tl = gsap.timeline({ paused: true });
+      var mark = q(".bg-mark");
+      tl.fromTo(mark, { scale: 0, rotation: -180 }, { scale: 1, rotation: 0, duration: 0.6, ease: "back.out(2)" }, 0.1);
+      tl.fromTo(q(".bg-label"), { xPercent: -110 }, { xPercent: 0, duration: 0.5, ease: "expo.out" }, 0.35);
+      // Every 8 s the mark does one quick turn, so the eye finds it again without it nagging.
+      for (var t = 8; t < hold - 2; t += 8) {
+        tl.fromTo(mark, { rotation: 0 }, { rotation: 360, duration: 0.7, ease: "power3.inOut", immediateRender: false }, t);
+      }
+      tl.to(q(".bg-label"), { xPercent: -110, duration: 0.25, ease: "power3.in" }, hold - 0.5);
+      tl.to(mark, { scale: 0, duration: 0.25, ease: "power3.in" }, hold - 0.35);
+
+      window.__timelines["taam-bug"] = tl;
+    })();
+  </script>
+</template>

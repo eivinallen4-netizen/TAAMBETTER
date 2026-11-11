@@ -20,6 +20,7 @@ import {
   type LeadFit,
   type QualifierOption,
 } from '@/app/lib/cta';
+import { smsConsentRecord } from '@/app/lib/legal';
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -45,6 +46,7 @@ interface Contact {
   website: string;
   role: string;
   lead_fit: LeadFit;
+  sms_consent: string;
 }
 
 function pickOption(options: QualifierOption[], value: unknown): string {
@@ -129,6 +131,8 @@ export async function POST(request: NextRequest) {
   const budget = pickOption(BUDGET_OPTIONS, body.budget);
   const timeline = pickOption(TIMELINE_OPTIONS, body.timeline);
   const role = pickOption(ROLE_OPTIONS, body.role);
+  // Only an explicit tick of the optional, unchecked box counts, and only with a real number.
+  const smsConsent = body.sms_consent === true && isPlausiblePhone(phone) ? smsConsentRecord(sourcePage) : '';
 
   if (email && isDisposableEmail(email)) {
     return Response.json({ error: 'Please use a real email address' }, { status: 400 });
@@ -170,6 +174,7 @@ export async function POST(request: NextRequest) {
     website,
     role,
     lead_fit: scoreLeadFit({ stage: businessStage, budget, timeline, role }),
+    sms_consent: smsConsent,
   };
 
   // Write to Turso - don't block on failure

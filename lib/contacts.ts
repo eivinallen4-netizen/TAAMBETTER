@@ -27,6 +27,8 @@ export const CONTACT_FIELDS = [
   'interests',
   'social_url',
   'gbp_url',
+  // Proof of text-message opt-in: when, which page and which wording (app/lib/legal.ts). Blank = no texts.
+  'sms_consent',
 ] as const;
 
 export type ContactField = (typeof CONTACT_FIELDS)[number];

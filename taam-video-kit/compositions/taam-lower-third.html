@@ -1,0 +1,161 @@
+<template>
+  <style>
+    #root {
+      position: absolute;
+      inset: 0;
+      container-type: size;
+      font-family: "Montserrat", sans-serif;
+      color: #fff;
+      background: transparent;
+      pointer-events: none;
+    }
+    .lt-wrap {
+      position: absolute;
+      left: 7cqw;
+      bottom: 11cqh;
+    }
+    .lt-peek-mask {
+      position: absolute;
+      left: 4cqmin;
+      bottom: calc(100% - 0.6cqmin);
+      width: 18cqmin;
+      height: 13cqmin;
+      overflow: hidden;
+    }
+    .lt-peek {
+      position: absolute;
+      left: 0;
+      bottom: 0;
+      width: 18cqmin;
+    }
+    .lt-peek img {
+      display: block;
+      width: 100%;
+    }
+    .lt-bar {
+      position: relative;
+      display: flex;
+      align-items: center;
+      gap: 2.2cqmin;
+      padding: 1.5cqmin 4.2cqmin 1.5cqmin 1.5cqmin;
+      background: #111111;
+      border-radius: 999px;
+      box-shadow: 0 0.8cqmin 0 0 #f46325;
+      clip-path: inset(0% 100% 0% 0% round 999px);
+    }
+    .lt-badge {
+      flex: none;
+      width: 11cqmin;
+      height: 11cqmin;
+      border-radius: 50%;
+      background: #f46325;
+      display: grid;
+      place-items: center;
+    }
+    .lt-badge img {
+      width: 7cqmin;
+      display: block;
+    }
+    .lt-line {
+      overflow: hidden;
+      padding-bottom: 0.2cqmin;
+    }
+    .lt-name {
+      font-weight: 900;
+      text-transform: uppercase;
+      letter-spacing: -0.035em;
+      line-height: 0.95;
+      font-size: 5.8cqmin;
+      white-space: nowrap;
+    }
+    .lt-role {
+      margin-top: 0.7cqmin;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.18em;
+      font-size: 2.6cqmin;
+      color: #ff9a66;
+      white-space: nowrap;
+    }
+  </style>
+  <div
+    id="root"
+    data-composition-id="taam-lower-third"
+    data-width="1920"
+    data-height="1080"
+    data-composition-variables='[
+      {"id":"name","type":"string","label":"Name","default":"Theo Taam"},
+      {"id":"role","type":"string","label":"Role / line two","default":"Founder · TAAM Marketing"},
+      {"id":"mascot","type":"boolean","label":"Mascot peeks over the bar","default":true},
+      {"id":"hold","type":"number","label":"Seconds on screen (match the host data-duration)","default":5,"min":2,"max":30,"step":0.5,"unit":"s"}
+    ]'
+  >
+    <div id="lt-drv" class="clip" data-start="0" data-duration="30" style="position:absolute;width:1px;height:1px;opacity:0"></div>
+    <div class="lt-wrap">
+      <div class="lt-peek-mask" data-layout-allow-overflow>
+        <div class="lt-peek"><img src="assets/characters/peek.webp" alt="" /></div>
+      </div>
+      <div class="lt-bar">
+        <div class="lt-badge"><img src="assets/brand/taam-mark-white.svg" alt="" /></div>
+        <div>
+          <div class="lt-line"><div class="lt-name">Theo Taam</div></div>
+          <div class="lt-line"><div class="lt-role">Founder · TAAM Marketing</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <script>
+    (function () {
+      var v = (window.__hyperframes && window.__hyperframes.getVariables && window.__hyperframes.getVariables()) || {};
+      var root = Array.prototype.filter.call(
+        document.querySelectorAll('.lt-wrap'),
+        function (w) { return !w.hasAttribute("data-bound"); }
+      )[0].parentNode;
+      root.querySelector(".lt-wrap").setAttribute("data-bound", "");
+      var q = function (s) { return root.querySelector(s); };
+
+      var hold = Number(v.hold) || 5;
+      if (v.name) q(".lt-name").textContent = v.name;
+      if (v.role != null) q(".lt-role").textContent = v.role;
+      var showMascot = v.mascot !== false && v.mascot !== "false";
+      if (!showMascot) q(".lt-peek-mask").style.display = "none";
+
+      // Hand-drawn boil: a stepped 12 fps wobble, seeded by the frame, so every render matches.
+      function boil(tl, el, t0, t1, amp, seed) {
+        for (var t = t0; t < t1; t += 1 / 12) {
+          var r = Math.sin((Math.floor(t * 12) + seed) * 12.9898) * 43758.5453;
+          tl.set(el, { rotation: ((r - Math.floor(r)) - 0.5) * 2 * amp }, t);
+        }
+      }
+
+      var tl = gsap.timeline({ paused: true });
+      var out = hold - 0.55;
+
+      // In: the bar wipes open, the badge pops, the lines rise out of their masks.
+      tl.fromTo(q(".lt-bar"), { clipPath: "inset(0% 100% 0% 0% round 999px)" }, { clipPath: "inset(0% 0% 0% 0% round 999px)", duration: 0.6, ease: "expo.out" }, 0.1);
+      tl.fromTo(q(".lt-badge"), { scale: 0, rotation: -90 }, { scale: 1, rotation: 0, duration: 0.55, ease: "back.out(2)" }, 0.18);
+      tl.fromTo(q(".lt-name"), { yPercent: 110 }, { yPercent: 0, duration: 0.5, ease: "expo.out" }, 0.28);
+      tl.fromTo(q(".lt-role"), { yPercent: 120 }, { yPercent: 0, duration: 0.5, ease: "expo.out" }, 0.38);
+
+      if (showMascot) {
+        var peek = q(".lt-peek");
+        // Anticipation (dips), pops up with a stretch, squashes on landing, settles.
+        tl.fromTo(peek, { yPercent: 105, scaleX: 1, scaleY: 1, transformOrigin: "50% 100%" }, { yPercent: 112, duration: 0.12, ease: "power1.in" }, 0.55);
+        tl.to(peek, { yPercent: -6, scaleX: 0.9, scaleY: 1.12, duration: 0.22, ease: "power3.out" }, 0.67);
+        tl.to(peek, { yPercent: 0, scaleX: 1.08, scaleY: 0.92, duration: 0.12, ease: "power2.in" }, 0.89);
+        tl.to(peek, { scaleX: 1, scaleY: 1, duration: 0.3, ease: "elastic.out(1, 0.5)" }, 1.01);
+        boil(tl, peek.querySelector("img"), 1.0, out, 1.4, 7);
+        // Out: ducks back behind the bar.
+        tl.to(peek, { yPercent: 110, duration: 0.25, ease: "power3.in" }, out);
+      }
+
+      // Out: lines drop, the bar wipes away to the right.
+      tl.to([q(".lt-name"), q(".lt-role")], { yPercent: 115, duration: 0.25, ease: "power3.in", stagger: 0.04 }, out + 0.05);
+      tl.to(q(".lt-badge"), { scale: 0, duration: 0.25, ease: "power3.in" }, out + 0.1);
+      tl.to(q(".lt-bar"), { clipPath: "inset(0% 0% 0% 100% round 999px)", duration: 0.32, ease: "power3.in" }, out + 0.15);
+      tl.set(q(".lt-wrap"), { opacity: 0 }, hold - 0.02);
+
+      window.__timelines["taam-lower-third"] = tl;
+    })();
+  </script>
+</template>

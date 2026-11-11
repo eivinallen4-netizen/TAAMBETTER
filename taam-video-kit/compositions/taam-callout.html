@@ -1,0 +1,121 @@
+<template>
+  <style>
+    #root {
+      position: absolute;
+      inset: 0;
+      container-type: size;
+      font-family: "Montserrat", sans-serif;
+      background: transparent;
+      pointer-events: none;
+    }
+    .co-wrap {
+      position: absolute;
+      top: 12cqh;
+      right: 6cqw;
+      display: flex;
+      align-items: flex-end;
+      gap: 0;
+    }
+    .co-wrap.is-left { right: auto; left: 6cqw; flex-direction: row-reverse; }
+    .co-hero { width: 26cqmin; flex: none; margin-right: -3cqmin; position: relative; z-index: 2; }
+    .co-wrap.is-left .co-hero { margin-right: 0; margin-left: -3cqmin; }
+    .co-hero img { display: block; width: 100%; }
+    .co-wrap.is-left .co-flip { transform: scaleX(-1); }
+    .co-card {
+      position: relative;
+      max-width: 44cqw;
+      background: #fff;
+      color: #111111;
+      border-radius: 3cqmin;
+      padding: 3.2cqmin 3.6cqmin;
+      box-shadow: 1.2cqmin 1.2cqmin 0 0 #f46325;
+      margin-bottom: 6cqmin;
+    }
+    .co-eyebrow {
+      font-weight: 700;
+      font-size: 2.6cqmin;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: #f46325;
+      margin-bottom: 1.4cqmin;
+    }
+    .co-text {
+      font-weight: 900;
+      text-transform: uppercase;
+      letter-spacing: -0.035em;
+      line-height: 0.95;
+      font-size: 5.6cqmin;
+      text-wrap: balance;
+    }
+  </style>
+  <div
+    id="root"
+    data-composition-id="taam-callout"
+    data-width="1920"
+    data-height="1080"
+    data-composition-variables='[
+      {"id":"eyebrow","type":"string","label":"Eyebrow","default":"Pro tip"},
+      {"id":"text","type":"string","label":"Callout text","default":"Put your phone number above the fold"},
+      {"id":"side","type":"enum","label":"Side","default":"right","options":[{"value":"right","label":"Top right"},{"value":"left","label":"Top left"}]},
+      {"id":"pose","type":"enum","label":"Mascot pose or prop","default":"chill","options":[{"value":"chill","label":"Pointing"},{"value":"phone","label":"Phone"},{"value":"wave","label":"Wave"},{"value":"famous","label":"Trophy"},{"value":"sitting","label":"Coin flip"},{"value":"phone-ringing","label":"Prop: Ringing phone"},{"value":"map-pin","label":"Prop: Map pin"},{"value":"search-bar","label":"Prop: Search bar"},{"value":"megaphone","label":"Prop: Megaphone"},{"value":"stars","label":"Prop: Five stars"},{"value":"browser","label":"Prop: Website"},{"value":"growth","label":"Prop: Growth chart"},{"value":"calendar","label":"Prop: Booked calendar"},{"value":"clapper","label":"Prop: Clapperboard"},{"value":"notify","label":"Prop: Social heart"},{"value":"coffee-cup","label":"Prop: Coffee"},{"value":"none","label":"No mascot"}]},
+      {"id":"hold","type":"number","label":"Seconds on screen (match the host data-duration)","default":4,"min":2,"max":30,"step":0.5,"unit":"s"}
+    ]'
+  >
+    <div class="co-wrap">
+      <div class="co-hero"><div class="co-flip"><img src="assets/characters/chill.webp" alt="" /></div></div>
+      <div class="co-card">
+        <div class="co-eyebrow">Pro tip</div>
+        <div class="co-text">Put your phone number above the fold</div>
+      </div>
+    </div>
+    <div class="co-drv clip" data-start="0" data-duration="30" style="position:absolute;width:1px;height:1px;opacity:0"></div>
+  </div>
+  <script>
+    (function () {
+      // GSAP can't tween container units, so frame-relative distances are converted to px here.
+      function cq(n, u) { var w = window.innerWidth || 1920, h = window.innerHeight || 1080; return n * (u === "w" ? w : u === "h" ? h : Math.min(w, h)) / 100; }
+      var v = (window.__hyperframes && window.__hyperframes.getVariables && window.__hyperframes.getVariables()) || {};
+      var wrap = Array.prototype.filter.call(document.querySelectorAll(".co-wrap"), function (w) { return !w.hasAttribute("data-bound"); })[0];
+      wrap.setAttribute("data-bound", "");
+      var q = function (s) { return wrap.querySelector(s); };
+
+      var hold = Number(v.hold) || 4;
+      var left = v.side === "left";
+      if (left) wrap.classList.add("is-left");
+      if (v.eyebrow != null) q(".co-eyebrow").textContent = v.eyebrow;
+      if (!v.eyebrow) q(".co-eyebrow").style.display = "none";
+      if (v.text != null) q(".co-text").textContent = v.text;
+      var pose = v.pose || "chill";
+      if (pose === "none") q(".co-hero").style.display = "none";
+      else q(".co-hero img").src = (["phone-ringing","map-pin","search-bar","megaphone","stars","browser","growth","calendar","clapper","notify","coffee-cup"].indexOf(pose) >= 0 ? "assets/props/" : "assets/characters/") + pose + ".webp";
+
+      function boil(tl, el, t0, t1, amp, seed) {
+        for (var t = t0; t < t1; t += 1 / 12) {
+          var r = Math.sin((Math.floor(t * 12) + seed) * 12.9898) * 43758.5453;
+          tl.set(el, { rotation: ((r - Math.floor(r)) - 0.5) * 2 * amp }, t);
+        }
+      }
+
+      var tl = gsap.timeline({ paused: true });
+      var out = hold - 0.45;
+      var dir = left ? -1 : 1;
+      var card = q(".co-card");
+      var hero = q(".co-hero");
+
+      // The mascot hops in first and points; the card pops out of its hand.
+      if (pose !== "none") {
+        tl.fromTo(hero, { x: cq(dir * -40, "w"), y: 0, rotation: dir * -12, transformOrigin: "50% 100%" }, { x: 0, rotation: 0, duration: 0.45, ease: "expo.out" }, 0.05);
+        tl.fromTo(hero, { scaleX: 1, scaleY: 1 }, { scaleX: 1.08, scaleY: 0.92, duration: 0.1, ease: "power2.in" }, 0.4);
+        tl.to(hero, { scaleX: 1, scaleY: 1, duration: 0.4, ease: "elastic.out(1, 0.45)" }, 0.5);
+        boil(tl, hero.querySelector("img"), 0.6, out, 1.3, 11);
+        tl.to(hero, { x: cq(dir * -40, "w"), duration: 0.35, ease: "power3.in" }, out + 0.08);
+      }
+      tl.fromTo(card, { scale: 0.4, opacity: 0, transformOrigin: left ? "100% 100%" : "0% 100%" }, { scale: 1, opacity: 1, duration: 0.5, ease: "back.out(1.7)" }, 0.35);
+      tl.fromTo(q(".co-text"), { opacity: 0, filter: "blur(6px)" }, { opacity: 1, filter: "blur(0px)", duration: 0.2, ease: "power4.out" }, 0.55);
+      tl.to(card, { scale: 0.6, opacity: 0, duration: 0.28, ease: "power3.in" }, out);
+      tl.set(wrap, { opacity: 0 }, hold - 0.02);
+
+      window.__timelines["taam-callout"] = tl;
+    })();
+  </script>
+</template>

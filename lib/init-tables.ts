@@ -91,7 +91,8 @@ export async function initializeTables(db: Client): Promise<void> {
     // `interests` is the comma list behind the interest buttons (lib/interests.ts); `deck` is the
     // team's edits to that contact's marketing-plan slides, as JSON (lib/deck.ts).
     // `social_url` / `gbp_url` come in with appointment links (lib/appointments.ts).
-    for (const col of [...CONTACT_QUALIFIER_COLUMNS, 'logo', 'interests', 'deck', 'social_url', 'gbp_url']) {
+    // `sms_consent` records a text-message opt-in from the contact form (app/lib/legal.ts).
+    for (const col of [...CONTACT_QUALIFIER_COLUMNS, 'logo', 'interests', 'deck', 'social_url', 'gbp_url', 'sms_consent']) {
       if (!have.has(col)) {
         await db.execute(`ALTER TABLE contacts ADD COLUMN ${col} TEXT`);
       }

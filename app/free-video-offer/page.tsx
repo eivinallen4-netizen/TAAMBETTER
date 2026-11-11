@@ -3,6 +3,7 @@
 import { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
 import Arrow from '@/components/editorial/Arrow';
+import { SMS_CONSENT_TEXT } from '../lib/legal';
 
 type Step = 1 | 2 | 3 | 'confirmation';
 
@@ -17,6 +18,8 @@ const emptyFormState = {
   businessName: '',
   phone: '',
   salesRange: '',
+  // 'yes' only when the visitor ticks the optional text-message box. Never pre-checked.
+  smsConsent: '',
 };
 
 export default function FreeVideoOfferPage() {
@@ -98,6 +101,7 @@ export default function FreeVideoOfferPage() {
           phone: form.phone.trim(),
           business_name: form.businessName.trim(),
           sales_range: form.salesRange,
+          sms_consent: form.smsConsent === 'yes',
         }),
       });
       if (!res.ok) throw new Error('Submission failed');
@@ -165,6 +169,8 @@ export default function FreeVideoOfferPage() {
             phone={form.phone}
             onBusinessNameChange={(value) => updateField('businessName', value)}
             onPhoneChange={(value) => updateField('phone', value)}
+            smsConsent={form.smsConsent === 'yes'}
+            onSmsConsentChange={(checked) => updateField('smsConsent', checked ? 'yes' : '')}
           />
         )}
         {step === 3 && (
@@ -271,11 +277,15 @@ function StepCompanyInfo({
   phone,
   onBusinessNameChange,
   onPhoneChange,
+  smsConsent,
+  onSmsConsentChange,
 }: {
   businessName: string;
   phone: string;
   onBusinessNameChange: (v: string) => void;
   onPhoneChange: (v: string) => void;
+  smsConsent: boolean;
+  onSmsConsentChange: (checked: boolean) => void;
 }) {
   const inputClass =
     'w-full px-0 py-3 bg-transparent border-0 border-b-2 border-white/50 focus:border-white outline-none text-white text-xl font-semibold placeholder-white/50 transition';
@@ -314,6 +324,29 @@ function StepCompanyInfo({
           />
         </div>
       </div>
+      <label htmlFor="fvo-sms" className="mt-8 flex items-start gap-3 cursor-pointer text-sm leading-relaxed text-white/85">
+        <input
+          id="fvo-sms"
+          type="checkbox"
+          checked={smsConsent}
+          onChange={(e) => onSmsConsentChange(e.target.checked)}
+          className="mt-0.5 h-5 w-5 shrink-0 accent-taam-near-black cursor-pointer"
+        />
+        <span>
+          {SMS_CONSENT_TEXT} <span className="opacity-70">(optional)</span>
+        </span>
+      </label>
+      <p className="mt-6 text-sm text-white/80">
+        By sending this you agree to our{' '}
+        <Link href="/terms" target="_blank" rel="noopener" className="underline underline-offset-2 hover:text-white">
+          Terms
+        </Link>{' '}
+        and{' '}
+        <Link href="/privacy" target="_blank" rel="noopener" className="underline underline-offset-2 hover:text-white">
+          Privacy policy
+        </Link>
+        .
+      </p>
     </div>
   );
 }
