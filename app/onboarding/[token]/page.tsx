@@ -1,13 +1,13 @@
 import type { Metadata } from 'next';
-import OnboardingFlow from './OnboardingFlow';
+import { crm } from '@/crm';
 
-export const metadata: Metadata = {
-  title: 'Client onboarding | TAAM',
-  robots: { index: false, follow: false },
-  referrer: 'no-referrer',
-};
+// A client's onboarding form. Links already sent use /onboarding/<token>; the CRM's onboarding
+// page (also at /c/onboarding/<token>) answers them with the same token.
+export const dynamic = 'force-dynamic';
+
+export const metadata: Metadata = { title: 'Client onboarding' };
 
 export default async function OnboardingPage({ params }: { params: Promise<{ token: string }> }) {
   const { token } = await params;
-  return <OnboardingFlow token={token} />;
+  return <crm.PublicPage params={Promise.resolve({ path: ['onboarding', token] })} />;
 }

@@ -34,12 +34,21 @@ function formatCall(iso: string | null): string {
   return d.toLocaleString(undefined, { weekday: 'long', month: 'long', day: 'numeric', hour: 'numeric', minute: '2-digit', timeZoneName: 'short' });
 }
 
-function post(token: string, body: Record<string, unknown>) {
-  return fetch(`/api/call/${encodeURIComponent(token)}`, {
+// The CRM keeps the appointment link: "opened" counts the visit, "scheduled" marks it booked.
+// The call time itself arrives from Calendly's signed webhook, never from the browser.
+const CRM_CALL: Record<string, string> = {
+  opened: '/api/crm/public/public_get_appointment',
+  scheduled: '/api/crm/public/public_mark_appointment_booked',
+};
+
+async function post(token: string, body: { event: 'opened' | 'scheduled'; inviteeUri?: string }) {
+  const response = await fetch(CRM_CALL[body.event], {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(body),
+    body: JSON.stringify({ token }),
   });
+  const data = await response.json().catch(() => null);
+  return { json: async () => ({ callStart: (data?.call_start as string | null | undefined) ?? null }) };
 }
 
 export default function CallBooking({ token, eventUrl, name, email, phone, initial, heading }: Props) {

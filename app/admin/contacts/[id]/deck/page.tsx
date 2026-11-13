@@ -143,7 +143,7 @@ export default function ContactDeckPage() {
   if (error && !contact) {
     return (
       <div className="mx-auto max-w-5xl">
-        <Link href={`/admin/contacts/${id}`} className="mb-5 inline-flex items-center gap-2 text-sm font-semibold text-gray-400 hover:text-white">
+        <Link href={`/admin/leads/${id}`} className="mb-5 inline-flex items-center gap-2 text-sm font-semibold text-gray-400 hover:text-white">
           <ArrowLeft className="h-4 w-4" /> Back to contact
         </Link>
         <div className="rounded-xl border border-red-700 bg-red-900/20 p-4 text-red-400">{error}</div>
@@ -182,7 +182,7 @@ export default function ContactDeckPage() {
 
       {/* Toolbar */}
       <div className="mb-5 flex flex-wrap items-center gap-3">
-        <Link href={`/admin/contacts/${id}`} className="mr-auto inline-flex items-center gap-2 text-sm font-semibold text-gray-400 transition hover:text-white">
+        <Link href={`/admin/leads/${id}`} className="mr-auto inline-flex items-center gap-2 text-sm font-semibold text-gray-400 transition hover:text-white">
           <ArrowLeft className="h-4 w-4" /> {deck.client}
         </Link>
         <span className="text-xs font-semibold text-gray-500">

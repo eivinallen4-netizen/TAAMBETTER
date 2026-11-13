@@ -2,9 +2,7 @@ import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import Logo from '@/components/editorial/Logo';
 import Mascot from '@/components/editorial/Mascot';
-import { getAdminDb } from '@/lib/admin-db';
-import { initializeTables } from '@/lib/init-tables';
-import { getAppointmentLinkByToken } from '@/lib/appointments';
+import { crm } from '@/crm';
 import { calendlyEventUrl } from '@/lib/calendly';
 import { PHONE } from '@/lib/brand-email';
 import CallBooking from './CallBooking';
@@ -28,21 +26,36 @@ const ON_THE_CALL = [
   ['Your questions, answered', 'Straight answers. No pressure.'],
 ] as const;
 
+const TOKEN_RE = /^[A-Za-z0-9_-]{10,64}$/;
+
 export default async function CallPage({ params }: { params: Promise<{ token: string }> }) {
   const { token } = await params;
-  const db = getAdminDb();
-  await initializeTables(db);
-  const link = await getAppointmentLinkByToken(db, token);
-  if (!link) notFound();
+  if (!TOKEN_RE.test(token)) notFound();
 
-  let logo = '';
-  if (link.contact_id) {
-    const found = await db.execute({ sql: 'SELECT logo FROM contacts WHERE id = ?', args: [link.contact_id] });
-    const value = String(found.rows[0]?.logo ?? '');
-    if (LOGO_RE.test(value)) logo = value;
-  }
+  // The appointment link is the CRM's (crm_appointment_links); this page is TAAM's own design
+  // around it. The visit is counted from the browser (CallBooking), not here, so link previews
+  // in texts and DMs don't count as opens.
+  const { db } = await crm.context();
+  const found = await db.execute({
+    sql: `SELECT l.client_name, l.business_name, l.status, l.call_start, d.logo
+          FROM crm_appointment_links l
+          LEFT JOIN taam_decks d ON d.client_id = l.client_id
+          WHERE l.token = ?`,
+    args: [token],
+  });
+  const row = found.rows[0];
+  if (!row) notFound();
+  const link = {
+    client_name: String(row.client_name ?? ''),
+    business_name: String(row.business_name ?? ''),
+    status: String(row.status ?? ''),
+    call_start: row.call_start == null ? null : String(row.call_start),
+  };
 
-  const business = link.business_name;
+  const logoValue = String(row.logo ?? '');
+  const logo = LOGO_RE.test(logoValue) ? logoValue : '';
+
+  const business = link.business_name || link.client_name;
   const firstName = link.client_name.trim().split(/\s+/)[0] ?? '';
 
   return (

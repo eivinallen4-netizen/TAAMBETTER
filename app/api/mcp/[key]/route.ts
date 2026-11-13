@@ -1,14 +1,7 @@
-import { NextRequest } from 'next/server';
-import { handleMcpPost, mcpMethodNotAllowed } from '@/lib/crm/mcp';
+import { forwardToCrm } from '@/lib/crm-route';
 
-// The same MCP endpoint with the API key in the URL, for Claude.ai custom connectors (Settings →
-// Connectors → Add custom connector), which can't send headers. Treat this URL like a password.
-
+// The MCP endpoint with the key in the address, for connectors that cannot send a header.
 export const dynamic = 'force-dynamic';
+export const maxDuration = 60;
 
-export async function POST(request: NextRequest, { params }: { params: Promise<{ key: string }> }) {
-  const { key } = await params;
-  return handleMcpPost(request, key);
-}
-
-export { mcpMethodNotAllowed as GET, mcpMethodNotAllowed as DELETE };
+export const { GET, POST, DELETE } = forwardToCrm((params) => ['mcp', String(params.key ?? '')]);

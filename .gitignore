@@ -44,4 +44,13 @@ next-env.d.ts
 !package.json
 !package-lock.json
 !tsconfig.json
+!vercel.json
 !app/content/siteContent.json
+
+# local databases (client data)
+/.data/
+*.db
+*.db-journal
+*.db-wal
+*.db-shm
+.email-previews/

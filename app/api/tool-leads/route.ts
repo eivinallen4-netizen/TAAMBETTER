@@ -1,7 +1,5 @@
 import { after, NextRequest } from 'next/server';
-import { createClient } from '@libsql/client';
-import { initializeTables } from '@/lib/init-tables';
-import { saveContact } from '@/lib/contacts';
+import { saveWebsiteLead } from '@/lib/crm-site/leads';
 import { createRateLimiter, handleRateLimit } from '@/lib/ratelimit';
 import { getClientIp } from '@/lib/logger';
 import { FREE_TOOLS, type FreeTool } from '@/app/lib/tools';
@@ -10,8 +8,8 @@ import { sendToolEmail } from '@/lib/tool-email';
 import { syncToolLeadToHubSpot } from '@/lib/hubspot';
 import { SITE_URL } from '@/lib/site-url';
 
-// Email gate for the free tools. Leads land in the same contacts table as the main form, tagged
-// with the tool's page as source_page, so they show up in /admin/contacts with the result attached.
+// Email gate for the free tools. Leads land in the CRM like the main form's, tagged with the
+// tool's page as source_page, so they show up in /admin/leads with the result attached.
 // When the visitor asks for it (`deliver`), the full report is emailed to them and the lead is pushed
 // to HubSpot, after the response so the page never waits on either.
 
@@ -23,18 +21,6 @@ const toolLeadLimiter = createRateLimiter({ windowMs: 60 * 60 * 1000, maxRequest
 
 // A few emailed reports per address per tool per hour, however many times the page asks.
 const deliveryLimiter = createRateLimiter({ windowMs: 60 * 60 * 1000, maxRequests: 3 });
-
-let db: ReturnType<typeof createClient> | null = null;
-
-function getDb() {
-  if (!db) {
-    if (!process.env.TURSO_URL || !process.env.TURSO_TOKEN) {
-      throw new Error('Turso not configured');
-    }
-    db = createClient({ url: process.env.TURSO_URL, authToken: process.env.TURSO_TOKEN });
-  }
-  return db;
-}
 
 function str(value: unknown, max: number): string {
   return typeof value === 'string' ? value.trim().slice(0, max) : '';
@@ -67,17 +53,13 @@ export async function POST(request: NextRequest) {
   const summary = str(body.summary, 1800);
 
   try {
-    const database = getDb();
-    await initializeTables(database);
-    await saveContact(database, {
+    await saveWebsiteLead({
       name,
       email,
       message: `[Free tool: ${tool.name}] ${summary}`,
-      completion_status: 'partial',
-      timestamp: new Date().toISOString(),
       source_page: `/tools/${tool.slug}`,
       biggest_challenge: tool.challenge,
-      services_interested: tool.services.join(', '),
+      services_interested: tool.services,
       website,
     });
   } catch (err) {

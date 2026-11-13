@@ -1,24 +1,21 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { requireAdmin } from '@/lib/admin-auth';
+import { requireOwner } from '@/lib/admin-auth';
 import { getAdminDb } from '@/lib/admin-db';
-import { initializeTables } from '@/lib/init-tables';
+import { readLogo } from '@/lib/crm-site/decks';
 
-// Serves a contact's uploaded company logo as an image, so lists don't have to carry every logo inline.
+// Serves a lead's uploaded company logo as an image, so lists don't have to carry every logo inline.
 
 const DATA_URL_RE = /^data:(image\/(?:png|jpeg|webp));base64,([A-Za-z0-9+/=]+)$/;
 
 export async function GET(_request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
-    await requireAdmin();
+    await requireOwner();
     const { id } = await params;
     if (!id.match(/^[a-f0-9\-]{36}$/i)) {
       return NextResponse.json({ error: 'Invalid ID format' }, { status: 400 });
     }
 
-    const db = getAdminDb();
-    await initializeTables(db);
-    const result = await db.execute({ sql: 'SELECT logo FROM contacts WHERE id = ?', args: [id] });
-    const match = DATA_URL_RE.exec(String(result.rows[0]?.logo ?? ''));
+    const match = DATA_URL_RE.exec(await readLogo(getAdminDb(), id));
     if (!match) return new NextResponse(null, { status: 404 });
 
     return new NextResponse(Buffer.from(match[2], 'base64'), {

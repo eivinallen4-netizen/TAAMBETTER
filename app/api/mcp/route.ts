@@ -1,13 +1,8 @@
-import { NextRequest } from 'next/server';
-import { handleMcpPost, mcpMethodNotAllowed } from '@/lib/crm/mcp';
+import { forwardToCrm } from '@/lib/crm-route';
 
-// MCP endpoint for Claude Code and other clients that can send an Authorization header:
-//   claude mcp add --transport http taam https://taammarketing.com/api/mcp --header "Authorization: Bearer taam_…"
-
+// The MCP endpoint at its original address, so the Claude connector keeps working. The key
+// goes in the Authorization header.
 export const dynamic = 'force-dynamic';
+export const maxDuration = 60;
 
-export function POST(request: NextRequest) {
-  return handleMcpPost(request);
-}
-
-export { mcpMethodNotAllowed as GET, mcpMethodNotAllowed as DELETE };
+export const { GET, POST, DELETE } = forwardToCrm(() => ['mcp']);

@@ -17,7 +17,7 @@ export default function Footer() {
   const pathname = usePathname();
   const content = siteContent;
 
-  if (pathname.startsWith('/admin') || pathname.startsWith('/onboarding/') || pathname.startsWith('/call/')) {
+  if (pathname.startsWith('/admin') || pathname.startsWith('/onboarding/') || pathname.startsWith('/call/') || pathname.startsWith('/c/')) {
     return null;
   }
 

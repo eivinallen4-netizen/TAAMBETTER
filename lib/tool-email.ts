@@ -2,18 +2,17 @@ import type { ToolReport } from '@/app/lib/tool-reports';
 import { renderToolPdf, toolPdfFilename } from '@/lib/tool-pdf';
 import {
   FONT,
-  INK,
   ORANGE,
   PHONE,
   REPLY_TO,
   RULE,
   SITE,
-  button,
   emailShell,
   esc,
-  heroCard,
   inkRow,
   paragraphs,
+  sectionHead,
+  statGrid,
 } from '@/lib/brand-email';
 
 // The branded email that delivers a free-tool report, and the Resend call that sends it.
@@ -23,67 +22,47 @@ export function renderToolEmail(report: ToolReport, firstName: string, withPdf =
   const hi = firstName ? `${firstName}, here's` : "Here's";
   const mailto = `mailto:${REPLY_TO}?subject=${encodeURIComponent(`Free call about my results (${report.toolName})`)}`;
 
-  const stats = report.stats
-    .map(
-      (s) => `<td valign="top" width="50%" style="width:50%;padding:16px 12px 16px 0;border-top:2px solid ${INK};">
-        <div style="font:800 11px/1.3 ${FONT};letter-spacing:.14em;text-transform:uppercase;color:${INK};">${esc(s.label)}</div>
-        <div class="stat" style="font:900 34px/1.05 ${FONT};color:#fff;padding-top:8px;">${esc(s.value)}</div>
-      </td>`
-    )
-    // Two per row keeps the numbers big on phones.
-    .reduce<string[]>((rows, cell, i) => (i % 2 ? (rows[rows.length - 1] += cell, rows) : [...rows, cell]), [])
-    .map((r) => `<tr>${r}</tr>`)
-    .join('');
-
   const sections = report.sections
-    .map((sec) =>
+    .map((sec, s) =>
       inkRow(
-        `<div style="font:900 26px/1.1 ${FONT};text-transform:uppercase;color:#fff;padding-bottom:16px;border-bottom:2px solid ${ORANGE};">${esc(sec.title)}</div>
-        ${sec.items
+        `${sectionHead(s + 1, sec.title)}
+        <div style="border-top:2px solid ${RULE};">${sec.items
           .map(
             (item, i) => `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border-bottom:2px solid ${RULE};"><tr>
-              <td width="44" valign="top" style="width:44px;padding:22px 0;font:900 15px/1.35 ${FONT};color:${ORANGE};">${String(i + 1).padStart(2, '0')}</td>
-              <td valign="top" style="padding:22px 0 10px;">
-                <div style="font:800 17px/1.35 ${FONT};color:#fff;">${esc(item.title)}</div>
-                ${item.tag ? `<div style="font:800 11px/1.4 ${FONT};letter-spacing:.14em;text-transform:uppercase;color:${ORANGE};padding-top:6px;">${esc(item.tag)}</div>` : ''}
-                <div style="padding-top:10px;">${paragraphs(item.body, `font:500 15px/1.6 ${FONT};color:#e6e6e6;`)}</div>
+              <td width="44" valign="top" style="width:44px;padding:24px 0;font:700 11px/1.9 ${FONT};letter-spacing:.2em;color:${ORANGE};">${String(i + 1).padStart(2, '0')}</td>
+              <td valign="top" style="padding:22px 0 12px;">
+                <div style="font:800 18px/1.35 ${FONT};color:#fff;">${esc(item.title)}</div>
+                ${item.tag ? `<table role="presentation" cellpadding="0" cellspacing="0" style="margin-top:12px;"><tr><td style="border:2px solid ${ORANGE};border-radius:999px;padding:6px 12px;font:800 11px/1.2 ${FONT};letter-spacing:.14em;text-transform:uppercase;color:${ORANGE};">${esc(item.tag)}</td></tr></table>` : ''}
+                <div style="padding-top:12px;">${paragraphs(item.body, `font:500 15px/1.65 ${FONT};color:#e6e6e6;`)}</div>
               </td>
             </tr></table>`
           )
-          .join('')}`,
-        48
+          .join('')}</div>`,
+        s ? 56 : 48
       )
     )
     .join('');
 
-  const rows = [
-    heroCard({
-      eyebrow: `Free ${report.toolName} · Full report`,
-      title: report.headline,
-      mascot: 'counting',
-      inner: [
-        report.website ? `<div style="font:800 14px/1.4 ${FONT};color:${INK};padding-bottom:12px;word-break:break-all;">${esc(report.website)}</div>` : '',
-        `<p style="margin:0 0 24px;font:600 17px/1.55 ${FONT};color:${INK};">${esc(hi)} everything from your report, so you can keep it, share it and work through it.${withPdf ? ' A printable PDF copy is attached.' : ''}</p>`,
-        `<table role="presentation" width="100%" cellpadding="0" cellspacing="0">${stats}</table>`,
-      ].join(''),
-    }),
-    inkRow(paragraphs(report.intro, `font:500 17px/1.65 ${FONT};color:#e6e6e6;`)),
-    sections,
-    `<tr><td class="px" style="padding:56px 20px 0;">
-      <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:${ORANGE};border-radius:24px;">
-      <tr><td class="card" style="padding:36px 32px;">
-        <div class="h1" style="font:900 40px/1 ${FONT};text-transform:uppercase;color:#fff;">Want us to fix it?</div>
-        <p style="margin:16px 0 24px;font:600 16px/1.55 ${FONT};color:${INK};">Book a free call. We'll walk through your results and tell you what we'd fix first. Take the plan and run with it, with or without us. We'll give you better marketing or refer you to someone who can.</p>
-        ${button('Book a free call', mailto)}
-        <p style="margin:18px 0 0;font:700 14px/1.5 ${FONT};color:${INK};">Or just reply to this email · Call <a href="tel:+1${PHONE.replace(/\D/g, '')}" style="color:${INK};">${PHONE}</a></p>
-      </td></tr></table>
-    </td></tr>`,
-  ].join('');
-
   const html = emailShell({
     title: `${report.toolName} report`,
     preheader: `${report.headline} Your full ${report.toolName} report from TAAM.`,
-    rows,
+    hero: {
+      eyebrow: `Free ${report.toolName}`,
+      title: report.headline,
+      mascot: 'counting',
+      inner: [
+        report.website ? `<div style="font:800 14px/1.4 ${FONT};color:#fff;padding-bottom:12px;word-break:break-all;">${esc(report.website)}</div>` : '',
+        `<p style="margin:0 0 26px;font:600 17px/1.6 ${FONT};color:#fff;">${esc(hi)} everything from your report, so you can keep it, share it and work through it.${withPdf ? ' A printable PDF copy is attached.' : ''}</p>`,
+        statGrid(report.stats),
+      ].join(''),
+    },
+    rows: [inkRow(paragraphs(report.intro, `font:500 18px/1.65 ${FONT};color:#e6e6e6;`)), sections].join(''),
+    poster: {
+      eyebrow: 'Want us to fix it?',
+      lines: ["Let's", 'talk.'],
+      body: "Book a free call. We'll walk through your results and tell you what we'd fix first. Take the plan and run with it, with or without us. We'll give you better marketing or refer you to someone who can.",
+      cta: { label: 'Book a free call', url: mailto },
+    },
     footer: `You're getting this because you asked for your report on ${SITE.replace(/^https?:\/\//, '')}/tools/${report.slug}. Run it again any time.`,
   });
 
@@ -128,7 +107,7 @@ export async function sendToolEmail(to: string, report: ToolReport, firstName: s
     method: 'POST',
     headers: { Authorization: `Bearer ${key}`, 'Content-Type': 'application/json' },
     body: JSON.stringify({
-      from: process.env.TOOL_EMAIL_FROM || 'TAAM <reports@taammarketing.com>',
+      from: process.env.TOOL_EMAIL_FROM || 'TAAM <reports@mail.taammarketing.com>',
       to: [to],
       reply_to: REPLY_TO,
       // Optional internal copy so the team sees exactly what went out.

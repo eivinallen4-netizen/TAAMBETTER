@@ -1,9 +1,6 @@
 import { randomUUID } from 'crypto';
 import type { NextRequest } from 'next/server';
-import { createClient } from '@libsql/client';
-import { initializeTables } from '@/lib/init-tables';
-import { saveContact } from '@/lib/contacts';
-import { createAppointmentLink } from '@/lib/appointments';
+import { bookingLinkFor, saveWebsiteLead } from '@/lib/crm-site/leads';
 import { discoveryCallUrl } from '@/lib/calendly';
 import { getClientIp, logger } from '@/lib/logger';
 import { createRateLimiter, handleRateLimit } from '@/lib/ratelimit';
@@ -53,36 +50,25 @@ function pickOption(options: QualifierOption[], value: unknown): string {
   return typeof value === 'string' && options.some((o) => o.value === value) ? value : '';
 }
 
-let db: ReturnType<typeof createClient> | null = null;
-
-function getDb() {
-  if (!db) {
-    const TURSO_URL = process.env.TURSO_URL;
-    const TURSO_TOKEN = process.env.TURSO_TOKEN;
-
-    if (!TURSO_URL || !TURSO_TOKEN) {
-      throw new Error('Turso not configured');
-    }
-
-    db = createClient({
-      url: TURSO_URL,
-      authToken: TURSO_TOKEN,
-    });
-  }
-  return db;
-}
-
+/** Saves the lead in the CRM (/admin/leads). Returns the lead's id. */
 async function writeToTurso(contact: Contact): Promise<{ success: boolean; contactId?: string; error?: string }> {
   try {
-    const servicesStr = Array.isArray(contact.services_interested)
-      ? contact.services_interested.join(', ')
-      : (contact.services_interested || '');
-
-    const contactId = await saveContact(getDb(), {
-      ...contact,
-      biggest_challenge: contact.biggest_challenge || '',
-      services_interested: servicesStr,
-      business_name: contact.business_name || '',
+    const { id: contactId } = await saveWebsiteLead({
+      name: contact.name,
+      email: contact.email,
+      phone: contact.phone,
+      message: contact.message,
+      business_name: contact.business_name,
+      website: contact.website,
+      industry: contact.industry,
+      business_stage: contact.business_stage,
+      budget: contact.budget,
+      timeline: contact.timeline,
+      role: contact.role,
+      biggest_challenge: contact.biggest_challenge,
+      services_interested: contact.services_interested,
+      source_page: contact.source_page,
+      sms_consent: contact.sms_consent,
     });
 
     return { success: true, contactId };
@@ -95,8 +81,6 @@ export async function POST(request: NextRequest) {
   const clientIp = getClientIp(request.headers);
   const limit = contactLimiter(request, `contact:${clientIp}`);
   if (!limit.allowed) return handleRateLimit(limit.resetTime!);
-
-  await initializeTables(getDb()).catch((err) => console.error('Table init failed:', err));
 
   let body: Record<string, unknown>;
   try {
@@ -190,15 +174,8 @@ export async function POST(request: NextRequest) {
   const eventUrl = discoveryCallUrl();
   if (isFinalSubmit && isComplete && qualified && eventUrl && tursoResult.contactId) {
     try {
-      const link = await createAppointmentLink(getDb(), {
-        clientName: name,
-        businessName,
-        socialUrl: website,
-        contactId: tursoResult.contactId,
-        createdBy: 'website-form',
-        createdByName: 'Website form',
-      });
-      booking = { token: link.token, eventUrl };
+      const token = await bookingLinkFor({ id: tursoResult.contactId, name, businessName });
+      booking = { token, eventUrl };
     } catch (err) {
       console.error('Booking link failed, falling back to a callback:', err);
     }
