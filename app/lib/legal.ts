@@ -3,7 +3,7 @@
 import siteContent from '../content/siteContent.json';
 
 export const LEGAL = {
-  entity: 'TAAM Media LLC',
+  entity: 'TAAM Marketing LLC',
   /** The business name used on the SMS (10DLC) registration. Must appear on the privacy policy and opt-in. */
   brand: 'TAAM Marketing',
   state: 'Nevada',
@@ -17,7 +17,7 @@ export const LEGAL = {
  * Bump the version whenever the SMS wording below changes. It is saved with each opt-in so we can show
  * which wording a person agreed to.
  */
-export const SMS_CONSENT_VERSION = '2026-11-14';
+export const SMS_CONSENT_VERSION = '2026-11-14-v2';
 
 /** The message types, matching the use cases on the SMS registration. Shown beside every SMS checkbox. */
 export const SMS_MESSAGE_TYPES =

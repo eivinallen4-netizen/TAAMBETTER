@@ -7,7 +7,7 @@ deployed. Deploy first: reviewers check the live pages, not this file.
 
 | Field | Value |
 | --- | --- |
-| Legal business name | TAAM Media LLC (must match the EIN paperwork exactly) |
+| Legal business name | TAAM Marketing LLC (must match the EIN paperwork exactly) |
 | Brand / DBA name | TAAM Marketing |
 | Website | https://taammarketing.com |
 | Support email | info@taammarketing.com |
@@ -19,7 +19,7 @@ deployed. Deploy first: reviewers check the live pages, not this file.
 Claude so the "Message types" line on the site (`app/lib/legal.ts`, `SMS_MESSAGE_TYPES`) can be changed to match.
 
 **Campaign description:**
-TAAM Marketing (TAAM Media LLC) is a Las Vegas marketing agency that builds websites, video content and ads for
+TAAM Marketing (TAAM Marketing LLC) is a Las Vegas marketing agency that builds websites, video content and ads for
 local businesses. We text business owners who opt in on our website forms to reply to their inquiry, schedule
 and remind them of calls, send project and account updates to clients, and send occasional marketing messages
 about TAAM Marketing services. Message frequency varies.
@@ -32,7 +32,7 @@ People opt in on our website, taammarketing.com, in two places:
    to the phone number field.
 
 The checkbox is unchecked by default and optional. A form can be sent without it. The checkbox reads: "Yes, text
-me. I agree to receive text messages from TAAM Marketing (TAAM Media LLC) at the phone number I provided.
+me. I agree to receive text messages from TAAM Marketing (TAAM Marketing LLC) at the phone number I provided.
 Messages may be sent with automated technology. Consent is not a condition of purchase." Right under it the form
 lists the message types, "Message frequency varies", "Message and data rates may apply", "Reply STOP to opt
 out", "Reply HELP for help", and links to our Terms (https://taammarketing.com/terms#text-messages) and Privacy

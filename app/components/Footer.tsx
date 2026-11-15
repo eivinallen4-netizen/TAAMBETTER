@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import siteContent from '../content/siteContent.json';
+import { LEGAL } from '../lib/legal';
 import ContactCTA from './ContactCTA';
 import Logo from '@/components/editorial/Logo';
 import Arrow from '@/components/editorial/Arrow';
@@ -69,7 +70,7 @@ export default function Footer() {
 
         <div className="mt-24 flex flex-col sm:flex-row justify-between gap-2 border-t rule pt-6 text-sm text-[color:var(--tone-muted)]">
           <span>
-            © {new Date().getFullYear()} TAAM Marketing (TAAM Media LLC). All rights reserved. ·{' '}
+            © {new Date().getFullYear()} {LEGAL.brand} ({LEGAL.entity}). All rights reserved. ·{' '}
             <Link href="/privacy" className="link-line">Privacy policy</Link> ·{' '}
             <Link href="/terms" className="link-line">Terms</Link>
           </span>

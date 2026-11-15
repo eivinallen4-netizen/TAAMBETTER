@@ -206,7 +206,7 @@ TAAM Marketing — [ confirm exact @handle per platform: Instagram, LinkedIn, Ti
 
 **Legal Business Name / Entity Type**
 
-TAAM Media LLC
+TAAM Marketing LLC
 
 # 8. Team
 
