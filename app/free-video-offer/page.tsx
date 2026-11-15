@@ -3,7 +3,7 @@
 import { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
 import Arrow from '@/components/editorial/Arrow';
-import { SMS_CONSENT_TEXT } from '../lib/legal';
+import SmsConsent from '../components/SmsConsent';
 
 type Step = 1 | 2 | 3 | 'confirmation';
 
@@ -324,18 +324,7 @@ function StepCompanyInfo({
           />
         </div>
       </div>
-      <label htmlFor="fvo-sms" className="mt-8 flex items-start gap-3 cursor-pointer text-sm leading-relaxed text-white/85">
-        <input
-          id="fvo-sms"
-          type="checkbox"
-          checked={smsConsent}
-          onChange={(e) => onSmsConsentChange(e.target.checked)}
-          className="mt-0.5 h-5 w-5 shrink-0 accent-taam-near-black cursor-pointer"
-        />
-        <span>
-          {SMS_CONSENT_TEXT} <span className="opacity-70">(optional)</span>
-        </span>
-      </label>
+      <SmsConsent id="fvo-sms" checked={smsConsent} onChange={onSmsConsentChange} />
       <p className="mt-6 text-sm text-white/80">
         By sending this you agree to our{' '}
         <Link href="/terms" target="_blank" rel="noopener" className="underline underline-offset-2 hover:text-white">

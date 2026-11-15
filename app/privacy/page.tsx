@@ -2,13 +2,13 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import PageHero from '@/components/sections/PageHero';
 import LegalSections, { type LegalSection } from '@/components/sections/LegalSections';
-import { LEGAL } from '../lib/legal';
+import { LEGAL, SMS_MESSAGE_TYPES } from '../lib/legal';
 import siteContent from '../content/siteContent.json';
 
 export const metadata: Metadata = {
   title: 'Privacy Policy',
   description:
-    'What TAAM collects on taammarketing.com, how we use it, how our emails and text messages work, who we share it with and how to have it deleted.',
+    'The TAAM Marketing Privacy Policy: what we collect on taammarketing.com, how we use it, how our emails and text messages work, who we share it with and how to have it deleted.',
   alternates: { canonical: '/privacy' },
 };
 
@@ -25,9 +25,13 @@ const sections: LegalSection[] = [
     body: (
       <>
         <p>
-          This policy covers {LEGAL.site} and the emails and text messages we send. &ldquo;TAAM&rdquo;,
-          &ldquo;we&rdquo; and &ldquo;us&rdquo; mean {LEGAL.entity}, a {LEGAL.state} limited liability company based
-          in Las Vegas. Questions go to <Email /> or <Phone />.
+          This Privacy Policy is for <strong>{LEGAL.brand}</strong>. {LEGAL.brand} is operated by {LEGAL.entity}, a{' '}
+          {LEGAL.state} limited liability company based in Las Vegas. &ldquo;{LEGAL.brand}&rdquo;, &ldquo;TAAM&rdquo;,
+          &ldquo;we&rdquo; and &ldquo;us&rdquo; all mean {LEGAL.brand} ({LEGAL.entity}).
+        </p>
+        <p>
+          It covers {LEGAL.site} and the emails and text messages {LEGAL.brand} sends. Questions go to <Email /> or{' '}
+          <Phone />.
         </p>
         <p>
           Using the site also means you agree to our <Link href="/terms" className="link-line font-semibold">Terms of Service</Link>.
@@ -99,15 +103,14 @@ const sections: LegalSection[] = [
     body: (
       <>
         <p>
-          We only text you if you gave us your number and checked the box agreeing to texts, or texted us first. The
-          box is never pre-checked and you don&apos;t have to check it to send a form or buy from us.
+          {LEGAL.brand} only texts you if you gave us your number and checked the box agreeing to texts, or texted us
+          first. The box is never pre-checked and you don&apos;t have to check it to send a form or buy from us.
         </p>
         <ul>
           <li>
-            <strong>What we send:</strong> replies about your request, call scheduling and reminders, project updates
-            for clients, and occasional offers from TAAM.
+            <strong>What we send:</strong> {SMS_MESSAGE_TYPES}.
           </li>
-          <li><strong>How often:</strong> message frequency varies with your request.</li>
+          <li><strong>How often:</strong> message frequency varies based on your inquiry and project.</li>
           <li><strong>Cost:</strong> message and data rates may apply, depending on your mobile plan.</li>
           <li>
             <strong>Opting out:</strong> reply <strong>STOP</strong>{' '}to any text and we&apos;ll stop texting that number.
@@ -159,6 +162,13 @@ const sections: LegalSection[] = [
           <li><strong>Calendly</strong> handles bookings if you schedule a call with us.</li>
           <li><strong>Payment and accounting tools</strong> process client invoices. We never see or store full card numbers.</li>
         </ul>
+        <p>
+          <strong>
+            No mobile information will be shared with third parties or affiliates for marketing or promotional
+            purposes. All the above categories exclude text messaging originator opt-in data and consent; this
+            information will not be shared with any third parties.
+          </strong>
+        </p>
         <p>
           We may also share information if the law requires it, to protect our rights or someone&apos;s safety, or as
           part of a merger or sale of the business, in which case this policy still applies to it.
@@ -251,7 +261,7 @@ const sections: LegalSection[] = [
     title: 'Contact',
     body: (
       <p>
-        {LEGAL.entity}, Las Vegas, {LEGAL.state}. Email <Email /> or call <Phone />.
+        {LEGAL.brand} ({LEGAL.entity}), Las Vegas, {LEGAL.state}. Email <Email /> or call <Phone />.
       </p>
     ),
   },
@@ -264,7 +274,7 @@ export default function PrivacyPage() {
         eyebrow="Privacy"
         title={'Privacy\npolicy.'}
         outlineFrom={1}
-        subtitle={`What we collect, how our emails and texts work, and how to have your info deleted. Last updated ${LEGAL.updated}.`}
+        subtitle={`The ${LEGAL.brand} Privacy Policy: what we collect, how our emails and texts work, and how to have your info deleted. Last updated ${LEGAL.updated}.`}
       />
       <LegalSections sections={sections} />
     </>

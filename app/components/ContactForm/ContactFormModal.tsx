@@ -27,7 +27,7 @@ import {
   type LeadFit,
   type QualifierOption,
 } from '../../lib/cta';
-import { SMS_CONSENT_TEXT } from '../../lib/legal';
+import SmsConsent from '../SmsConsent';
 import type { ContactFormPrefill } from './ContactFormProvider';
 import Arrow from '@/components/editorial/Arrow';
 import CallBooking from '@/app/call/[token]/CallBooking';
@@ -671,18 +671,11 @@ function StepContactInfo({
           />
         </div>
       </div>
-      <label htmlFor="cf-sms" className="mt-8 flex items-start gap-3 cursor-pointer text-sm leading-relaxed text-white/85">
-        <input
-          id="cf-sms"
-          type="checkbox"
-          checked={form.smsConsent === 'yes'}
-          onChange={(e) => onChange('smsConsent', e.target.checked ? 'yes' : '')}
-          className="mt-0.5 h-5 w-5 shrink-0 accent-taam-near-black cursor-pointer"
-        />
-        <span>
-          {SMS_CONSENT_TEXT} {optional}
-        </span>
-      </label>
+      <SmsConsent
+        id="cf-sms"
+        checked={form.smsConsent === 'yes'}
+        onChange={(checked) => onChange('smsConsent', checked ? 'yes' : '')}
+      />
       <p className="mt-6 text-sm text-white/80">
         No spam, no newsletter sign-up. Your info goes to our team and nowhere else. By sending this you agree to our{' '}
         <Link href="/terms" target="_blank" rel="noopener" className="underline underline-offset-2 hover:text-white">

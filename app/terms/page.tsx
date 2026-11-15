@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import PageHero from '@/components/sections/PageHero';
 import LegalSections, { type LegalSection } from '@/components/sections/LegalSections';
-import { LEGAL } from '../lib/legal';
+import { LEGAL, SMS_MESSAGE_TYPES } from '../lib/legal';
 import siteContent from '../content/siteContent.json';
 
 export const metadata: Metadata = {
@@ -28,8 +28,8 @@ const sections: LegalSection[] = [
     body: (
       <>
         <p>
-          These terms are an agreement between you and {LEGAL.entity} (&ldquo;TAAM&rdquo;, &ldquo;we&rdquo;,
-          &ldquo;us&rdquo;), a {LEGAL.state} limited liability company. They cover {LEGAL.site}, our free tools and
+          These terms are an agreement between you and {LEGAL.brand}, operated by {LEGAL.entity}, a {LEGAL.state}{' '}
+          limited liability company (&ldquo;{LEGAL.brand}&rdquo;, &ldquo;TAAM&rdquo;, &ldquo;we&rdquo;, &ldquo;us&rdquo;). They cover {LEGAL.site}, our free tools and
           offers, and the emails and text messages we send. By using the site or sending us a form, you agree to them
           and to our <Privacy />.
         </p>
@@ -78,15 +78,14 @@ const sections: LegalSection[] = [
     body: (
       <>
         <p>
-          <strong>Program:</strong> {LEGAL.smsProgram}, run by {LEGAL.entity}. When you check the text-message box on
-          one of our forms, you agree to get text messages from us at the number you gave, including replies about
-          your request, call scheduling and reminders, project updates for clients, and occasional offers. Messages
-          may be sent with automated technology.
+          <strong>Program:</strong> {LEGAL.smsProgram}, run by {LEGAL.brand} ({LEGAL.entity}). When you check the
+          text-message box on one of our forms, you agree to get text messages from {LEGAL.brand} at the number you
+          gave: {SMS_MESSAGE_TYPES}. Messages may be sent with automated technology.
         </p>
         <ul>
           <li><strong>Consent is optional.</strong> You don&apos;t have to agree to texts to send a form or buy from us.</li>
-          <li><strong>Message frequency varies</strong> with your request and project.</li>
-          <li><strong>Msg &amp; data rates may apply.</strong> Check your mobile plan.</li>
+          <li><strong>Message frequency varies</strong> based on your inquiry and project.</li>
+          <li><strong>Message and data rates may apply.</strong> Check your mobile plan.</li>
           <li>
             <strong>To stop:</strong> reply <strong>STOP</strong>{' '}(or CANCEL, END, QUIT, UNSUBSCRIBE) to any message.
             We&apos;ll confirm with one final text and then stop. Reply <strong>START</strong> to opt back in.
@@ -239,7 +238,7 @@ const sections: LegalSection[] = [
     title: 'Contact',
     body: (
       <p>
-        {LEGAL.entity}, Las Vegas, {LEGAL.state}. Email <Email /> or call <Phone />.
+        {LEGAL.brand} ({LEGAL.entity}), Las Vegas, {LEGAL.state}. Email <Email /> or call <Phone />.
       </p>
     ),
   },
