@@ -1,7 +1,8 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
-import { Download, ExternalLink, ImageIcon, Inbox, Link2, PenLine, Plus, Power, Send, Trash2, UserRound } from 'lucide-react';
+import { Download, ExternalLink, ImageIcon, Inbox, Link2, PenLine, Plus, Power, QrCode, Send, Trash2, UserRound } from 'lucide-react';
+import QR from 'qrcode';
 import {
   Badge,
   Button,
@@ -81,6 +82,63 @@ interface LinksResult {
   links: ReviewLink[];
 }
 
+// ---------- QR code ----------
+
+// A scannable code for any URL: prefilled with a review link, or blank to paste anything.
+// Drawn in the browser (qrcode), so nothing leaves the CRM.
+function QrModal({ initialUrl, title, onClose }: { initialUrl: string; title?: string; onClose: () => void }) {
+  const [url, setUrl] = useState(initialUrl);
+  const [drawn, setDrawn] = useState<{ for: string; data: string }>({ for: '', data: '' });
+  const value = url.trim();
+  const png = value && drawn.for === value ? drawn.data : '';
+
+  useEffect(() => {
+    if (!value) return;
+    let live = true;
+    QR.toDataURL(value, { width: 720, margin: 2, errorCorrectionLevel: 'M', color: { dark: '#111111', light: '#ffffff' } })
+      .then((data) => live && setDrawn({ for: value, data }))
+      .catch(() => live && setDrawn({ for: value, data: '' }));
+    return () => {
+      live = false;
+    };
+  }, [value]);
+
+  const fileName = `qr-${(hostOf(value) || 'link').replace(/[^a-z0-9.-]+/gi, '-')}.png`;
+
+  return (
+    <Modal
+      title={title ?? 'QR code'}
+      description="Scan it with a phone camera to open the link."
+      onClose={onClose}
+      footer={
+        <>
+          <Button onClick={onClose}>Close</Button>
+          {png ? (
+            <a href={png} download={fileName} className={OPEN_CLASS}>
+              <Download className="size-3.5" aria-hidden />
+              Download PNG
+            </a>
+          ) : null}
+        </>
+      }
+    >
+      <div className="space-y-4">
+        <Field label="Link">
+          <Input type="url" inputMode="url" autoComplete="off" spellCheck={false} value={url} onChange={(e) => setUrl(e.target.value)} placeholder="https://" autoFocus={!initialUrl} />
+        </Field>
+        <div className="flex justify-center">
+          {png ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img src={png} alt={`QR code for ${value}`} className="size-64 rounded-control border border-line bg-white p-2" />
+          ) : (
+            <div className="flex size-64 items-center justify-center rounded-control border border-dashed border-line text-sm text-muted">Paste a link to make a code</div>
+          )}
+        </div>
+      </div>
+    </Modal>
+  );
+}
+
 // ---------- New link ----------
 
 function NewLinkModal({ onClose, onCreated }: { onClose: () => void; onCreated: (link: ReviewLink) => void }) {
@@ -91,6 +149,7 @@ function NewLinkModal({ onClose, onCreated }: { onClose: () => void; onCreated: 
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
   const [made, setMade] = useState<ReviewLink | null>(null);
+  const [showQr, setShowQr] = useState(false);
 
   async function save() {
     setBusy(true);
@@ -110,6 +169,10 @@ function NewLinkModal({ onClose, onCreated }: { onClose: () => void; onCreated: 
     }
   }
 
+  if (made && showQr) {
+    return <QrModal initialUrl={made.share_url} title={`QR code for ${made.label}`} onClose={() => setShowQr(false)} />;
+  }
+
   if (made) {
     return (
       <Modal
@@ -126,6 +189,10 @@ function NewLinkModal({ onClose, onCreated }: { onClose: () => void; onCreated: 
           <div className="flex items-center gap-2 rounded-control border border-line bg-raised p-2 pl-3">
             <code className="min-w-0 flex-1 truncate text-sm text-ink">{made.share_url}</code>
             <CopyButton text={made.share_url} label="Copy link" />
+            <Button size="sm" onClick={() => setShowQr(true)} aria-label="Show QR code">
+              <QrCode className="size-3.5" aria-hidden />
+              QR
+            </Button>
           </div>
           <p className="text-sm text-muted">
             {made.label} · {hostOf(made.site_url)}
@@ -541,6 +608,7 @@ function LinkRow({
   onHost,
   onToggle,
   onAdd,
+  onQr,
 }: {
   link: ReviewLink;
   active: boolean;
@@ -548,6 +616,7 @@ function LinkRow({
   onHost: () => void;
   onToggle: () => void;
   onAdd: () => void;
+  onQr: () => void;
 }) {
   const c = link.counts;
   return (
@@ -569,6 +638,10 @@ function LinkRow({
       <div className="flex items-center gap-2 rounded-control border border-line px-2 py-1">
         <code className="min-w-0 flex-1 truncate text-xs text-muted">{link.share_url}</code>
         <CopyButton text={link.share_url} label="Copy" />
+        <Button size="sm" variant="ghost" onClick={onQr} aria-label={`QR code for ${link.label}`}>
+          <QrCode className="size-3.5" aria-hidden />
+          QR
+        </Button>
       </div>
       <div className="flex flex-wrap gap-1.5">
         <Button size="sm" onClick={onHost} disabled={!link.active}>
@@ -594,7 +667,7 @@ function ReviewsScreen() {
   const confirm = useConfirm();
   const state = useOp<LinksResult>('list_review_links');
   const [selectedId, setSelectedId] = useState<number | null>(null);
-  const [modal, setModal] = useState<{ kind: 'new' } | { kind: 'add'; link: ReviewLink } | null>(null);
+  const [modal, setModal] = useState<{ kind: 'new' } | { kind: 'add'; link: ReviewLink } | { kind: 'qr'; url: string; title?: string } | null>(null);
   // Bumped after a request is added from the modal, so the request list reloads too.
   const [bump, setBump] = useState(0);
   const { reload } = state;
@@ -649,13 +722,22 @@ function ReviewsScreen() {
       New review link
     </Button>
   );
+  const headerActions = (
+    <>
+      <Button onClick={() => setModal({ kind: 'qr', url: '' })}>
+        <QrCode className="size-4" aria-hidden />
+        QR code
+      </Button>
+      {newButton}
+    </>
+  );
 
   return (
     <div className="mx-auto max-w-6xl">
       <PageHeader
         title="Site reviews"
         subtitle="Send a client a link to their live site. They click what to change; you push it to Claude."
-        actions={newButton}
+        actions={headerActions}
       />
 
       <Loaded state={state} skeleton="cards">
@@ -707,6 +789,7 @@ function ReviewsScreen() {
                       onHost={() => void openAsHost(link)}
                       onToggle={() => void toggle(link)}
                       onAdd={() => setModal({ kind: 'add', link })}
+                      onQr={() => setModal({ kind: 'qr', url: link.share_url, title: `QR code for ${link.label}` })}
                     />
                   ))}
                 </div>
@@ -729,6 +812,7 @@ function ReviewsScreen() {
           }}
         />
       )}
+      {modal?.kind === 'qr' && <QrModal initialUrl={modal.url} title={modal.title} onClose={() => setModal(null)} />}
       {modal?.kind === 'add' && (
         <AddRequestModal
           link={modal.link}
