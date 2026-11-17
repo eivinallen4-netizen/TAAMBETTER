@@ -2,6 +2,7 @@ import { defineCrm } from '@taam/crm';
 import { createCrm } from '@taam/crm/next';
 import { taamSiteModule } from '@/lib/crm-site/module';
 import { taamInstallsModule } from '@/lib/crm-site/installs/module';
+import { taamReviewsModule } from '@/lib/crm-site/reviews/module';
 
 // The TAAM CRM (@taam/crm) installed in the TAAM website: staff screens at /admin, customer
 // pages at /c (plus the older /call/[token] and /onboarding/[token] links, which keep working).
@@ -31,7 +32,8 @@ export const crm = createCrm(
     apiKeyPrefix: 'taam',
     // The website's own tools (lib/crm-site/module.ts) and the client installs list
     // (lib/crm-site/installs, owner only) are always on.
-    modules: { 'taam-site': true, 'taam-installs': true },
+    // Site reviews (lib/crm-site/reviews) talk to the review app on its own subdomain.
+    modules: { 'taam-site': true, 'taam-installs': true, 'taam-reviews': true },
     // The appointment setters keep Appointments (only the links they made) and the Call list.
     // Leads, onboarding, sales settings and deleting from the call list stay owner-only.
     permissions: {
@@ -44,9 +46,10 @@ export const crm = createCrm(
         'TAAM never offers discounts. Never write "discount", "% off", "deal", "save" or "sale" in an email, a page or a quote. A smaller budget gets a smaller scope at the same rates.',
         'Onboarding is only for clients who have paid.',
         'Confirm with the user before deleting anything or sending email.',
+        'Site reviews: list_review_requests returns only requests the team pushed (queued). Set each to in_progress, make the change in the code of that site, then update_review_requests with done and a short plain reply the client will read.',
         'SEO pages for /insights: call list_pages first (it covers the whole site and shows rejection notes). create_page always saves for review; publish only when the user asks.',
       ],
     },
   }),
-  [taamSiteModule, taamInstallsModule]
+  [taamSiteModule, taamInstallsModule, taamReviewsModule]
 );
