@@ -1,9 +1,10 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
-import Link from 'next/link';
-import { Presentation, Search } from 'lucide-react';
+import { Presentation } from 'lucide-react';
+import { Badge, Empty, Notice, PageHeader, Table } from '@taam/crm/client';
 import { logoUrl } from '../components/ContactLogo';
+import { SearchInput } from '../components/crm-ui';
 
 // Every lead's personalized marketing-plan slides in one list. Each lead's slides open at
 // /admin/contacts/[id]/deck; the lead itself is in the CRM at /admin/leads/[id].
@@ -43,58 +44,66 @@ export default function ClientSlidesPage() {
   }, [leads, query]);
 
   return (
-    <div className="mx-auto max-w-4xl">
-      <div className="mb-6 flex flex-wrap items-end gap-4">
-        <div className="mr-auto">
-          <h1 className="text-xl font-black text-white">Client slides</h1>
-          <p className="mt-1 text-sm text-gray-400">A marketing-plan deck for each lead, made from what they told us.</p>
-        </div>
-        <label className="relative block w-full sm:w-64">
-          <span className="sr-only">Search leads</span>
-          <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-500" />
-          <input
-            type="search"
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            placeholder="Search leads"
-            className="w-full rounded-lg border border-gray-700 bg-gray-950 py-2 pl-9 pr-3 text-sm text-white placeholder:text-gray-500 focus:border-[#F46325] focus:outline-none"
-          />
-        </label>
+    <div className="mx-auto max-w-6xl">
+      <PageHeader title="Client slides" subtitle="A marketing-plan deck for each lead, made from what they told us." />
+
+      <div className="mb-4 flex flex-wrap items-center gap-2">
+        <SearchInput label="Search leads" value={query} onChange={(e) => setQuery(e.target.value)} className="w-full sm:w-auto sm:min-w-56 sm:flex-1" />
       </div>
 
       {error ? (
-        <p role="alert" className="rounded-lg border border-red-500/40 bg-red-500/10 p-4 text-sm text-red-200">
+        <Notice tone="bad" title="Could not load the slides">
           {error}
-        </p>
+        </Notice>
       ) : leads === null ? (
-        <p className="text-sm text-gray-400">Loading…</p>
-      ) : shown.length === 0 ? (
-        <p className="rounded-xl border border-gray-800 bg-gray-900 p-8 text-center text-sm text-gray-400">
-          {leads.length === 0 ? 'No leads yet. Slides appear here as soon as a lead comes in.' : 'No lead matches that search.'}
-        </p>
-      ) : (
-        <ul className="divide-y divide-gray-800 overflow-hidden rounded-xl border border-gray-800 bg-gray-900">
-          {shown.map((lead) => (
-            <li key={lead.id}>
-              <Link href={`/admin/contacts/${lead.id}/deck`} className="flex items-center gap-4 px-4 py-3 transition hover:bg-gray-800/60">
-                <span className="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-lg bg-white">
-                  {lead.logo_v ? (
-                    // eslint-disable-next-line @next/next/no-img-element -- a small private image served by the API
-                    <img src={logoUrl(lead.id, lead.logo_v)} alt="" className="max-h-full max-w-full object-contain" />
-                  ) : (
-                    <Presentation className="h-5 w-5 text-gray-400" />
-                  )}
-                </span>
-                <span className="min-w-0 flex-1">
-                  <span className="block truncate font-bold text-white">{lead.business_name || lead.name}</span>
-                  {lead.business_name && lead.name !== lead.business_name && <span className="block truncate text-sm text-gray-400">{lead.name}</span>}
-                </span>
-                {lead.edited && <span className="rounded-full bg-[#F46325]/15 px-2.5 py-1 text-[11px] font-bold uppercase tracking-wide text-[#FF9A66]">Edited</span>}
-                <span className="text-sm font-semibold text-gray-300">Open slides</span>
-              </Link>
-            </li>
+        <div className="overflow-hidden rounded-xl border border-[var(--crm-line)]" aria-busy="true" aria-label="Loading slides">
+          {[0, 1, 2, 3].map((i) => (
+            <div key={i} className="flex items-center gap-4 border-b border-[var(--crm-line)] px-4 py-3 last:border-0">
+              <div className="crm-skeleton size-10 rounded-lg" />
+              <div className="crm-skeleton h-3 w-1/3 rounded" />
+            </div>
           ))}
-        </ul>
+        </div>
+      ) : (
+        <Table
+          caption="Client slides"
+          rows={shown}
+          rowKey={(l) => l.id}
+          href={(l) => `/contacts/${l.id}/deck`}
+          empty={
+            <Empty icon={Presentation} title={leads.length === 0 ? 'No leads yet' : 'No lead matches that search'}>
+              {leads.length === 0 ? 'Slides appear here as soon as a lead comes in.' : 'Try a different name, or clear the search.'}
+            </Empty>
+          }
+          columns={[
+            {
+              header: 'Lead',
+              cell: (lead) => (
+                <span className="flex min-w-0 items-center gap-3">
+                  <span className="flex size-10 shrink-0 items-center justify-center overflow-hidden rounded-lg border border-[var(--crm-line)] bg-white">
+                    {lead.logo_v ? (
+                      // eslint-disable-next-line @next/next/no-img-element -- a small private image served by the API
+                      <img src={logoUrl(lead.id, lead.logo_v)} alt="" className="max-h-full max-w-full object-contain" />
+                    ) : (
+                      <Presentation className="size-5 text-[#62626b]" aria-hidden />
+                    )}
+                  </span>
+                  <span className="min-w-0">
+                    <span className="block truncate font-semibold">{lead.business_name || lead.name}</span>
+                    {lead.business_name && lead.name !== lead.business_name && (
+                      <span className="block truncate text-xs text-[var(--crm-muted)]">{lead.name}</span>
+                    )}
+                  </span>
+                </span>
+              ),
+            },
+            {
+              header: 'Slides',
+              align: 'right',
+              cell: (lead) => (lead.edited ? <Badge tone="brand">Edited</Badge> : <span className="text-[var(--crm-muted)]">Not edited</span>),
+            },
+          ]}
+        />
       )}
     </div>
   );

@@ -3,7 +3,8 @@
 import Link from 'next/link';
 import { use, useCallback, useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { AlertTriangle, Archive, ArrowLeft, Bot, CheckCircle2, Eye, History, Loader2, RotateCcw, Save, Send, ThumbsDown, Undo2 } from 'lucide-react';
+import { Archive, Bot, CheckCircle2, Eye, History, RotateCcw, Save, Send, ThumbsDown, Undo2 } from 'lucide-react';
+import { Badge, Button, Card, Notice, PageHeader, useConfirm } from '@taam/crm/client';
 import InsightArticle from '@/components/insights/InsightArticle';
 import {
   META_DESCRIPTION_MAX,
@@ -18,6 +19,7 @@ import {
   type PageStatus,
 } from '@/lib/pages/rules';
 import { Counter, FaqEditor, HistoryPanel, SnippetPreview, VideoList, type Revision } from './parts';
+import { Tabs } from '../../components/crm-ui';
 import { PageStatusBadge, inputClass, when } from '../ui';
 
 // Edit one SEO page: fields on the left, the page as it will look on the site on the right.
@@ -61,31 +63,31 @@ const fieldsOf = (p: PageFields): PageFields => ({
   source_videos: p.source_videos,
 });
 
-function Label({ children, extra }: { children: React.ReactNode; extra?: React.ReactNode }) {
+function Label({ children, extra, htmlFor }: { children: React.ReactNode; extra?: React.ReactNode; htmlFor?: string }) {
   return (
     <div className="mb-1.5 flex items-baseline justify-between gap-3">
-      <span className="text-xs font-bold uppercase tracking-wider text-gray-400">{children}</span>
+      <label htmlFor={htmlFor} className="text-sm font-medium text-[var(--crm-ink)]">
+        {children}
+      </label>
       {extra}
     </div>
   );
 }
 
-function Card({ title, children }: { title: string; children: React.ReactNode }) {
+/** A section of the editor: the CRM's card with its fields spaced the same way everywhere. */
+function Section({ title, subtitle, children }: { title: string; subtitle?: string; children: React.ReactNode }) {
   return (
-    <section className="rounded-lg border border-gray-700 bg-gray-900 p-5">
-      <h2 className="mb-4 text-sm font-black uppercase tracking-wider text-white">{title}</h2>
+    <Card title={title} subtitle={subtitle}>
       <div className="space-y-4">{children}</div>
-    </section>
+    </Card>
   );
 }
-
-const btn = 'inline-flex items-center gap-2 rounded-lg px-3.5 py-2.5 text-sm font-bold transition disabled:opacity-40';
-const btnGhost = `${btn} border border-gray-600 text-gray-200 hover:border-[#F46325] hover:text-white`;
 
 export default function PageEditor({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
   const isNew = id === 'new';
   const router = useRouter();
+  const confirm = useConfirm();
 
   const [loaded, setLoaded] = useState<Loaded | null>(null);
   const [fields, setFields] = useState<PageFields>(emptyPageFields());
@@ -187,8 +189,9 @@ export default function PageEditor({ params }: { params: Promise<{ id: string }>
 
   async function act(action: 'publish' | 'unpublish' | 'archive' | 'restore' | 'reject', note?: string) {
     if (action === 'publish' && !(await save())) return;
-    if (action === 'unpublish' && !window.confirm('Take this page off the site? It goes back to draft.')) return;
-    if (action === 'archive' && !window.confirm('Archive this page? You can restore it any time.')) return;
+    if (action === 'unpublish' && !(await confirm({ title: 'Take this page off the site?', body: 'It goes back to draft and leaves the sitemap.', confirmLabel: 'Unpublish' })))
+      return;
+    if (action === 'archive' && !(await confirm({ title: 'Archive this page?', body: 'You can restore it any time.', confirmLabel: 'Archive' }))) return;
     const data = (await call(action, `/api/admin/pages/${id}/actions`, 'POST', { action, note })) as Loaded | null;
     if (!data) return;
     show(data);
@@ -201,193 +204,245 @@ export default function PageEditor({ params }: { params: Promise<{ id: string }>
 
   if (loadError) {
     return (
-      <div>
-        <Link href="/admin/pages" className="inline-flex items-center gap-1.5 text-sm text-gray-400 hover:text-white">
-          <ArrowLeft className="h-4 w-4" /> SEO pages
-        </Link>
-        <p className="mt-6 text-red-300">{loadError}</p>
+      <div className="mx-auto max-w-6xl">
+        <PageHeader title="Page not found" breadcrumbs={[{ label: 'SEO pages', href: '/pages' }, { label: 'Page' }]} />
+        <Notice tone="bad" title="Could not load this page">
+          {loadError}
+        </Notice>
       </div>
     );
   }
-  if (!isNew && !loaded) return <Loader2 className="mx-auto mt-24 h-6 w-6 animate-spin text-gray-500" />;
+  if (!isNew && !loaded) {
+    return (
+      <div className="mx-auto max-w-7xl space-y-4" aria-busy="true" aria-label="Loading page">
+        <div className="crm-skeleton h-4 w-24 rounded" />
+        <div className="crm-skeleton h-8 w-2/3 rounded" />
+        <div className="grid gap-6 pt-4 xl:grid-cols-2">
+          <div className="crm-skeleton h-72 rounded-xl" />
+          <div className="crm-skeleton h-72 rounded-xl" />
+        </div>
+      </div>
+    );
+  }
 
   const page = loaded?.page;
   const status = page?.status ?? 'draft';
   const blockers = issues.length + conflicts.length;
   const fieldIssues = (f: keyof PageFields) => issues.filter((i) => i.field === f);
-  const fieldBorder = (f: keyof PageFields) => (fieldIssues(f).length || conflicts.some((c) => c.field === f) ? '!border-red-500/70' : '');
+  const fieldBorder = (f: keyof PageFields) => (fieldIssues(f).length || conflicts.some((c) => c.field === f) ? '!border-[var(--crm-bad)]' : '');
+  const invalid = (f: keyof PageFields) => (fieldBorder(f) ? true : undefined);
 
   return (
-    <div>
-      <Link href="/admin/pages" className="inline-flex items-center gap-1.5 text-sm text-gray-400 hover:text-white">
-        <ArrowLeft className="h-4 w-4" /> SEO pages
-      </Link>
-
-      {/* Header + actions */}
-      <div className="sticky top-0 z-20 -mx-4 mb-6 mt-3 border-b border-gray-800 bg-taam-near-black/95 px-4 py-4 backdrop-blur sm:-mx-6 sm:px-6 lg:-mx-8 lg:px-8">
-        <div className="flex flex-wrap items-start justify-between gap-4">
-          <div className="min-w-0">
-            <div className="flex flex-wrap items-center gap-2">
-              <h1 className="text-2xl font-black sm:text-3xl">{fields.title || (isNew ? 'New page' : 'Untitled')}</h1>
+    <div className="mx-auto max-w-7xl">
+      {/* Header + actions stay in view while the long form scrolls. */}
+      <div className="z-20 -mx-1 mb-6 border-b lg:sticky lg:top-0 border-[var(--crm-line)] bg-[var(--crm-bg)] px-1 pt-1">
+        <PageHeader
+          title={fields.title || (isNew ? 'New page' : 'Untitled')}
+          breadcrumbs={[{ label: 'SEO pages', href: '/pages' }, { label: isNew ? 'New page' : 'Edit page' }]}
+          meta={
+            <>
               {page && <PageStatusBadge status={status} />}
-              {dirty && <span className="text-xs font-bold text-amber-300">Unsaved changes</span>}
-            </div>
-            {page && (
-              <p className="mt-1 flex flex-wrap items-center gap-x-2 text-sm text-gray-400">
-                {page.created_by_kind === 'claude' && <Bot className="h-3.5 w-3.5 text-[#FF9A66]" />}
+              {dirty && <Badge tone="warn">Unsaved changes</Badge>}
+            </>
+          }
+          subtitle={
+            page ? (
+              <span className="inline-flex flex-wrap items-center gap-x-1.5">
+                {page.created_by_kind === 'claude' && <Bot className="size-3.5" aria-hidden />}
                 {page.created_by_kind === 'claude' ? 'Claude weekly run' : page.created_by} · created {when(page.created_at)}
                 {page.published_at && ` · published ${when(page.published_at)}`}
-              </p>
-            )}
-          </div>
-          <div className="flex flex-wrap items-center gap-2">
-            {status !== 'archived' && (
-              <button type="button" onClick={save} disabled={!!busy || (!dirty && !isNew) || blockers > 0} className={`${btn} bg-white text-[#111] hover:bg-gray-200`}>
-                {busy === 'save' ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
-                {status === 'published' ? 'Save live page' : 'Save draft'}
-              </button>
-            )}
-            {loaded && (
-              <a href={loaded.preview_path} target="_blank" rel="noreferrer" className={btnGhost} title={dirty ? 'Shows the last saved version' : undefined}>
-                <Eye className="h-4 w-4" /> Preview
-              </a>
-            )}
-            {page && (status === 'draft' || status === 'needs_review') && (
-              <button type="button" onClick={() => act('publish')} disabled={!!busy || blockers > 0} className={`${btn} bg-[#F46325] text-white hover:bg-[#FF7B42]`}>
-                {busy === 'publish' ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />} Publish
-              </button>
-            )}
-            {page && status === 'published' && (
-              <button type="button" onClick={() => act('unpublish')} disabled={!!busy} className={btnGhost}>
-                <Undo2 className="h-4 w-4" /> Unpublish
-              </button>
-            )}
-            {page && status !== 'archived' && status !== 'published' && (
-              <button type="button" onClick={() => setRejecting((r) => !r)} disabled={!!busy} className={btnGhost}>
-                <ThumbsDown className="h-4 w-4" /> Reject
-              </button>
-            )}
-            {page && status !== 'archived' && (
-              <button type="button" onClick={() => act('archive')} disabled={!!busy} className={btnGhost}>
-                <Archive className="h-4 w-4" /> Archive
-              </button>
-            )}
-            {page && status === 'archived' && (
-              <button type="button" onClick={() => act('restore')} disabled={!!busy} className={btnGhost}>
-                <RotateCcw className="h-4 w-4" /> Restore
-              </button>
-            )}
-          </div>
-        </div>
+              </span>
+            ) : undefined
+          }
+          actions={
+            <>
+              {loaded && (
+                <a
+                  href={loaded.preview_path}
+                  target="_blank"
+                  rel="noreferrer"
+                  title={dirty ? 'Shows the last saved version' : undefined}
+                  className="inline-flex min-h-10 items-center gap-2 rounded-[var(--crm-radius-control)] px-3 text-sm font-semibold text-[var(--crm-muted)] transition-colors hover:text-[var(--crm-ink)]"
+                >
+                  <Eye className="size-4" aria-hidden /> Preview
+                </a>
+              )}
+              {page && status === 'archived' && (
+                <Button variant="secondary" onClick={() => act('restore')} disabled={!!busy} busy={busy === 'restore'}>
+                  <RotateCcw className="size-4" aria-hidden /> Restore
+                </Button>
+              )}
+              {page && status !== 'archived' && (
+                <Button variant="ghost" onClick={() => act('archive')} disabled={!!busy} busy={busy === 'archive'}>
+                  <Archive className="size-4" aria-hidden /> Archive
+                </Button>
+              )}
+              {page && status !== 'archived' && status !== 'published' && (
+                <Button variant="ghost" onClick={() => setRejecting((r) => !r)} disabled={!!busy} aria-expanded={rejecting}>
+                  <ThumbsDown className="size-4" aria-hidden /> Reject
+                </Button>
+              )}
+              {page && status === 'published' && (
+                <Button variant="secondary" onClick={() => act('unpublish')} disabled={!!busy} busy={busy === 'unpublish'}>
+                  <Undo2 className="size-4" aria-hidden /> Unpublish
+                </Button>
+              )}
+              {status !== 'archived' && (
+                <Button
+                  variant={status === 'published' || isNew ? 'primary' : 'secondary'}
+                  onClick={save}
+                  disabled={!!busy || (!dirty && !isNew) || blockers > 0}
+                  busy={busy === 'save'}
+                  busyLabel="Saving…"
+                >
+                  <Save className="size-4" aria-hidden /> {status === 'published' ? 'Save live page' : 'Save draft'}
+                </Button>
+              )}
+              {page && (status === 'draft' || status === 'needs_review') && (
+                <Button variant="primary" onClick={() => act('publish')} disabled={!!busy || blockers > 0} busy={busy === 'publish'} busyLabel="Publishing…">
+                  <Send className="size-4" aria-hidden /> Publish
+                </Button>
+              )}
+            </>
+          }
+        />
 
-        {rejecting && (
-          <div className="mt-4 rounded-lg border border-red-500/40 bg-red-500/5 p-4">
-            <Label>Why is this page rejected? Claude reads this before suggesting new pages.</Label>
-            <textarea
-              value={rejectNote}
-              onChange={(e) => setRejectNote(e.target.value)}
-              rows={2}
-              placeholder='e.g. "Off-topic for our clients", "Says the creator recommends X, he said the opposite at 4:10"'
-              className={inputClass}
-            />
-            <div className="mt-2 flex gap-2">
-              <button type="button" onClick={() => act('reject', rejectNote)} disabled={!rejectNote.trim() || !!busy} className={`${btn} bg-red-500 text-white hover:bg-red-400`}>
-                {busy === 'reject' ? <Loader2 className="h-4 w-4 animate-spin" /> : <ThumbsDown className="h-4 w-4" />} Reject and archive
-              </button>
-              <button type="button" onClick={() => setRejecting(false)} className={btnGhost}>
-                Cancel
-              </button>
-            </div>
+        {(rejecting || error || (notice && !error)) && (
+          <div className="mb-4 space-y-3">
+            {rejecting && (
+              <div className="rounded-[var(--crm-radius)] border border-[var(--crm-line)] bg-[var(--crm-surface)] p-4">
+                <Label htmlFor="reject-note">Why is this page rejected? Claude reads this before suggesting new pages.</Label>
+                <textarea
+                  id="reject-note"
+                  value={rejectNote}
+                  onChange={(e) => setRejectNote(e.target.value)}
+                  rows={2}
+                  placeholder='e.g. "Off-topic for our clients", "Says the creator recommends X, he said the opposite at 4:10"'
+                  className={inputClass}
+                />
+                <div className="mt-3 flex justify-end gap-2">
+                  <Button variant="ghost" onClick={() => setRejecting(false)}>
+                    Cancel
+                  </Button>
+                  <Button variant="danger" onClick={() => act('reject', rejectNote)} disabled={!rejectNote.trim() || !!busy} busy={busy === 'reject'}>
+                    <ThumbsDown className="size-4" aria-hidden /> Reject and archive
+                  </Button>
+                </div>
+              </div>
+            )}
+            {error && (
+              <Notice tone="bad" onDismiss={() => setError('')}>
+                {error}
+              </Notice>
+            )}
+            {notice && !error && (
+              <Notice tone="ok" onDismiss={() => setNotice('')}>
+                {notice}
+              </Notice>
+            )}
           </div>
-        )}
-
-        {error && <p className="mt-3 rounded-lg border border-red-500/40 bg-red-500/10 px-4 py-2.5 text-sm text-red-300">{error}</p>}
-        {notice && !error && (
-          <p className="mt-3 inline-flex items-center gap-2 text-sm font-semibold text-emerald-300">
-            <CheckCircle2 className="h-4 w-4" /> {notice}
-          </p>
         )}
       </div>
 
       {page?.rejection_note && (
-        <div className="mb-6 rounded-lg border border-red-500/40 bg-red-500/5 px-4 py-3 text-sm">
-          <span className="font-bold text-red-300">Rejected {when(page.rejected_at)}:</span> <span className="text-gray-200">{page.rejection_note}</span>
+        <div className="mb-6">
+          <Notice tone="bad" title={`Rejected ${when(page.rejected_at)}`}>
+            {page.rejection_note}
+          </Notice>
         </div>
       )}
 
       {/* Guardrails */}
-      {blockers > 0 ? (
-        <div className="mb-6 rounded-lg border border-amber-500/40 bg-amber-500/5 px-4 py-3">
-          <p className="mb-2 flex items-center gap-2 text-sm font-black uppercase tracking-wider text-amber-300">
-            <AlertTriangle className="h-4 w-4" /> Fix before saving ({blockers})
+      <div className="mb-6">
+        {blockers > 0 ? (
+          <Notice tone="warn" title={`Fix before saving (${blockers})`}>
+            <ul className="list-disc space-y-1 pl-4">
+              {conflicts.map((c, i) => (
+                <li key={`c${i}`}>
+                  {c.message}{' '}
+                  {c.existing.kind === 'insight' && c.existing.id ? (
+                    <Link href={`/admin/pages/${c.existing.id}`} className="font-semibold text-[var(--crm-brand-ink)] underline underline-offset-2">
+                      Open that page
+                    </Link>
+                  ) : (
+                    <a href={c.existing.url} target="_blank" rel="noreferrer" className="font-semibold text-[var(--crm-brand-ink)] underline underline-offset-2">
+                      View it
+                    </a>
+                  )}
+                </li>
+              ))}
+              {issues.map((i, n) => (
+                <li key={`i${n}`}>{i.message}</li>
+              ))}
+            </ul>
+          </Notice>
+        ) : (
+          <p className="inline-flex items-center gap-2 text-sm font-medium text-[var(--crm-ok)]">
+            <CheckCircle2 className="size-4" aria-hidden /> Passes every guardrail
           </p>
-          <ul className="space-y-1 text-sm text-gray-200">
-            {conflicts.map((c, i) => (
-              <li key={`c${i}`}>
-                • {c.message}{' '}
-                {c.existing.kind === 'insight' && c.existing.id ? (
-                  <Link href={`/admin/pages/${c.existing.id}`} className="font-bold text-[#FF9A66] underline">
-                    Open that page
-                  </Link>
-                ) : (
-                  <a href={c.existing.url} target="_blank" rel="noreferrer" className="font-bold text-[#FF9A66] underline">
-                    View it
-                  </a>
-                )}
-              </li>
-            ))}
-            {issues.map((i, n) => (
-              <li key={`i${n}`}>• {i.message}</li>
-            ))}
-          </ul>
-        </div>
-      ) : (
-        <p className="mb-6 inline-flex items-center gap-2 text-sm font-semibold text-emerald-300">
-          <CheckCircle2 className="h-4 w-4" /> Passes every guardrail
-        </p>
-      )}
+        )}
+      </div>
 
       <div className="grid gap-6 xl:grid-cols-2">
         {/* Fields */}
         <div className="min-w-0 space-y-6">
-          <Card title="Page">
+          <Section title="Page">
             <div>
-              <Label>Title (H1)</Label>
-              <input value={fields.title} onChange={(e) => set('title', e.target.value)} className={`${inputClass} ${fieldBorder('title')}`} />
+              <Label htmlFor="f-title">Title (H1)</Label>
+              <input id="f-title" value={fields.title} onChange={(e) => set('title', e.target.value)} aria-invalid={invalid('title')} className={`${inputClass} ${fieldBorder('title')}`} />
             </div>
             <div>
               <Label
+                htmlFor="f-slug"
                 extra={
-                  <button type="button" onClick={() => set('slug', slugify(fields.title))} className="text-xs font-bold text-[#FF9A66] hover:text-white">
-                    From title
+                  <button type="button" onClick={() => set('slug', slugify(fields.title))} className="text-xs font-semibold text-[var(--crm-brand-ink)] hover:text-[var(--crm-ink)]">
+                    Make from title
                   </button>
                 }
               >
                 Slug
               </Label>
-              <div className="flex items-center rounded-lg border border-gray-700 bg-gray-900 focus-within:border-[#F46325]">
-                <span className="pl-3 text-sm text-gray-500">/insights/</span>
+              <div
+                className={`flex min-h-10 items-center rounded-[var(--crm-radius-control)] border border-[var(--crm-field)] bg-[var(--crm-raised)] transition-colors focus-within:border-[var(--crm-brand)] ${fieldBorder('slug')}`}
+              >
+                <span className="pl-3 text-sm text-[var(--crm-muted)]">/insights/</span>
                 <input
+                  id="f-slug"
                   value={fields.slug}
                   onChange={(e) => set('slug', e.target.value.toLowerCase())}
-                  className={`w-full rounded-lg bg-transparent py-2.5 pr-3 text-white focus:outline-none ${fieldBorder('slug')}`}
+                  aria-invalid={invalid('slug')}
+                  className="w-full bg-transparent py-2 pr-3 text-base text-[var(--crm-ink)] focus:outline-none sm:text-sm"
                 />
               </div>
-              {status === 'published' && fields.slug !== saved.slug && <p className="mt-1 text-xs text-amber-300">Changing a live page&apos;s slug breaks links to the old URL.</p>}
+              {status === 'published' && fields.slug !== saved.slug && (
+                <p className="mt-1 text-xs text-[var(--crm-warn)]">Changing a live page&apos;s slug breaks links to the old URL.</p>
+              )}
             </div>
-          </Card>
+          </Section>
 
-          <Card title="Search">
+          <Section title="Search">
             <div>
-              <Label extra={<Counter value={fields.meta_title} max={META_TITLE_MAX} />}>Meta title</Label>
-              <input value={fields.meta_title} onChange={(e) => set('meta_title', e.target.value)} className={`${inputClass} ${fieldBorder('meta_title')}`} />
+              <Label htmlFor="f-meta-title" extra={<Counter value={fields.meta_title} max={META_TITLE_MAX} />}>
+                Meta title
+              </Label>
+              <input
+                id="f-meta-title"
+                value={fields.meta_title}
+                onChange={(e) => set('meta_title', e.target.value)}
+                aria-invalid={invalid('meta_title')}
+                className={`${inputClass} ${fieldBorder('meta_title')}`}
+              />
             </div>
             <div>
-              <Label extra={<Counter value={fields.meta_description} max={META_DESCRIPTION_MAX} />}>Meta description</Label>
+              <Label htmlFor="f-meta-desc" extra={<Counter value={fields.meta_description} max={META_DESCRIPTION_MAX} />}>
+                Meta description
+              </Label>
               <textarea
+                id="f-meta-desc"
                 value={fields.meta_description}
                 onChange={(e) => set('meta_description', e.target.value)}
                 rows={3}
+                aria-invalid={invalid('meta_description')}
                 className={`${inputClass} ${fieldBorder('meta_description')}`}
               />
             </div>
@@ -396,12 +451,19 @@ export default function PageEditor({ params }: { params: Promise<{ id: string }>
               <SnippetPreview slug={fields.slug} metaTitle={fields.meta_title} metaDescription={fields.meta_description} />
             </div>
             <div>
-              <Label>Main keyword</Label>
-              <input value={fields.main_keyword} onChange={(e) => set('main_keyword', e.target.value)} className={`${inputClass} ${fieldBorder('main_keyword')}`} />
+              <Label htmlFor="f-keyword">Main keyword</Label>
+              <input
+                id="f-keyword"
+                value={fields.main_keyword}
+                onChange={(e) => set('main_keyword', e.target.value)}
+                aria-invalid={invalid('main_keyword')}
+                className={`${inputClass} ${fieldBorder('main_keyword')}`}
+              />
             </div>
             <div>
-              <Label>Secondary keywords (comma separated)</Label>
+              <Label htmlFor="f-secondary">Secondary keywords</Label>
               <input
+                id="f-secondary"
                 value={secondaryText}
                 onChange={(e) => {
                   setSecondaryText(e.target.value);
@@ -413,16 +475,19 @@ export default function PageEditor({ params }: { params: Promise<{ id: string }>
                       .filter(Boolean)
                   );
                 }}
+                aria-invalid={invalid('secondary_keywords')}
                 className={`${inputClass} ${fieldBorder('secondary_keywords')}`}
               />
+              <p className="mt-1 text-xs text-[var(--crm-muted)]">Separate them with commas.</p>
             </div>
-          </Card>
+          </Section>
 
-          <Card title="Body">
+          <Section title="Body">
             <div>
               <Label
+                htmlFor="f-body"
                 extra={
-                  <span className={`text-xs font-bold tabular-nums ${words < MIN_BODY_WORDS ? 'text-red-400' : 'text-gray-500'}`}>
+                  <span className={`text-xs font-medium tabular-nums ${words < MIN_BODY_WORDS ? 'text-[var(--crm-bad)]' : 'text-[var(--crm-muted)]'}`}>
                     {words} words (min {MIN_BODY_WORDS})
                   </span>
                 }
@@ -430,53 +495,54 @@ export default function PageEditor({ params }: { params: Promise<{ id: string }>
                 Markdown
               </Label>
               <textarea
+                id="f-body"
                 value={fields.body}
                 onChange={(e) => set('body', e.target.value)}
                 rows={28}
                 spellCheck
+                aria-invalid={invalid('body')}
                 className={`${inputClass} font-mono text-sm leading-relaxed ${fieldBorder('body')}`}
                 placeholder={'Opening paragraph that answers the question.\n\n## A question people ask\n\nThe answer…'}
               />
-              <p className="mt-1 text-xs text-gray-500">## sections, **bold**, *italic*, [links](https://…), - lists, &gt; quotes, | tables |. No images or HTML.</p>
+              <p className="mt-1 text-xs text-[var(--crm-muted)]">## sections, **bold**, *italic*, [links](https://…), - lists, &gt; quotes, | tables |. No images or HTML.</p>
             </div>
-          </Card>
+          </Section>
 
-          <Card title="FAQ">
+          <Section title="FAQ">
             <FaqEditor value={fields.faq} onChange={(v) => set('faq', v)} />
-          </Card>
+          </Section>
 
-          <Card title="Source videos">
-            <p className="-mt-2 text-sm text-gray-400">Check the page against what the creator actually said.</p>
+          <Section title="Source videos" subtitle="Check the page against what the creator actually said.">
             <VideoList value={fields.source_videos} onChange={(v) => set('source_videos', v)} />
-          </Card>
+          </Section>
 
-          <Card title="Schema JSON-LD">
-            <p className="-mt-2 text-sm text-gray-400">Leave empty to generate Article + FAQPage schema from the page.</p>
+          <Section title="Schema JSON-LD" subtitle="Leave empty to generate Article + FAQPage schema from the page.">
             <textarea
               value={fields.schema_jsonld}
               onChange={(e) => set('schema_jsonld', e.target.value)}
               rows={8}
+              aria-label="Schema JSON-LD"
+              aria-invalid={invalid('schema_jsonld')}
               className={`${inputClass} font-mono text-xs ${fieldBorder('schema_jsonld')}`}
               placeholder='{ "@context": "https://schema.org", … }'
             />
-          </Card>
+          </Section>
         </div>
 
         {/* Preview / history */}
         <div className="min-w-0">
-          <div className="sticky top-40">
-            <div className="mb-3 flex gap-2">
-              <button type="button" onClick={() => setPane('preview')} className={`${btn} ${pane === 'preview' ? 'bg-[#F46325] text-white' : 'bg-gray-800 text-gray-300 hover:bg-gray-700'}`}>
-                <Eye className="h-4 w-4" /> Live preview
-              </button>
-              {loaded && (
-                <button type="button" onClick={() => setPane('history')} className={`${btn} ${pane === 'history' ? 'bg-[#F46325] text-white' : 'bg-gray-800 text-gray-300 hover:bg-gray-700'}`}>
-                  <History className="h-4 w-4" /> History <span className="opacity-70">{loaded.revisions.length}</span>
-                </button>
-              )}
-            </div>
+          <div className="xl:sticky xl:top-48">
+            <Tabs
+              label="Right panel"
+              value={loaded ? pane : 'preview'}
+              onChange={setPane}
+              options={[
+                { value: 'preview', label: 'Live preview' },
+                ...(loaded ? [{ value: 'history' as const, label: 'History', count: loaded.revisions.length }] : []),
+              ]}
+            />
             {pane === 'preview' || !loaded ? (
-              <div className="max-h-[calc(100vh-13rem)] overflow-y-auto overflow-x-hidden rounded-xl border border-gray-700">
+              <div className="max-h-[calc(100vh-15rem)] overflow-y-auto overflow-x-hidden rounded-[var(--crm-radius)] border border-[var(--crm-line)]">
                 <InsightArticle
                   compact
                   title={fields.title}
@@ -488,10 +554,14 @@ export default function PageEditor({ params }: { params: Promise<{ id: string }>
                 />
               </div>
             ) : (
-              <div className="max-h-[calc(100vh-13rem)] overflow-y-auto rounded-xl border border-gray-700 bg-gray-900 p-4">
-                <p className="mb-3 text-sm text-gray-400">Every save and status change. Open one to see what changed and restore it.</p>
-                <HistoryPanel pageId={id} revisions={loaded.revisions} onRestored={(d) => (show(d as Loaded), setPane('preview'), setNotice('Version restored as a new save.'))} />
-              </div>
+              <Card>
+                <p className="mb-3 flex items-center gap-2 text-sm text-[var(--crm-muted)]">
+                  <History className="size-4" aria-hidden /> Every save and status change. Open one to see what changed and restore it.
+                </p>
+                <div className="max-h-[calc(100vh-19rem)] overflow-y-auto">
+                  <HistoryPanel pageId={id} revisions={loaded.revisions} onRestored={(d) => (show(d as Loaded), setPane('preview'), setNotice('Version restored as a new save.'))} />
+                </div>
+              </Card>
             )}
           </div>
         </div>

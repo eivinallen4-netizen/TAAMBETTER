@@ -1,11 +1,11 @@
 'use client';
 
-import Link from 'next/link';
-import { useRouter } from 'next/navigation';
 import { useCallback, useEffect, useState } from 'react';
 import { Bot, FileText, History, Plus, User } from 'lucide-react';
+import { Empty, LinkButton, Notice, PageHeader, Table } from '@taam/crm/client';
 import { PAGE_STATUSES, STATUS_LABEL, type PageStatus } from '@/lib/pages/rules';
-import { PageStatusBadge, chip, day } from './ui';
+import { SearchInput, SelectInput, Tabs } from '../components/crm-ui';
+import { PageStatusBadge, day } from './ui';
 
 // SEO pages at /insights. Claude's weekly run drafts them over MCP (create_page) into "Needs
 // review"; the team checks each one against its source videos, then publishes or rejects it.
@@ -26,8 +26,28 @@ interface PageRow {
 
 type Tab = 'needs_review' | 'all' | PageStatus;
 
+const SORTS = [
+  { value: 'newest', label: 'Newest first' },
+  { value: 'oldest', label: 'Oldest first' },
+  { value: 'updated', label: 'Recently edited' },
+  { value: 'published', label: 'Recently published' },
+];
+
+function SkeletonRows() {
+  return (
+    <div className="overflow-hidden rounded-xl border border-[var(--crm-line)]" aria-busy="true" aria-label="Loading pages">
+      {[0, 1, 2, 3].map((i) => (
+        <div key={i} className="flex items-center gap-6 border-b border-[var(--crm-line)] px-4 py-4 last:border-0">
+          <div className="crm-skeleton h-3 w-1/3 rounded" />
+          <div className="crm-skeleton h-3 w-1/5 rounded" />
+          <div className="crm-skeleton ml-auto h-3 w-16 rounded" />
+        </div>
+      ))}
+    </div>
+  );
+}
+
 export default function PagesList() {
-  const router = useRouter();
   const [tab, setTab] = useState<Tab>('needs_review');
   const [query, setQuery] = useState('');
   const [sort, setSort] = useState('newest');
@@ -63,117 +83,96 @@ export default function PagesList() {
   const tabs: Tab[] = ['needs_review', 'all', ...PAGE_STATUSES.filter((s) => s !== 'needs_review')];
 
   return (
-    <div>
-      <div className="mb-8 flex flex-wrap items-end justify-between gap-4">
-        <div>
-          <h1 className="flex items-center gap-3 text-4xl font-black">
-            <FileText className="h-8 w-8 text-[#F46325]" /> SEO pages
-          </h1>
-          <p className="mt-1 max-w-2xl text-gray-400">
-            Pages at /insights. Claude drafts them every week from creator videos; check each one against its sources, then publish or reject it with a note.
-          </p>
-        </div>
-        <div className="flex gap-2">
-          <Link
-            href="/admin/pages/activity"
-            className="inline-flex items-center gap-2 rounded-lg border border-gray-600 px-4 py-2.5 text-sm font-bold text-gray-200 hover:border-[#F46325] hover:text-white"
-          >
-            <History className="h-4 w-4" /> Activity log
-          </Link>
-          <Link
-            href="/admin/pages/new"
-            className="inline-flex items-center gap-2 rounded-lg bg-[#F46325] px-4 py-2.5 text-sm font-bold text-white hover:bg-[#FF7B42]"
-          >
-            <Plus className="h-4 w-4" /> New page
-          </Link>
-        </div>
+    <div className="mx-auto max-w-6xl">
+      <PageHeader
+        title="SEO pages"
+        subtitle="Pages at /insights. Claude drafts them every week from creator videos. Check each one against its sources, then publish it or reject it with a note."
+        actions={
+          <>
+            <LinkButton href="/pages/activity" variant="secondary">
+              <History className="size-4" aria-hidden /> Activity log
+            </LinkButton>
+            <LinkButton href="/pages/new" variant="primary">
+              <Plus className="size-4" aria-hidden /> New page
+            </LinkButton>
+          </>
+        }
+      />
+
+      <Tabs
+        label="Status"
+        value={tab}
+        onChange={setTab}
+        options={tabs.map((t) => ({
+          value: t,
+          label: t === 'all' ? 'All' : STATUS_LABEL[t],
+          count: counts ? (t === 'all' ? total : counts[t] ?? 0) : undefined,
+        }))}
+      />
+
+      <div className="mb-4 flex flex-wrap items-center gap-2">
+        <SearchInput label="Search title or keyword" value={query} onChange={(e) => setQuery(e.target.value)} className="w-full sm:w-auto sm:min-w-56 sm:flex-1" />
+        <SelectInput aria-label="Sort" value={sort} onChange={(e) => setSort(e.target.value)} options={SORTS} />
       </div>
 
-      <div className="mb-3 flex flex-wrap items-center gap-2">
-        {tabs.map((t) => (
-          <button key={t} type="button" onClick={() => setTab(t)} className={chip(tab === t)}>
-            {t === 'all' ? 'All' : STATUS_LABEL[t]}{' '}
-            <span className={t === 'needs_review' && (counts?.needs_review ?? 0) > 0 && tab !== t ? 'rounded-full bg-amber-400 px-1.5 text-xs font-black text-black' : 'opacity-70'}>
-              {t === 'all' ? total : counts?.[t] ?? 0}
-            </span>
-          </button>
-        ))}
-      </div>
-      <div className="mb-5 flex flex-wrap items-center gap-2">
-        <select
-          value={sort}
-          onChange={(e) => setSort(e.target.value)}
-          aria-label="Sort"
-          className="rounded-lg border border-gray-700 bg-gray-900 px-3 py-2 text-sm text-white focus:border-[#F46325] focus:outline-none"
-        >
-          <option value="newest">Newest first</option>
-          <option value="oldest">Oldest first</option>
-          <option value="updated">Recently edited</option>
-          <option value="published">Recently published</option>
-        </select>
-        <input
-          value={query}
-          onChange={(e) => setQuery(e.target.value)}
-          placeholder="Search title or keyword…"
-          className="ml-auto w-64 rounded-lg border border-gray-700 bg-gray-900 px-3 py-2 text-sm text-white placeholder:text-gray-500 focus:border-[#F46325] focus:outline-none"
+      {error && (
+        <div className="mb-4">
+          <Notice tone="bad" title="Could not load pages">
+            {error}
+          </Notice>
+        </div>
+      )}
+
+      {loading ? (
+        <SkeletonRows />
+      ) : (
+        <Table
+          caption="SEO pages"
+          rows={rows}
+          rowKey={(p) => p.id}
+          href={(p) => `/pages/${p.id}`}
+          cards
+          empty={
+            <Empty icon={FileText} title={query ? 'Nothing matches that search' : tab === 'needs_review' ? 'Nothing waiting for review' : 'No pages here yet'}>
+              {query ? 'Try a different word, or clear the search.' : tab === 'needs_review' ? 'New drafts from the weekly run show up here.' : undefined}
+            </Empty>
+          }
+          columns={[
+            {
+              header: 'Title',
+              cell: (p) => (
+                <div className="min-w-0 max-w-[22rem]">
+                  <span className="block truncate font-semibold text-[var(--crm-ink)]">{p.title}</span>
+                  <span className="block truncate text-xs text-[var(--crm-muted)]">/insights/{p.slug}</span>
+                  {p.rejection_note && <span className="mt-1 block text-xs text-[var(--crm-bad)]">Rejected: {p.rejection_note}</span>}
+                </div>
+              ),
+            },
+            { header: 'Main keyword', wide: true, className: 'whitespace-nowrap', cell: (p) => <span className="block max-w-[12rem] truncate text-[var(--crm-muted)]" title={p.main_keyword}>{p.main_keyword}</span> },
+            {
+              header: 'Status',
+              className: 'whitespace-nowrap',
+              cell: (p) => (
+                <span className="block">
+                  <PageStatusBadge status={p.status} />
+                  {p.published_at && <span className="mt-1 block text-xs tabular-nums text-[var(--crm-muted)]">{day(p.published_at)}</span>}
+                </span>
+              ),
+            },
+            {
+              header: 'Created by',
+              wide: true,
+              cell: (p) => (
+                <span className="inline-flex items-center gap-1.5 whitespace-nowrap text-[var(--crm-muted)]">
+                  {p.created_by_kind === 'claude' ? <Bot className="size-3.5" aria-hidden /> : <User className="size-3.5" aria-hidden />}
+                  {p.created_by_kind === 'claude' ? 'Claude weekly run' : p.created_by || 'Team'}
+                </span>
+              ),
+            },
+            { header: 'Created', align: 'right', cell: (p) => <span className="whitespace-nowrap tabular-nums text-[var(--crm-muted)]">{day(p.created_at)}</span> },
+          ]}
         />
-      </div>
-
-      {error && <p className="mb-4 rounded-lg border border-red-500/40 bg-red-500/10 px-4 py-3 text-sm text-red-300">{error}</p>}
-
-      <div className="overflow-x-auto rounded-lg border border-gray-700 bg-gray-900">
-        <table className="w-full text-left text-sm">
-          <thead className="border-b border-gray-700 text-xs uppercase tracking-wider text-gray-400">
-            <tr>
-              <th className="px-4 py-3">Title</th>
-              <th className="px-4 py-3">Main keyword</th>
-              <th className="px-4 py-3">Status</th>
-              <th className="px-4 py-3">Created by</th>
-              <th className="px-4 py-3">Created</th>
-              <th className="px-4 py-3">Published</th>
-            </tr>
-          </thead>
-          <tbody>
-            {loading ? (
-              <tr>
-                <td colSpan={6} className="px-4 py-10 text-center text-gray-500">
-                  Loading…
-                </td>
-              </tr>
-            ) : rows.length === 0 ? (
-              <tr>
-                <td colSpan={6} className="px-4 py-10 text-center text-gray-500">
-                  {query ? 'Nothing matches.' : tab === 'needs_review' ? 'Nothing waiting for review.' : 'No pages here yet.'}
-                </td>
-              </tr>
-            ) : (
-              rows.map((p) => (
-                <tr key={p.id} onClick={() => router.push(`/admin/pages/${p.id}`)} className="cursor-pointer border-b border-gray-800 last:border-0 hover:bg-gray-800/60">
-                  <td className="max-w-md px-4 py-3">
-                    <Link href={`/admin/pages/${p.id}`} className="font-bold text-white" onClick={(e) => e.stopPropagation()}>
-                      {p.title}
-                    </Link>
-                    <span className="block text-xs text-gray-500">/insights/{p.slug}</span>
-                    {p.rejection_note && <span className="mt-1 block text-xs text-red-300/80">Rejected: {p.rejection_note}</span>}
-                  </td>
-                  <td className="px-4 py-3 text-gray-300">{p.main_keyword}</td>
-                  <td className="px-4 py-3">
-                    <PageStatusBadge status={p.status} />
-                  </td>
-                  <td className="whitespace-nowrap px-4 py-3 text-gray-300">
-                    <span className="inline-flex items-center gap-1.5">
-                      {p.created_by_kind === 'claude' ? <Bot className="h-3.5 w-3.5 text-[#FF9A66]" /> : <User className="h-3.5 w-3.5 text-gray-500" />}
-                      {p.created_by_kind === 'claude' ? 'Claude weekly run' : p.created_by || 'Team'}
-                    </span>
-                  </td>
-                  <td className="whitespace-nowrap px-4 py-3 text-gray-400">{day(p.created_at)}</td>
-                  <td className="whitespace-nowrap px-4 py-3 text-gray-400">{p.published_at ? day(p.published_at) : <span className="text-gray-600">—</span>}</td>
-                </tr>
-              ))
-            )}
-          </tbody>
-        </table>
-      </div>
+      )}
     </div>
   );
 }

@@ -57,6 +57,19 @@ export default function Navigation() {
     return null;
   }
 
+  // Ad landing pages: logo only, so paid traffic isn't pulled off the page.
+  if (pathname === '/score') {
+    return (
+      <header className="absolute inset-x-0 top-0 z-50">
+        <div className="gutter flex h-20 items-center text-white">
+          <Link href="/" aria-label="TAAM home" className="outline-none focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-white">
+            <Logo className="h-5 md:h-6" />
+          </Link>
+        </div>
+      </header>
+    );
+  }
+
   return (
     <>
       <header

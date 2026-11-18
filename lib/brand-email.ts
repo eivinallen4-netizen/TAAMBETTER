@@ -18,6 +18,9 @@ export const FONT = "Montserrat, 'Helvetica Neue', Helvetica, Arial, sans-serif"
 export const SITE = (process.env.NEXT_PUBLIC_SITE_URL || 'https://www.taammarketing.com').replace(/\/$/, '');
 export const REPLY_TO = process.env.TOOL_EMAIL_REPLY_TO || 'info@taammarketing.com';
 export const PHONE = '702-997-6813';
+/** The schedule: every "Book a call" link goes to the CRM's 30-min Marketing Strategy booking page. */
+export const BOOKING_PATH = '/c/meet/marketing-strategy';
+export const BOOKING_URL = `${SITE}${BOOKING_PATH}`;
 export const TEL = `tel:+1${PHONE.replace(/\D/g, '')}`;
 
 // Inboxes can't reach localhost, so images always come from a public host.
@@ -147,6 +150,8 @@ export interface Hero {
 export function emailShell(o: { title: string; preheader: string; hero: Hero; rows: string; poster?: Poster; footer: string }): string {
   const site = SITE.replace(/^https?:\/\//, '');
   const h = o.hero;
+  // Long lines ("Jordan Lee booked Strategy call") step down a size so words don't break.
+  const long = h.title.length > 26;
   const mascot = h.mascot
     ? `<td width="104" align="right" valign="bottom" style="width:104px;"><img src="${asset(`${h.mascot}.png`)}" width="104" height="104" alt="" style="display:block;width:104px;height:104px;border:0;"></td>`
     : '';
@@ -161,6 +166,7 @@ export function emailShell(o: { title: string; preheader: string; hero: Hero; ro
   @media (max-width: 520px) {
     .px { padding-left: 24px !important; padding-right: 24px !important; }
     .h1 { font-size: 40px !important; }
+    .h1-long { font-size: 30px !important; }
     .h2 { font-size: 28px !important; }
     .mega { font-size: 48px !important; }
     .sign { font-size: 34px !important; }
@@ -194,7 +200,7 @@ export function emailShell(o: { title: string; preheader: string; hero: Hero; ro
     </tr></table>
 
     <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin-top:18px;"><tr>
-      <td valign="bottom"><h1 class="h1" style="margin:0;${display(54)}line-height:.88;">${esc(h.title)}</h1></td>
+      <td valign="bottom"><h1 class="${long ? 'h1-long' : 'h1'}" style="margin:0;${display(long ? 40 : 54)}line-height:.9;">${esc(h.title)}</h1></td>
       ${mascot}
     </tr></table>
     <div style="height:28px;line-height:28px;font-size:0;">&nbsp;</div>

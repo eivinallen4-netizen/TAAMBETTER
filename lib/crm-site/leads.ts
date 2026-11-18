@@ -8,8 +8,12 @@ import { crm } from '@/crm';
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 /** Saves a lead from a website form. Blank fields are left out; an email that is not valid yet (a half-typed one) is not sent. */
-export async function saveWebsiteLead(fields: Omit<SaveLeadInput, 'source'>): Promise<{ id: string; created: boolean; leadFit: string }> {
-  const input: Record<string, unknown> = { source: 'Website' };
+export async function saveWebsiteLead(
+  fields: Omit<SaveLeadInput, 'source'>,
+  /** Where the lead came from, on a new lead only. Defaults to "Website". */
+  source = 'Website'
+): Promise<{ id: string; created: boolean; leadFit: string }> {
+  const input: Record<string, unknown> = { source };
   for (const [key, value] of Object.entries(fields)) {
     if (value === undefined || value === null) continue;
     if (typeof value === 'string' && value.trim() === '') continue;

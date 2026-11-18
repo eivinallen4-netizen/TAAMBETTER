@@ -3,6 +3,7 @@ import { createCrm } from '@taam/crm/next';
 import { taamSiteModule } from '@/lib/crm-site/module';
 import { taamInstallsModule } from '@/lib/crm-site/installs/module';
 import { taamReviewsModule } from '@/lib/crm-site/reviews/module';
+import { renderCrmPackageEmail } from '@/lib/crm-site/email-template';
 
 // The TAAM CRM (@taam/crm) installed in the TAAM website: staff screens at /admin, customer
 // pages at /c (plus the older /call/[token] and /onboarding/[token] links, which keep working).
@@ -30,6 +31,8 @@ export const crm = createCrm(
     // existing API keys (taam_…) and the Claude connector keep working.
     session: { cookieName: 'admin_session' },
     apiKeyPrefix: 'taam',
+    // Every email the CRM sends goes out in the website's design (lib/brand-email.ts).
+    email: { render: renderCrmPackageEmail },
     // The website's own tools (lib/crm-site/module.ts) and the client installs list
     // (lib/crm-site/installs, owner only) are always on.
     // Site reviews (lib/crm-site/reviews) talk to the review app on its own subdomain.

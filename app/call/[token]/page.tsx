@@ -3,8 +3,6 @@ import { notFound } from 'next/navigation';
 import Logo from '@/components/editorial/Logo';
 import Mascot from '@/components/editorial/Mascot';
 import { crm } from '@/crm';
-import { calendlyEventUrl } from '@/lib/calendly';
-import { PHONE } from '@/lib/brand-email';
 import CallBooking from './CallBooking';
 
 // The page an appointment setter sends a prospect. Made for their business, and the only thing on
@@ -119,9 +117,6 @@ export default async function CallPage({ params }: { params: Promise<{ token: st
         <div className="gutter section-pad">
           <CallBooking
             token={token}
-            eventUrl={calendlyEventUrl()}
-            name={link.client_name}
-            phone={PHONE}
             initial={link.status === 'booked' ? { callStart: link.call_start } : null}
           />
         </div>

@@ -1,0 +1,187 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>TAAM Story</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@500;600;700;800;900&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+<!--
+  One 1080x1920 Instagram story. Open as story.html?site=movers&layout=results
+  Copy and which prop goes where live in stories.js. Screenshots: shots/ (capture.py), crops: render.py.
+  Props: assets/ (gen-assets.sh). Story UI covers roughly the top 220px and bottom 250px.
+-->
+<style>
+  :root { --o:#F46325; --ink:#111111; }
+  * { box-sizing:border-box; margin:0; padding:0; }
+  html, body { width:1080px; height:1920px; overflow:hidden; background:var(--ink); }
+  body { font-family:Montserrat, sans-serif; color:#fff; -webkit-font-smoothing:antialiased; }
+  .story { position:relative; width:1080px; height:1920px; overflow:hidden; }
+  .story.orange { background:var(--o); --bg:var(--o); }
+  .story.ink { background:var(--ink); --bg:var(--ink); }
+  .caps { text-transform:uppercase; font-weight:900; letter-spacing:-0.02em; line-height:.92; }
+  /* outline type: background-coloured fill painted over a double-width stroke, so letter overlaps (R, K) stay clean */
+  .outline { color:var(--bg); -webkit-text-stroke:6px #fff; paint-order:stroke fill; }
+  .mono { font-family:'JetBrains Mono', monospace; font-weight:700; letter-spacing:.08em; text-transform:uppercase; }
+  .label { display:inline-block; font-size:26px; padding:10px 18px; background:var(--o); color:#fff; }
+  .shot { background-repeat:no-repeat; background-size:100% auto; background-position:top center; background-color:#fff; }
+  .pill { display:inline-flex; align-items:center; gap:14px; border-radius:999px; font-weight:800; }
+  /* Rule: a prop always stands on a floor or leans on/peeks from something. Never floats. */
+  .prop { position:absolute; pointer-events:none; }
+  .floor { position:absolute; left:50px; right:50px; height:12px; border-radius:6px; }
+
+  /* ---------- site: long desktop scroll in a tall browser frame (ref: Nila AI) ---------- */
+  .site .top { position:absolute; left:80px; right:80px; top:220px; }
+  .site .top .label { margin-bottom:22px; }
+  .site h1 { font-size:80px; }
+  .site .frame { position:absolute; left:50%; transform:translateX(-50%); width:640px; top:480px; bottom:262px; border:4px solid #fff; border-radius:36px; overflow:hidden; background:#fff; }
+  .site .bar { height:50px; background:var(--ink); display:flex; align-items:center; gap:10px; padding:0 22px; border-bottom:4px solid #fff; }
+  .site .bar i { width:12px; height:12px; border-radius:50%; background:#fff; display:block; }
+  .site .bar span { margin-left:auto; font-size:17px; color:#fff; opacity:.8; }
+  .site .frame .shot { position:absolute; inset:50px 0 0 0; }
+  .site .frame .fade { position:absolute; left:0; right:0; bottom:0; height:160px; background:linear-gradient(transparent, rgba(17,17,17,.9)); }
+  .site .side { position:absolute; top:520px; font-size:22px; color:#777; writing-mode:vertical-rl; }
+  .site .side.l { left:70px; transform:rotate(180deg); }
+  .site .side.r { right:70px; }
+  .site .floor { bottom:250px; background:#fff; z-index:4; }
+  .site .prop { width:var(--w,300px); right:50px; bottom:262px; z-index:3; }
+
+  /* ---------- mobile + desktop: toggle showcase (ref: Kaiko) ---------- */
+  .toggle { position:absolute; left:80px; top:230px; display:flex; background:var(--ink); border-radius:999px; padding:10px; gap:6px; }
+  .toggle b { font-size:28px; font-weight:800; padding:16px 36px; border-radius:999px; color:#8a8a8a; letter-spacing:.02em; }
+  .toggle b.on { background:#fff; color:var(--ink); }
+  .mobile .phone { position:absolute; left:220px; top:380px; width:520px; height:1060px; border:18px solid var(--ink); border-radius:74px; overflow:hidden; background:var(--ink); z-index:2; }
+  .mobile .phone .shot { position:absolute; inset:58px 0 0 0; }
+  .mobile .phone .notch { position:absolute; top:12px; left:50%; transform:translateX(-50%); width:140px; height:36px; border-radius:30px; background:var(--ink); z-index:2; }
+  .mobile .floor { top:1440px; background:var(--ink); z-index:5; height:14px; }
+  /* stands on the floor next to the phone, overlapping its edge (or peeks up from behind the floor) */
+  .mobile .side { z-index:4; left:var(--x, 650px); width:var(--w, 330px); bottom:calc(480px - var(--dy, 0px)); }
+  .mobile .client { position:absolute; left:0; right:0; top:1500px; text-align:center; }
+  .mobile .client .big { font-size:104px; color:var(--o); -webkit-text-stroke:8px var(--ink); paint-order:stroke fill; }
+  .mobile .client .url { margin-top:18px; font-size:28px; color:var(--ink); }
+
+  .desktop .laptop { position:absolute; left:90px; width:660px; top:400px; z-index:2; }
+  .desktop .screen { height:430px; border:18px solid var(--ink); border-bottom-width:24px; border-radius:36px 36px 0 0; overflow:hidden; background:var(--ink); position:relative; }
+  .desktop .screen .shot { position:absolute; inset:0; }
+  .desktop .base { height:30px; background:var(--ink); margin:0 -36px; border-radius:0 0 26px 26px; }
+  .desktop .floor { top:860px; background:var(--ink); height:14px; }
+  .desktop .after { position:absolute; left:80px; right:80px; top:940px; bottom:250px; display:flex; flex-direction:column; gap:34px; }
+  .desktop .after h1 { font-size:112px; color:var(--ink); max-height:420px; }
+  .desktop .after h1 span { display:block; }
+  .desktop .after h1 .outline { -webkit-text-stroke:8px var(--ink); }
+  .desktop .tags { display:flex; flex-wrap:wrap; gap:14px; }
+  .desktop .tags .pill { background:var(--ink); color:#fff; font-size:26px; padding:16px 28px; }
+  .desktop .url { font-size:30px; color:var(--ink); }
+  .desktop .prop { width:var(--w,270px); right:50px; bottom:1060px; z-index:3; }
+
+  /* ---------- results: numbered list + industry props (ref: Averion) ---------- */
+  .results .col { position:absolute; left:70px; right:70px; top:220px; bottom:250px; display:flex; flex-direction:column; gap:36px; }
+  .results .top { position:relative; padding-right:300px; }
+  .results h1 { font-size:96px; margin-top:26px; max-height:300px; }
+  .results h1 span { display:block; }
+  .results .row { display:flex; align-items:center; border-top:2px solid #444; height:118px; gap:24px; }
+  .results .row:last-child { border-bottom:2px solid #444; }
+  .results .row .mono { width:220px; font-size:22px; color:#aaa; flex:none; }
+  .results .row .t { flex:1; min-width:0; font-size:52px; font-weight:900; text-transform:uppercase; letter-spacing:-0.02em; white-space:nowrap; }
+  .results .row:not(:first-child) .t { color:var(--ink); -webkit-text-stroke:4px #bbb; paint-order:stroke fill; }
+  .results .badge { position:absolute; right:-30px; top:0; width:310px; height:310px; border-radius:50%; background:var(--o); }
+  .results .badge { overflow:hidden; }
+  .results .badge img { position:absolute; width:230px; height:210px; object-fit:contain; object-position:bottom; left:40px; bottom:56px; }
+  .results .badge::after { content:''; position:absolute; left:40px; right:40px; bottom:48px; height:10px; border-radius:5px; background:var(--ink); }
+  .results .strip { flex:1; display:grid; grid-template-columns:repeat(3, 1fr); gap:18px; min-height:0; }
+  .results .strip .c { background:#fff; border-radius:34px; position:relative; overflow:hidden; display:flex; flex-direction:column; align-items:center; padding:22px 18px 0; }
+  .results .strip .c .mono { color:var(--ink); font-size:20px; }
+  .results .strip .c img { width:88%; flex:1; min-height:0; object-fit:contain; object-position:bottom; margin-top:12px; }
+  .results .badge.wall img { width:220px; height:220px; object-position:center; left:45px; top:45px; bottom:auto; }
+  .results .badge.wall::after { display:none; }
+  .results .strip .c.wall img { object-position:center; margin:20px 0 36px; }
+  .results .strip .c i { display:block; align-self:stretch; height:12px; border-radius:6px; background:var(--ink); margin:0 6px 26px; }
+  .results .cta { margin:0 -30px; height:190px; flex:none; background:var(--o); border-radius:44px; display:flex; align-items:center; gap:24px; padding:0 30px; }
+  .results .cta .box { flex:1; background:var(--ink); border-radius:28px; padding:26px 30px; }
+  .results .cta .box .caps { font-size:38px; }
+  .results .cta .box .mono { font-size:20px; margin-top:10px; color:#ccc; }
+  .results .cta .pill { background:#fff; color:var(--ink); font-size:30px; padding:26px 34px; flex:none; }
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script src="stories.js"></script>
+<script>
+  const q = new URLSearchParams(location.search);
+  const id = q.get('site') || 'movers';
+  const layout = q.get('layout') || 'site';
+  const s = window.SITES[id];
+  const D = `crops/${id}-desktop-tall.jpg`, DH = `crops/${id}-desktop-hero.jpg`, M = `crops/${id}-mobile.jpg`;
+  // 'char:peek' = a mascot pose from /public/characters, anything else = a prop in assets/
+  const A = n => n.startsWith('char:') ? `crops/props/char-${n.slice(5)}.png` : `crops/props/${n}.png`;
+  const bg = u => `style="background-image:url('${u}')"`;
+  const esc = t => String(t).replace(/&/g, '&amp;').replace(/</g, '&lt;');
+  const P = s.props;
+
+  const L = {
+    site: () => `<div class="story ink site">
+      <div class="top">
+        <span class="label mono">${esc(s.label)} / TAAM</span>
+        <h1 class="caps fit" data-maxh="150">${esc(s.client)}</h1>
+      </div>
+      <div class="side l mono">${esc(s.url)}</div><div class="side r mono">BUILT BY TAAM</div>
+      <div class="frame">
+        <div class="bar"><i></i><i></i><i></i><span class="mono">${esc(s.url)}</span></div>
+        <div class="shot" ${bg(D)}></div><div class="fade"></div>
+      </div>
+      <img class="prop" src="${A(P.site.src)}" style="--w:${P.site.w || 300}px"><div class="floor"></div>
+    </div>`,
+
+    mobile: () => `<div class="story orange mobile">
+      <div class="toggle"><b>DESKTOP</b><b class="on">MOBILE</b></div>
+      <div class="phone"><div class="notch"></div><div class="shot" ${bg(M)}></div></div>
+      <img class="prop side" src="${A(P.mobile.src)}" style="--x:${P.mobile.x}px;--w:${P.mobile.w}px;--dy:${P.mobile.dy || 0}px;${P.mobile.front ? 'z-index:6' : ''}">
+      <div class="floor"></div>
+      <div class="client">
+        <div class="caps big">${id === 'taam' ? 'OUR SITE' : 'CLIENT WORK'}</div>
+        <div class="url mono">${esc(s.url)}</div>
+      </div>
+    </div>`,
+
+    desktop: () => `<div class="story orange desktop">
+      <div class="toggle"><b class="on">DESKTOP</b><b>MOBILE</b></div>
+      <div class="laptop"><div class="screen"><div class="shot" ${bg(DH)}></div></div><div class="base"></div></div>
+      <div class="after">
+        <h1 class="caps fit" data-maxh="420"><span>${esc(s.headline[0])}</span><span class="outline">${esc(s.headline[1])}</span></h1>
+        <div class="tags">${s.tags.map(t => `<span class="pill">${esc(t)}</span>`).join('')}</div>
+        <div class="url mono">${esc(s.url)}</div>
+      </div>
+      <div class="floor"></div><img class="prop" src="${A(P.desktop.src)}" style="--w:${P.desktop.w || 270}px">
+    </div>`,
+
+    results: () => `<div class="story ink results"><div class="col">
+      <div class="top"><span class="label mono">${esc(id === 'taam' ? 'TAAM / THE OFFER' : 'TAAM / RESULTS')}</span>
+        <h1 class="caps fit" data-maxh="300"><span>${esc(s.headline[0])}</span><span class="outline">${esc(s.headline[1])}</span></h1>
+        <div class="badge ${P.badge.wall ? 'wall' : ''}"><img src="${A(P.badge.src)}"></div></div>
+      <div class="list">${s.wins.map(w => `<div class="row"><span class="mono">${esc(w[0])}</span><span class="t fit">${esc(w[1])}</span></div>`).join('')}</div>
+      <div class="strip" style="grid-template-columns:repeat(${P.strip.length}, 1fr)">${P.strip.map(([n, t, wall]) => `<div class="c ${wall ? 'wall' : ''}"><span class="mono">${esc(t)}</span><img src="${A(n)}">${wall ? '' : '<i></i>'}</div>`).join('')}</div>
+      <div class="cta">
+        <div class="box"><div class="caps">${id === 'taam' ? 'WANT MORE CUSTOMERS?' : 'WANT RESULTS LIKE THIS?'}</div><div class="mono">taammarketing.com</div></div>
+        <span class="pill">${esc(s.cta)} →</span>
+      </div>
+    </div></div>`,
+  };
+
+  document.getElementById('root').innerHTML = L[layout]();
+
+  // Shrink text marked .fit until it fits its width (and data-maxh, if set), so longer copy never spills.
+  function textH(el) { const r = document.createRange(); r.selectNodeContents(el); return r.getBoundingClientRect().height; }
+  function fitAll() {
+    document.querySelectorAll('.fit').forEach(el => {
+      const maxH = +el.dataset.maxh || Infinity;
+      let size = parseFloat(getComputedStyle(el).fontSize);
+      const over = () => el.scrollWidth > el.clientWidth + 1 || textH(el) > maxH;
+      while (over() && size > 18) { size -= 2; el.style.fontSize = size + 'px'; }
+    });
+  }
+
+  // render.py waits for this so fonts and screenshots are in before the capture
+  Promise.all([document.fonts.ready, ...[...document.images].map(i => i.decode().catch(() => {}))])
+    .then(() => { fitAll(); document.body.dataset.ready = '1'; });
+</script>
+</body>
+</html>

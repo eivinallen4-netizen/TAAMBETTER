@@ -30,11 +30,9 @@ import {
 import SmsConsent from '../SmsConsent';
 import type { ContactFormPrefill } from './ContactFormProvider';
 import Arrow from '@/components/editorial/Arrow';
-import CallBooking from '@/app/call/[token]/CallBooking';
+import { BOOKING_PATH } from '@/lib/brand-email';
 
 type Step = 1 | 2 | 3 | 4 | 'confirmation';
-/** Sent back by /api/contact for qualified leads, so they can book the call before they close the form. */
-type Booking = { token: string; eventUrl: string };
 const TOTAL_STEPS = 4;
 
 // One mascot per step: fishing for the problem, chilling on the details, counting the budget, calling you.
@@ -104,7 +102,6 @@ export default function ContactFormModal({ prefill, onClose }: ContactFormModalP
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [fit, setFit] = useState<LeadFit>('possible');
-  const [booking, setBooking] = useState<Booking | null>(null);
   const dialogRef = useRef<HTMLDivElement>(null);
   const advanceTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const partialSent = useRef(false);
@@ -232,7 +229,6 @@ export default function ContactFormModal({ prefill, onClose }: ContactFormModalP
         data.lead_fit ??
           scoreLeadFit({ stage: form.businessStage, budget: form.budget, timeline: form.timeline, role: form.role }),
       );
-      if (data.booking?.token && data.booking?.eventUrl) setBooking(data.booking);
       setStep('confirmation');
     } catch {
       setSubmitError('Something went wrong sending that. Mind trying again?');
@@ -373,10 +369,8 @@ export default function ContactFormModal({ prefill, onClose }: ContactFormModalP
         {step === 'confirmation' && (
           <Confirmation
             name={form.name}
-            email={form.email.trim()}
             businessName={form.businessName.trim()}
             fit={fit}
-            booking={booking}
             preLaunch={form.businessStage === 'pre_launch'}
             onClose={onClose}
           />
@@ -694,22 +688,17 @@ function StepContactInfo({
 
 function Confirmation({
   name,
-  email,
   businessName,
   fit,
-  booking,
   preLaunch,
   onClose,
 }: {
   name: string;
-  email: string;
   businessName: string;
   fit: LeadFit;
-  booking: Booking | null;
   preLaunch: boolean;
   onClose: () => void;
 }) {
-  const instagram = siteContent.contact.social.instagram;
   const firstName = name.trim().split(/\s+/)[0] || 'friend';
 
   if (fit === 'early') {
@@ -753,65 +742,28 @@ function Confirmation({
     );
   }
 
-  // Qualified: book the call right here, while they want it most.
-  if (booking) {
-    const phone = siteContent.contact.phone;
-    return (
-      <div className="py-6">
-        <CallBooking
-          token={booking.token}
-          eventUrl={booking.eventUrl}
-          name={name.trim()}
-          email={email}
-          phone={phone}
-          initial={null}
-          heading={
-            <>
-              <h2 className="display display-lg mb-5">Got it, {firstName}.</h2>
-              <p className="lede mb-8 max-w-xl">
-                Pick a time for a short video call. We&apos;ll show you the first videos we&apos;d film for{' '}
-                {businessName || 'your business'}.
-              </p>
-            </>
-          }
-        />
-        <p className="mt-6 text-center font-semibold">
-          Rather talk now? Call{' '}
-          <a href={`tel:${phone.replace(/[^+\d]/g, '')}`} className="link-line">
-            {phone}
-          </a>
-          .
-        </p>
-        <CloseLink onClose={onClose} />
-      </div>
-    );
-  }
-
+  // Qualified: book the call right here, on the schedule, while they want it most.
+  const phone = siteContent.contact.phone;
   return (
     <div className="text-center py-10">
-      <Mascot pose="money-gun" size={320} className="mascot-pop mx-auto mb-8 h-36 md:h-52 w-auto" />
+      <Mascot pose="phone" size={320} className="mascot-pop mx-auto mb-8 h-36 md:h-52 w-auto" />
       <h2 className="display display-lg mb-6">Got it, {firstName}.</h2>
       <p className="lede max-w-xl mx-auto mb-10">
-        We&apos;ll look over your answers and reach out within 1 business day to set up a short call. If we&apos;re
-        not the right team for it, we&apos;ll tell you straight.
+        Pick a time for a 30-minute video call. We&apos;ll show you what we&apos;d do first for{' '}
+        {businessName || 'your business'}.
       </p>
-      <p className="font-semibold max-w-xl mx-auto -mt-6 mb-10">
+      <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+        <Link href={BOOKING_PATH} onClick={onClose} className="btn btn-solid">
+          Pick a time <Arrow dir="right" />
+        </Link>
+      </div>
+      <p className="font-semibold max-w-xl mx-auto mt-8">
         Rather talk now? Call{' '}
-        <a href={`tel:${siteContent.contact.phone.replace(/[^+\d]/g, '')}`} className="link-line">
-          {siteContent.contact.phone}
+        <a href={`tel:${phone.replace(/[^+\d]/g, '')}`} className="link-line">
+          {phone}
         </a>
         .
       </p>
-      <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-        <Link href="/work" onClick={onClose} className="eyebrow link-line">
-          See our recent work
-        </Link>
-        {instagram && (
-          <a href={instagram} target="_blank" rel="noopener noreferrer" className="eyebrow link-line">
-            Follow us on Instagram
-          </a>
-        )}
-      </div>
       <CloseLink onClose={onClose} />
     </div>
   );

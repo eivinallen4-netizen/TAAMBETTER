@@ -217,7 +217,7 @@ export async function renderToolPdf(report: ToolReport, firstName: string): Prom
   const btnW = f.xbold.widthOfTextAtSize(btnLabel, 10) + 40;
   page.drawRectangle({ x: M + 24, y: y - 32, width: btnW, height: 32, color: INK });
   page.drawText(btnLabel, { x: M + 44, y: y - 20, size: 10, font: f.xbold, color: WHITE });
-  addLink(doc, page, M + 24, y - 32, btnW, 32, `mailto:${REPLY_TO}?subject=${encodeURIComponent(`Free call about my results (${report.toolName})`)}`);
+  addLink(doc, page, M + 24, y - 32, btnW, 32, `${SITE}/c/meet/marketing-strategy`);
   page.drawText(contact, { x: M + 24 + btnW + 16, y: y - 20, size: 10, font: f.bold, color: INK });
   addLink(doc, page, M + 24 + btnW + 16, y - 26, f.bold.widthOfTextAtSize(contact, 10), 18, `tel:+1${PHONE.replace(/\D/g, '')}`);
   y = ctaTop - ctaH;

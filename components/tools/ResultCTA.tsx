@@ -1,6 +1,7 @@
-import ContactCTA from '@/app/components/ContactCTA';
+import Link from 'next/link';
 import type { FreeTool } from '@/app/lib/tools';
 import Arrow from '@/components/editorial/Arrow';
+import { BOOKING_PATH } from '@/lib/brand-email';
 
 interface ResultCTAProps {
   tool: FreeTool;
@@ -21,10 +22,11 @@ export default function ResultCTA({ tool, hook }: ResultCTAProps) {
         </p>
       </div>
       <div className="col-span-12 lg:col-span-5 lg:justify-self-end">
-        <ContactCTA challenge={tool.challenge} services={tool.services} className="btn btn-solid">
+        {/* The schedule: the CRM's Marketing Strategy booking page. */}
+        <Link href={BOOKING_PATH} className="btn btn-solid">
           Book a free call <Arrow />
-        </ContactCTA>
-        <p className="mt-4 text-sm font-semibold">No obligation · Reply within 1 business day</p>
+        </Link>
+        <p className="mt-4 text-sm font-semibold">No obligation · 30-minute video call</p>
       </div>
     </div>
   );

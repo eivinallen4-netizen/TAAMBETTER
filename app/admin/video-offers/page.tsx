@@ -1,11 +1,11 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import Link from 'next/link';
+import { useCallback, useEffect, useState } from 'react';
+import { Download, Pencil, Trash2, Video } from 'lucide-react';
+import { Button, Empty, PageHeader, Table, useConfirm, useToast } from '@taam/crm/client';
 import { useAdminAuth } from '@/lib/useAdminAuth';
-import type { TableColumn } from '../components/DataTable';
-import { ExportCsvButton } from '../components/ExportCsvButton';
 import { EditRowModal, FieldSchema } from '../components/EditRowModal';
+import { SearchInput, SelectInput } from '../components/crm-ui';
 
 interface Lead {
   id: string;
@@ -16,21 +16,15 @@ interface Lead {
   created_at: string;
 }
 
-const columns: TableColumn<Lead>[] = [
-  { key: 'name', header: 'Name', sortable: true },
-  { key: 'phone', header: 'Phone', sortable: false },
-  { key: 'business_name', header: 'Business Name', sortable: true },
-  { key: 'sales_range', header: 'Sales Range', sortable: false },
-  { key: 'created_at', header: 'Created At', sortable: true },
-];
+type SortKey = 'name' | 'business_name' | 'created_at';
 
 const editSchema: FieldSchema[] = [
   { key: 'name', label: 'Name', type: 'text', required: true },
   { key: 'phone', label: 'Phone', type: 'tel', required: true },
-  { key: 'business_name', label: 'Business Name', type: 'text', required: true },
+  { key: 'business_name', label: 'Business name', type: 'text', required: true },
   {
     key: 'sales_range',
-    label: 'Sales Range',
+    label: 'Sales range',
     type: 'select',
     required: true,
     options: [
@@ -44,51 +38,49 @@ const editSchema: FieldSchema[] = [
   },
 ];
 
-export default function LeadsPage() {
+const LIMIT = 100;
+
+function shortDate(iso: string): string {
+  const d = new Date(iso);
+  return Number.isNaN(d.getTime()) ? iso : d.toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' });
+}
+
+export default function VideoOffersPage() {
   useAdminAuth();
+  const toast = useToast();
+  const confirm = useConfirm();
   const [leads, setLeads] = useState<Lead[]>([]);
   const [total, setTotal] = useState(0);
-  const [loading, setLoading] = useState(false);
+  const [loaded, setLoaded] = useState(false);
   const [search, setSearch] = useState('');
   const [offset, setOffset] = useState(0);
-  const [sort, setSort] = useState('created_at');
+  const [sort, setSort] = useState<SortKey>('created_at');
   const [dir, setDir] = useState<'asc' | 'desc'>('desc');
   const [editingLead, setEditingLead] = useState<Lead | null>(null);
 
-
-  const limit = 100;
-
-  useEffect(() => {
-    fetchLeads();
-  }, [search, offset, sort, dir]);
-
-  useEffect(() => {
-    const interval = setInterval(() => {
-      fetchLeads();
-    }, 5000);
-    return () => clearInterval(interval);
-  }, [search, offset, sort, dir]);
-
-  async function fetchLeads() {
-    setLoading(true);
+  const fetchLeads = useCallback(async () => {
     try {
-      const params = new URLSearchParams({
-        search,
-        limit: String(limit),
-        offset: String(offset),
-        sort,
-        dir,
-      });
+      const params = new URLSearchParams({ search, limit: String(LIMIT), offset: String(offset), sort, dir });
       const res = await fetch(`/api/admin/leads?${params}`);
       const data = await res.json();
-      setLeads(data.data);
-      setTotal(data.total);
+      setLeads(data.data ?? []);
+      setTotal(data.total ?? 0);
     } catch (error) {
       console.error('Fetch error:', error);
     } finally {
-      setLoading(false);
+      setLoaded(true);
     }
-  }
+  }, [search, offset, sort, dir]);
+
+  // Load now, then refresh quietly every few seconds so new offers appear on their own.
+  useEffect(() => {
+    const first = setTimeout(fetchLeads, 0);
+    const interval = setInterval(fetchLeads, 5000);
+    return () => {
+      clearTimeout(first);
+      clearInterval(interval);
+    };
+  }, [fetchLeads]);
 
   async function handleSave(id: string, updates: Record<string, unknown>) {
     const res = await fetch(`/api/admin/leads/${id}`, {
@@ -96,144 +88,144 @@ export default function LeadsPage() {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(updates),
     });
-
-    if (!res.ok) {
-      throw new Error('Failed to save');
-    }
-
+    if (!res.ok) throw new Error('Could not save. Try again.');
+    toast('Saved', { tone: 'ok' });
     await fetchLeads();
   }
 
-  async function handleDelete(id: string) {
-    const res = await fetch(`/api/admin/leads/${id}`, {
-      method: 'DELETE',
+  async function handleDelete(lead: Lead) {
+    const ok = await confirm({
+      title: `Delete ${lead.name || 'this offer'}?`,
+      body: 'This removes the free video offer for good.',
+      confirmLabel: 'Delete',
+      tone: 'danger',
     });
-
+    if (!ok) return;
+    const res = await fetch(`/api/admin/leads/${lead.id}`, { method: 'DELETE' });
     if (!res.ok) {
-      throw new Error('Failed to delete');
+      toast('Could not delete. Try again.', { tone: 'bad' });
+      return;
     }
-
+    toast('Deleted');
     await fetchLeads();
   }
+
+  const SORTS = [
+    { value: 'created_at:desc', label: 'Newest first' },
+    { value: 'created_at:asc', label: 'Oldest first' },
+    { value: 'name:asc', label: 'Name A to Z' },
+    { value: 'business_name:asc', label: 'Business A to Z' },
+  ];
+  const sortValue = SORTS.some((o) => o.value === `${sort}:${dir}`) ? `${sort}:${dir}` : 'created_at:desc';
+
+  const exportHref = `/api/admin/leads/export?${new URLSearchParams(search ? { search } : {})}`;
 
   return (
-    <div>
-      <div className="mb-8">
-        <h1 className="text-4xl font-black mb-4">Free video offers</h1>
-        <p className="text-gray-400">
-          {total} total{total > 0 && ` • Showing ${offset + 1}-${Math.min(offset + limit, total)}`}
-        </p>
+    <div className="mx-auto max-w-6xl">
+      <PageHeader
+        title="Free video offers"
+        subtitle={total === 1 ? '1 offer from the free video form.' : `${total} offers from the free video form.`}
+        actions={
+          <Button variant="secondary" onClick={() => (window.location.href = exportHref)}>
+            <Download className="size-4" aria-hidden /> Export CSV
+          </Button>
+        }
+      />
+
+      <div className="mb-4 flex flex-wrap items-center gap-2">
+        <SearchInput
+          label="Search by name, business or phone"
+          value={search}
+          onChange={(e) => {
+            setSearch(e.target.value);
+            setOffset(0);
+          }}
+          className="w-full sm:w-auto sm:min-w-56 sm:flex-1"
+        />
+        <SelectInput
+          aria-label="Sort"
+          value={sortValue}
+          onChange={(e) => {
+            const [key, d] = e.target.value.split(':') as [SortKey, 'asc' | 'desc'];
+            setSort(key);
+            setDir(d);
+            setOffset(0);
+          }}
+          options={SORTS}
+        />
       </div>
 
-      <div className="mb-6 flex gap-4 items-end">
-        <div className="flex-1">
-          <label className="block text-sm font-bold mb-2 text-gray-300">Search</label>
-          <input
-            type="text"
-            value={search}
-            onChange={(e) => {
-              setSearch(e.target.value);
-              setOffset(0);
-            }}
-            placeholder="Search by name, business, or phone..."
-            className="w-full px-4 py-2 bg-gray-800 border border-gray-700 focus:border-[#F46325] outline-none text-white rounded transition"
-          />
+      {!loaded ? (
+        <div className="overflow-hidden rounded-xl border border-[var(--crm-line)]" aria-busy="true" aria-label="Loading offers">
+          {[0, 1, 2, 3].map((i) => (
+            <div key={i} className="flex items-center gap-6 border-b border-[var(--crm-line)] px-4 py-4 last:border-0">
+              <div className="crm-skeleton h-3 w-1/4 rounded" />
+              <div className="crm-skeleton h-3 w-1/5 rounded" />
+              <div className="crm-skeleton ml-auto h-3 w-16 rounded" />
+            </div>
+          ))}
         </div>
-        <ExportCsvButton dataset="leads" search={search} />
-      </div>
+      ) : (
+        <Table
+          caption="Free video offers"
+          rows={leads}
+          rowKey={(l) => l.id}
+          href={(l) => `/video-offers/${l.id}`}
+          cards
+          empty={
+            <Empty icon={Video} title={search ? 'Nothing matches that search' : 'No free video offers yet'}>
+              {search ? 'Try a different name, or clear the search.' : 'People who ask for the free video show up here.'}
+            </Empty>
+          }
+          columns={[
+            {
+              header: 'Name',
+              cell: (l) => (
+                <span className="block min-w-0">
+                  <span className="block truncate font-semibold">{l.name || 'No name'}</span>
+                  <span className="block truncate text-xs text-[var(--crm-muted)]">{l.business_name}</span>
+                </span>
+              ),
+            },
+            { header: 'Phone', cell: (l) => <span className="whitespace-nowrap tabular-nums">{l.phone}</span> },
+            { header: 'Sales range', wide: true, cell: (l) => <span className="text-[var(--crm-muted)]">{l.sales_range}</span> },
+            {
+              header: 'Received',
+              align: 'right',
+              cell: (l) => <span className="whitespace-nowrap tabular-nums text-[var(--crm-muted)]">{shortDate(l.created_at)}</span>,
+            },
+            {
+              header: 'Actions',
+              align: 'right',
+              hideOnCard: true,
+              cell: (l) => (
+                <span className="inline-flex gap-1">
+                  <Button size="sm" variant="ghost" aria-label={`Edit ${l.name}`} onClick={() => setEditingLead(l)}>
+                    <Pencil className="size-3.5" aria-hidden />
+                  </Button>
+                  <Button size="sm" variant="ghost" aria-label={`Delete ${l.name}`} onClick={() => handleDelete(l)}>
+                    <Trash2 className="size-3.5" aria-hidden />
+                  </Button>
+                </span>
+              ),
+            },
+          ]}
+        />
+      )}
 
-      <div className="overflow-x-auto bg-gray-900 rounded-lg border border-gray-700">
-        <table className="w-full">
-          <thead>
-            <tr className="border-b border-gray-700 bg-gray-800">
-              {columns.map((col) => (
-                <th
-                  key={String(col.key)}
-                  className="px-6 py-4 text-left text-sm font-bold text-gray-300 hover:text-white cursor-pointer"
-                  onClick={() => {
-                    if (col.sortable !== false) {
-                      const newDir = sort === String(col.key) && dir === 'asc' ? 'desc' : 'asc';
-                      setSort(String(col.key));
-                      setDir(newDir);
-                    }
-                  }}
-                >
-                  <div className="flex items-center gap-2">
-                    {col.header}
-                    {col.sortable !== false && sort === String(col.key) && (
-                      <span className="text-xs">{dir === 'asc' ? '↑' : '↓'}</span>
-                    )}
-                  </div>
-                </th>
-              ))}
-              <th className="px-6 py-4 text-left text-sm font-bold text-gray-300">Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {leads.map((lead) => (
-              <tr key={lead.id} className="border-b border-gray-700 hover:bg-gray-800/50 transition">
-                {columns.map((col) => (
-                  <td key={String(col.key)} className="px-6 py-4 text-sm text-gray-300">
-                    {col.key === 'name' ? (
-                      <Link href={`/admin/video-offers/${lead.id}`} className="text-blue-400 hover:text-blue-300 underline cursor-pointer">
-                        <div className="truncate max-w-xs">{String(lead[col.key] || '')}</div>
-                      </Link>
-                    ) : (
-                      <div className="truncate max-w-xs">{String(lead[col.key] || '')}</div>
-                    )}
-                  </td>
-                ))}
-                <td className="px-6 py-4 text-sm">
-                  <div className="flex gap-2">
-                    <Link
-                      href={`/admin/video-offers/${lead.id}`}
-                      className="px-3 py-1 bg-blue-900/50 text-blue-400 rounded hover:bg-blue-900 transition text-xs font-bold"
-                    >
-                      View Details
-                    </Link>
-                    <button
-                      onClick={() => setEditingLead(lead)}
-                      className="px-3 py-1 bg-[#F46325] text-white rounded hover:bg-[#E55A1A] transition text-xs font-bold"
-                    >
-                      Edit
-                    </button>
-                    <button
-                      onClick={() => {
-                        if (window.confirm('Delete this record?')) {
-                          handleDelete(lead.id);
-                        }
-                      }}
-                      className="px-3 py-1 bg-red-900/50 text-red-400 rounded hover:bg-red-900 transition text-xs font-bold"
-                    >
-                      Delete
-                    </button>
-                  </div>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-
-      <div className="mt-6 flex justify-between items-center">
-        <button
-          onClick={() => setOffset(Math.max(0, offset - limit))}
-          disabled={offset === 0}
-          className="px-4 py-2 bg-gray-800 text-gray-300 rounded hover:bg-gray-700 disabled:opacity-50 transition"
-        >
-          Previous
-        </button>
-        <span className="text-gray-400">
-          Page {Math.floor(offset / limit) + 1} of {Math.ceil(total / limit) || 1}
-        </span>
-        <button
-          onClick={() => setOffset(offset + limit)}
-          disabled={offset + limit >= total}
-          className="px-4 py-2 bg-gray-800 text-gray-300 rounded hover:bg-gray-700 disabled:opacity-50 transition"
-        >
-          Next
-        </button>
-      </div>
+      {total > LIMIT && (
+        <div className="mt-4 flex items-center justify-between gap-3">
+          <Button variant="secondary" size="sm" onClick={() => setOffset(Math.max(0, offset - LIMIT))} disabled={offset === 0}>
+            Previous
+          </Button>
+          <span className="text-sm tabular-nums text-[var(--crm-muted)]">
+            {offset + 1}–{Math.min(offset + LIMIT, total)} of {total}
+          </span>
+          <Button variant="secondary" size="sm" onClick={() => setOffset(offset + LIMIT)} disabled={offset + LIMIT >= total}>
+            Next
+          </Button>
+        </div>
+      )}
 
       <EditRowModal
         open={!!editingLead}
@@ -242,7 +234,7 @@ export default function LeadsPage() {
         onSave={handleSave}
         onClose={() => setEditingLead(null)}
         rowIdField="id"
-        title="Edit Lead"
+        title="Edit free video offer"
       />
     </div>
   );

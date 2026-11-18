@@ -6,7 +6,8 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "test:score": "node --test --experimental-strip-types scripts/score-quiz.test.ts"
   },
   "dependencies": {
     "@hyperframes/lint": "^0.9.33",

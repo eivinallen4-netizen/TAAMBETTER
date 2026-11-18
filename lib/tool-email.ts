@@ -1,6 +1,7 @@
 import type { ToolReport } from '@/app/lib/tool-reports';
 import { renderToolPdf, toolPdfFilename } from '@/lib/tool-pdf';
 import {
+  BOOKING_URL,
   FONT,
   ORANGE,
   PHONE,
@@ -20,7 +21,6 @@ import {
 
 export function renderToolEmail(report: ToolReport, firstName: string, withPdf = false) {
   const hi = firstName ? `${firstName}, here's` : "Here's";
-  const mailto = `mailto:${REPLY_TO}?subject=${encodeURIComponent(`Free call about my results (${report.toolName})`)}`;
 
   const sections = report.sections
     .map((sec, s) =>
@@ -61,7 +61,7 @@ export function renderToolEmail(report: ToolReport, firstName: string, withPdf =
       eyebrow: 'Want us to fix it?',
       lines: ["Let's", 'talk.'],
       body: "Book a free call. We'll walk through your results and tell you what we'd fix first. Take the plan and run with it, with or without us. We'll give you better marketing or refer you to someone who can.",
-      cta: { label: 'Book a free call', url: mailto },
+      cta: { label: 'Book a free call', url: BOOKING_URL },
     },
     footer: `You're getting this because you asked for your report on ${SITE.replace(/^https?:\/\//, '')}/tools/${report.slug}. Run it again any time.`,
   });
@@ -77,7 +77,8 @@ export function renderToolEmail(report: ToolReport, firstName: string, withPdf =
     report.intro,
     ...report.sections.flatMap((sec) => ['', sec.title.toUpperCase(), ...sec.items.map((i) => `\n- ${i.title}${i.tag ? ` (${i.tag})` : ''}\n  ${i.body.replace(/\n+/g, ' ')}`)]),
     '',
-    `Want us to fix it? Reply to this email or call ${PHONE} for a free call.`,
+    `Want us to fix it? Book a free call: ${BOOKING_URL}`,
+    `Or reply to this email or call ${PHONE}.`,
     `Better marketing for the best businesses. ${SITE}`,
   ]
     .filter((l, i, a) => !(l === '' && a[i - 1] === ''))

@@ -1,9 +1,13 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useRouter, useParams } from 'next/navigation';
+import { Pencil, Phone, Trash2 } from 'lucide-react';
+import { Button, Card, Field, Input, Notice, PageHeader, useConfirm, useToast } from '@taam/crm/client';
 import { useAdminAuth } from '@/lib/useAdminAuth';
-import Link from 'next/link';
+import { fieldClass } from '../../components/crm-ui';
+
+// One free video offer: what they told us, edit it in place, or delete it.
 
 interface Lead {
   id: string;
@@ -14,11 +18,26 @@ interface Lead {
   created_at: string;
 }
 
-export default function LeadDetailsPage() {
+const SALES_RANGES = ['Under $10k', '$10k - $50k', '$50k - $100k', '$100k - $500k', '$500k - $1M', 'Over $1M'];
+
+const CRUMBS = (name: string) => [{ label: 'Free video offers', href: '/video-offers' }, { label: name }];
+
+function Fact({ label, children }: { label: string; children: React.ReactNode }) {
+  return (
+    <div className="min-w-0">
+      <dt className="crm-eyebrow">{label}</dt>
+      <dd className="mt-1 break-words text-[var(--crm-ink)]">{children || <span className="text-[var(--crm-muted)]">—</span>}</dd>
+    </div>
+  );
+}
+
+export default function VideoOfferDetailPage() {
   useAdminAuth();
   const router = useRouter();
   const params = useParams();
   const leadId = params.id as string;
+  const toast = useToast();
+  const confirm = useConfirm();
 
   const [lead, setLead] = useState<Lead | null>(null);
   const [loading, setLoading] = useState(true);
@@ -26,64 +45,57 @@ export default function LeadDetailsPage() {
   const [isEditing, setIsEditing] = useState(false);
   const [formData, setFormData] = useState<Partial<Lead>>({});
   const [isSaving, setIsSaving] = useState(false);
-  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
-  useEffect(() => {
-    fetchLead();
-  }, [leadId]);
-
-  async function fetchLead() {
+  const fetchLead = useCallback(async () => {
     setLoading(true);
     setError(null);
     try {
       const res = await fetch(`/api/admin/leads/${leadId}`);
       if (!res.ok) {
-        if (res.status === 404) {
-          setError('Lead not found');
-        } else {
-          setError('Failed to load lead');
-        }
+        setError(res.status === 404 ? 'This offer was not found. It may have been deleted.' : 'Could not load this offer. Reload to try again.');
         return;
       }
       const data = await res.json();
       setLead(data);
       setFormData(data);
     } catch (err) {
-      setError('Failed to load lead');
+      setError('Could not load this offer. Reload to try again.');
       console.error('Fetch error:', err);
     } finally {
       setLoading(false);
     }
-  }
+  }, [leadId]);
 
-  async function handleSave() {
+  useEffect(() => {
+    const t = setTimeout(fetchLead, 0);
+    return () => clearTimeout(t);
+  }, [fetchLead]);
+
+  async function handleSave(e: React.FormEvent) {
+    e.preventDefault();
     if (!lead) return;
-
     setIsSaving(true);
+    setError(null);
     try {
-      const updates = {
-        name: formData.name,
-        phone: formData.phone,
-        business_name: formData.business_name,
-        sales_range: formData.sales_range,
-      };
-
       const res = await fetch(`/api/admin/leads/${leadId}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(updates),
+        body: JSON.stringify({
+          name: formData.name,
+          phone: formData.phone,
+          business_name: formData.business_name,
+          sales_range: formData.sales_range,
+        }),
       });
-
       if (!res.ok) {
-        setError('Failed to save lead');
+        setError('Could not save. Try again.');
         return;
       }
-
-      const updatedLead = await res.json();
-      setLead(updatedLead);
+      setLead(await res.json());
       setIsEditing(false);
+      toast('Saved', { tone: 'ok' });
     } catch (err) {
-      setError('Failed to save lead');
+      setError('Could not save. Try again.');
       console.error('Save error:', err);
     } finally {
       setIsSaving(false);
@@ -91,206 +103,139 @@ export default function LeadDetailsPage() {
   }
 
   async function handleDelete() {
+    if (!lead) return;
+    const ok = await confirm({
+      title: `Delete ${lead.name || 'this offer'}?`,
+      body: 'This removes the free video offer for good.',
+      confirmLabel: 'Delete',
+      tone: 'danger',
+    });
+    if (!ok) return;
     try {
-      const res = await fetch(`/api/admin/leads/${leadId}`, {
-        method: 'DELETE',
-      });
-
+      const res = await fetch(`/api/admin/leads/${leadId}`, { method: 'DELETE' });
       if (!res.ok) {
-        setError('Failed to delete lead');
+        setError('Could not delete. Try again.');
         return;
       }
-
+      toast('Deleted');
       router.push('/admin/video-offers');
     } catch (err) {
-      setError('Failed to delete lead');
+      setError('Could not delete. Try again.');
       console.error('Delete error:', err);
     }
   }
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
-        <p className="text-gray-400">Loading...</p>
+      <div className="mx-auto max-w-3xl space-y-4" aria-busy="true" aria-label="Loading offer">
+        <div className="crm-skeleton h-4 w-32 rounded" />
+        <div className="crm-skeleton h-8 w-1/2 rounded" />
+        <div className="crm-skeleton h-48 rounded-xl" />
       </div>
     );
   }
 
-  if (error || !lead) {
+  if (!lead) {
     return (
-      <div className="max-w-2xl mx-auto">
-        <Link
-          href="/admin/video-offers"
-          className="inline-flex items-center gap-2 text-[#F46325] hover:text-[#f0b896] mb-6 transition"
-        >
-          ← Back to free video offers
-        </Link>
-        <div className="bg-red-900/20 border border-red-700 rounded p-4 text-red-400">
-          {error || 'Lead not found'}
-        </div>
+      <div className="mx-auto max-w-3xl">
+        <PageHeader title="Free video offer" breadcrumbs={CRUMBS('Not found')} />
+        <Notice tone="bad">{error || 'This offer was not found.'}</Notice>
       </div>
     );
   }
+
+  const received = new Date(lead.created_at);
 
   return (
-    <div className="max-w-2xl mx-auto">
-      <Link
-        href="/admin/video-offers"
-        className="inline-flex items-center gap-2 text-[#F46325] hover:text-[#f0b896] mb-6 transition"
-      >
-        ← Back to free video offers
-      </Link>
-
-      <div className="mb-8">
-        <h1 className="text-4xl font-black mb-2">{lead.name}</h1>
-        <p className="text-gray-400">Lead ID: {lead.id}</p>
-      </div>
+    <div className="mx-auto max-w-3xl">
+      <PageHeader
+        title={lead.name || 'No name'}
+        subtitle={lead.business_name || undefined}
+        breadcrumbs={CRUMBS(lead.name || 'Offer')}
+        actions={
+          !isEditing && (
+            <>
+              <Button variant="ghost" onClick={handleDelete}>
+                <Trash2 className="size-4" aria-hidden /> Delete
+              </Button>
+              <Button variant="secondary" onClick={() => setIsEditing(true)}>
+                <Pencil className="size-4" aria-hidden /> Edit
+              </Button>
+            </>
+          )
+        }
+      />
 
       {error && (
-        <div className="mb-6 bg-red-900/20 border border-red-700 rounded p-4 text-red-400">
-          {error}
+        <div className="mb-4">
+          <Notice tone="bad" onDismiss={() => setError(null)}>
+            {error}
+          </Notice>
         </div>
       )}
 
-      <div className="bg-gray-900 rounded-lg border border-gray-700 p-8 mb-6">
-        {isEditing ? (
-          <div className="space-y-6">
-            <div>
-              <label className="block text-sm font-bold mb-2 text-gray-300">Name</label>
-              <input
-                type="text"
-                value={formData.name || ''}
-                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                className="w-full px-4 py-2 bg-gray-800 border border-gray-700 focus:border-[#F46325] outline-none text-white rounded transition"
-              />
+      {isEditing ? (
+        <Card title="Edit offer">
+          <form onSubmit={handleSave} className="space-y-4">
+            <div className="grid gap-4 sm:grid-cols-2">
+              <Field label="Name" required>
+                <Input value={formData.name || ''} onChange={(e) => setFormData({ ...formData, name: e.target.value })} required />
+              </Field>
+              <Field label="Phone" required>
+                <Input type="tel" value={formData.phone || ''} onChange={(e) => setFormData({ ...formData, phone: e.target.value })} required />
+              </Field>
+              <Field label="Business name">
+                <Input value={formData.business_name || ''} onChange={(e) => setFormData({ ...formData, business_name: e.target.value })} />
+              </Field>
+              <Field label="Sales range">
+                <select value={formData.sales_range || ''} onChange={(e) => setFormData({ ...formData, sales_range: e.target.value })} className={fieldClass}>
+                  <option value="">Choose a range</option>
+                  {SALES_RANGES.map((r) => (
+                    <option key={r} value={r}>
+                      {r}
+                    </option>
+                  ))}
+                </select>
+              </Field>
             </div>
-
-            <div>
-              <label className="block text-sm font-bold mb-2 text-gray-300">Phone</label>
-              <input
-                type="tel"
-                value={formData.phone || ''}
-                onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                className="w-full px-4 py-2 bg-gray-800 border border-gray-700 focus:border-[#F46325] outline-none text-white rounded transition"
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-bold mb-2 text-gray-300">Business Name</label>
-              <input
-                type="text"
-                value={formData.business_name || ''}
-                onChange={(e) => setFormData({ ...formData, business_name: e.target.value })}
-                className="w-full px-4 py-2 bg-gray-800 border border-gray-700 focus:border-[#F46325] outline-none text-white rounded transition"
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-bold mb-2 text-gray-300">Sales Range</label>
-              <select
-                value={formData.sales_range || ''}
-                onChange={(e) => setFormData({ ...formData, sales_range: e.target.value })}
-                className="w-full px-4 py-2 bg-gray-800 border border-gray-700 focus:border-[#F46325] outline-none text-white rounded transition"
-              >
-                <option value="">Select a range</option>
-                <option value="Under $10k">Under $10k</option>
-                <option value="$10k - $50k">$10k - $50k</option>
-                <option value="$50k - $100k">$50k - $100k</option>
-                <option value="$100k - $500k">$100k - $500k</option>
-                <option value="$500k - $1M">$500k - $1M</option>
-                <option value="Over $1M">Over $1M</option>
-              </select>
-            </div>
-
-            <div className="flex gap-3 pt-4">
-              <button
-                onClick={handleSave}
+            <div className="flex justify-end gap-2 pt-2">
+              <Button
+                type="button"
+                variant="ghost"
                 disabled={isSaving}
-                className="flex-1 px-4 py-2 bg-[#F46325] text-white font-bold rounded hover:bg-[#f0b896] disabled:opacity-50 transition"
-              >
-                {isSaving ? 'Saving...' : 'Save Changes'}
-              </button>
-              <button
                 onClick={() => {
                   setIsEditing(false);
                   setFormData(lead);
                 }}
-                disabled={isSaving}
-                className="flex-1 px-4 py-2 bg-gray-800 text-gray-300 font-bold rounded hover:bg-gray-700 disabled:opacity-50 transition"
               >
                 Cancel
-              </button>
+              </Button>
+              <Button type="submit" variant="primary" busy={isSaving} busyLabel="Saving…">
+                Save changes
+              </Button>
             </div>
-          </div>
-        ) : (
-          <div className="space-y-6">
-            <div className="grid grid-cols-2 gap-6">
-              <div>
-                <p className="text-xs font-bold text-gray-500 uppercase mb-2">Name</p>
-                <p className="text-lg text-white">{lead.name}</p>
-              </div>
-              <div>
-                <p className="text-xs font-bold text-gray-500 uppercase mb-2">Phone</p>
-                <p className="text-lg text-white">{lead.phone}</p>
-              </div>
-              <div>
-                <p className="text-xs font-bold text-gray-500 uppercase mb-2">Business Name</p>
-                <p className="text-lg text-white">{lead.business_name}</p>
-              </div>
-              <div>
-                <p className="text-xs font-bold text-gray-500 uppercase mb-2">Sales Range</p>
-                <p className="text-lg text-white">{lead.sales_range}</p>
-              </div>
-            </div>
-
-            <div>
-              <p className="text-xs font-bold text-gray-500 uppercase mb-2">Created At</p>
-              <p className="text-white">
-                {new Date(lead.created_at).toLocaleString()}
-              </p>
-            </div>
-
-            <div className="flex gap-3 pt-4">
-              <button
-                onClick={() => setIsEditing(true)}
-                className="flex-1 px-4 py-2 bg-[#F46325] text-white font-bold rounded hover:bg-[#f0b896] transition"
-              >
-                Edit
-              </button>
-              <button
-                onClick={() => setShowDeleteConfirm(true)}
-                className="flex-1 px-4 py-2 bg-red-900 text-red-300 font-bold rounded hover:bg-red-800 transition"
-              >
-                Delete
-              </button>
-            </div>
-          </div>
-        )}
-      </div>
-
-      {showDeleteConfirm && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-          <div className="bg-gray-900 rounded-lg border border-gray-700 p-6 max-w-sm mx-4">
-            <h2 className="text-xl font-bold text-white mb-4">Delete Lead?</h2>
-            <p className="text-gray-400 mb-6">
-              This will permanently delete <span className="font-semibold text-white">{lead.name}</span> and all associated data.
-            </p>
-            <div className="flex gap-3">
-              <button
-                onClick={handleDelete}
-                className="flex-1 px-4 py-2 bg-red-900 text-red-300 font-bold rounded hover:bg-red-800 transition"
-              >
-                Delete
-              </button>
-              <button
-                onClick={() => setShowDeleteConfirm(false)}
-                className="flex-1 px-4 py-2 bg-gray-800 text-gray-300 font-bold rounded hover:bg-gray-700 transition"
-              >
-                Cancel
-              </button>
-            </div>
-          </div>
-        </div>
+          </form>
+        </Card>
+      ) : (
+        <Card title="Details">
+          <dl className="grid gap-x-6 gap-y-5 sm:grid-cols-2">
+            <Fact label="Name">{lead.name}</Fact>
+            <Fact label="Phone">
+              {lead.phone && (
+                <a href={`tel:${lead.phone}`} className="inline-flex items-center gap-1.5 tabular-nums hover:text-[var(--crm-brand-ink)]">
+                  <Phone className="size-3.5 text-[var(--crm-muted)]" aria-hidden /> {lead.phone}
+                </a>
+              )}
+            </Fact>
+            <Fact label="Business name">{lead.business_name}</Fact>
+            <Fact label="Sales range">{lead.sales_range}</Fact>
+            <Fact label="Received">
+              {Number.isNaN(received.getTime())
+                ? lead.created_at
+                : received.toLocaleString(undefined, { month: 'short', day: 'numeric', year: 'numeric', hour: 'numeric', minute: '2-digit' })}
+            </Fact>
+          </dl>
+        </Card>
       )}
     </div>
   );

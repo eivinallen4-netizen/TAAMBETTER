@@ -371,7 +371,7 @@ export const OPERATIONS: Operation[] = [
   {
     name: 'create_appointment_link',
     description:
-      "Make an appointment link for a prospect: creates the contact and a private page made for their business where they book a video call on the closer's Calendly. Returns the URL to send them.",
+      "Make an appointment link for a prospect: creates the contact and a private page made for their business that sends them to TAAM's schedule (/c/meet/marketing-strategy) to book a video call. Returns the URL to send them.",
     method: 'POST',
     path: '/appointments',
     input: {

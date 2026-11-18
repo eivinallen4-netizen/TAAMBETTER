@@ -8,6 +8,7 @@ import Section from '@/components/editorial/Section';
 import PageHero from '@/components/sections/PageHero';
 import CTASection from '@/components/sections/CTASection';
 import Arrow from '@/components/editorial/Arrow';
+import Mascot from '@/components/editorial/Mascot';
 import { SITE_URL } from '@/lib/site-url';
 
 const baseUrl = SITE_URL;
@@ -52,6 +53,23 @@ export default function ToolsPage() {
       />
 
       <Section tone="ink" index="01" label="Tools">
+        <Reveal className="mb-14 md:mb-20">
+          <Link
+            href="/score"
+            className="group tone-orange relative grid grid-cols-12 items-center gap-x-6 gap-y-6 overflow-hidden rounded-[var(--radius-card)] p-8 md:p-12"
+          >
+            <div className="col-span-12 md:col-span-8">
+              <span className="eyebrow">New · Free assessment · About 3 minutes</span>
+              <h2 className="display display-md mt-4 hover-outline">Call Flow Score</h2>
+              <p className="mt-4 max-w-2xl text-base md:text-lg leading-relaxed font-medium">
+                12 quick questions about how customers find you, call you and book you. Get your score, the one gap
+                costing you the most jobs, and a 90-day plan to fix it.{' '}
+                <span className="font-bold whitespace-nowrap">Get my score <Arrow /></span>
+              </p>
+            </div>
+            <Mascot pose="phone" size={200} className="hidden md:block col-span-4 justify-self-end w-40 lg:w-48 transition-transform duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:-rotate-6" />
+          </Link>
+        </Reveal>
         <ol className="border-t-2 rule">
           {FREE_TOOLS.map((t, i) => (
             <Reveal as="li" key={t.slug} delay={i * 0.05} className="group border-b-2 rule">

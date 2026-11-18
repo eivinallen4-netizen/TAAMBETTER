@@ -14,6 +14,10 @@ const { renderCrmEmail, renderOnboardingReceivedEmail } = await jiti.import(path
 const { renderBrandEmail } = await jiti.import(path.join(root, 'lib/brand-email.ts'));
 const { renderToolEmail } = await jiti.import(path.join(root, 'lib/tool-email.ts'));
 const { buildAdReport, buildGbpReport, GBP_QUESTIONS } = await jiti.import(path.join(root, 'app/lib/tool-reports.ts'));
+const { renderCrmPackageEmail } = await jiti.import(path.join(root, 'lib/crm-site/email-template.ts'));
+
+// Samples of what @taam/crm hands to crm.ts `email.render`.
+const pkg = (kind, subject, heading, paragraphs, button, note) => ({ subject, html: renderCrmPackageEmail({ kind, subject, heading, paragraphs, button, note }) });
 
 const base = { firstName: 'Maria', businessName: 'Desert Shine Detailing', when: '', title: '', note: '' };
 const note = 'Great talking today. Send over anything you want us to look at before we start.';
@@ -33,6 +37,10 @@ const emails = {
     details: [['Experience', '5+ years'], ['Email', 'jordan@example.com'], ['Phone', '702-555-0100'], ['Link', 'https://example.com/reel']],
     footer: 'Sent from the careers page on taammarketing.com.',
   }),
+  'crm-booking-confirmed': pkg('booking_confirmed', 'Confirmed: Strategy call with TAAM', "You're booked", ['Strategy call, Tuesday Nov 18 at 2:00 PM PT (30 minutes).', 'A calendar invite is attached.'], { label: 'Manage booking', url: 'https://www.taammarketing.com/c/b/abc' }, 'Need a different time? Use the link to reschedule or cancel.'),
+  'crm-booking-host': pkg('booking_host_new', 'New booking: Jordan Lee, Strategy call', 'Jordan Lee booked Strategy call', ['Tuesday Nov 18 at 2:00 PM PT.\njordan@example.com · 702-555-0100'], { label: 'Open in CRM', url: 'https://www.taammarketing.com/admin/bookings/1' }),
+  'crm-esign-request': pkg('esign_request', 'Please sign: Service agreement', 'Service agreement', ['TAAM sent you a document to sign. It takes about a minute.'], { label: 'Review and sign', url: 'https://www.taammarketing.com/c/sign/abc' }),
+  'crm-sign-in-code': pkg('sign_in_code', 'Your TAAM sign-in code', 'Your code: 482 913', ['Enter this code to sign in. It works for 10 minutes.']),
   'tool-ad-report': renderToolEmail(buildAdReport({ budget: 2000, cpc: 4.5, conversion: 8, close: 30, jobValue: 600, margin: 50 }), 'Maria', true),
   'tool-gbp-report': renderToolEmail(
     buildGbpReport(Object.fromEntries(GBP_QUESTIONS.map((q, i) => [q.id, i % 3 ? 'yes' : 'no']))),

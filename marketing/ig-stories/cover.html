@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>TAAM Highlight Cover</title>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@900&display=swap" rel="stylesheet">
+<!--
+  1080x1080 Instagram highlight cover, text only, TAAM headline style:
+  heavy all-caps Montserrat, first line solid white, second line white outline.
+  Instagram shows only the centre circle, so the text is sized to stay inside it.
+  Open as cover.html?text=WEB|SITES  (| splits the lines)  ·  render: python render_cover.py "WEB|SITES"
+-->
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; }
+  html, body { width:1080px; height:1080px; overflow:hidden; background:#F46325; }
+  .wrap { position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; }
+  .l { font-family:Montserrat, sans-serif; font-weight:900; text-transform:uppercase; letter-spacing:-0.03em;
+       line-height:.86; color:#fff; white-space:nowrap; font-size:250px; }
+  /* outline line: orange fill painted over a double-width white stroke, so letter overlaps stay clean */
+  .l.o { color:#F46325; -webkit-text-stroke:14px #fff; paint-order:stroke fill; }
+</style>
+</head>
+<body>
+<div class="wrap" id="w"></div>
+<script>
+  const raw = new URLSearchParams(location.search).get('text') || 'WEB|SITES';
+  const lines = raw.split('|');
+  const w = document.getElementById('w');
+  lines.forEach((t, i) => {
+    const d = document.createElement('div');
+    d.className = 'l' + (i % 2 ? ' o' : '');
+    d.textContent = t;
+    w.appendChild(d);
+  });
+  document.fonts.ready.then(() => {
+    // shrink until the whole block fits inside the circle Instagram shows (with a margin)
+    const fits = () => { const r = w.getBoundingClientRect(), b = [...w.children].map(c => c.getBoundingClientRect());
+      const width = Math.max(...b.map(x => x.width)), height = b[b.length - 1].bottom - b[0].top;
+      return Math.hypot(width / 2, height / 2) <= 440; };
+    let size = 250;
+    while (!fits() && size > 40) { size -= 4; w.querySelectorAll('.l').forEach(l => l.style.fontSize = size + 'px'); }
+    document.body.dataset.ready = '1';
+  });
+</script>
+</body>
+</html>

@@ -1,7 +1,6 @@
 import { randomUUID } from 'crypto';
 import type { NextRequest } from 'next/server';
-import { bookingLinkFor, saveWebsiteLead } from '@/lib/crm-site/leads';
-import { discoveryCallUrl } from '@/lib/calendly';
+import { saveWebsiteLead } from '@/lib/crm-site/leads';
 import { getClientIp, logger } from '@/lib/logger';
 import { createRateLimiter, handleRateLimit } from '@/lib/ratelimit';
 import {
@@ -167,19 +166,7 @@ export async function POST(request: NextRequest) {
     console.error('Turso write failed:', tursoResult.error);
   }
 
-  // Speed to lead: a qualified lead books the call right on the confirmation screen. The booking runs
-  // through an appointment link like the setters' ones, so it lands on this contact in the CRM.
-  let booking: { token: string; eventUrl: string } | null = null;
-  const qualified = contact.lead_fit === 'strong' || contact.lead_fit === 'possible';
-  const eventUrl = discoveryCallUrl();
-  if (isFinalSubmit && isComplete && qualified && eventUrl && tursoResult.contactId) {
-    try {
-      const token = await bookingLinkFor({ id: tursoResult.contactId, name, businessName });
-      booking = { token, eventUrl };
-    } catch (err) {
-      console.error('Booking link failed, falling back to a callback:', err);
-    }
-  }
-
-  return Response.json({ success: true, completion_status: contact.completion_status, lead_fit: contact.lead_fit, booking });
+  // A qualified lead books the call on the confirmation screen, through the CRM's schedule
+  // (/c/meet/marketing-strategy), not a Calendly appointment link.
+  return Response.json({ success: true, completion_status: contact.completion_status, lead_fit: contact.lead_fit });
 }
