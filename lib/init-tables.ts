@@ -155,7 +155,7 @@ export async function initializeTables(db: Client): Promise<void> {
     // Website cold-call leads the lead finder pushes in through the API, and their call log.
     await initColdcallTables(db);
 
-    // SEO pages at /insights (drafted by Claude over MCP, published from /admin/pages), their
+    // SEO pages at /blog (drafted by Claude over MCP, published from /admin/pages), their
     // revisions, and the log of every MCP tool call and admin page action.
     await initPagesTables(db);
     await initActivityTable(db);

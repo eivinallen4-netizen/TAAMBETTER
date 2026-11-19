@@ -7,10 +7,14 @@ import Mascot from '@/components/editorial/Mascot';
 import SmsConsent from '@/app/components/SmsConsent';
 import { trackEvent } from '@/app/lib/track';
 import {
+  PLAYBOOK,
   QUIZ,
   QUESTION_COUNT,
   computeResult,
+  fill,
+  nextStep,
   personal,
+  pillarAnswer,
   planText,
   type Answers,
   type Pillar,
@@ -48,9 +52,9 @@ const SAMPLE: [string, number][] = [
 ];
 
 const WHAT_YOU_GET: [string, string][] = [
-  ['Your score', 'All 7 parts of how calls reach you, scored out of 100'],
-  ['Your #1 gap', 'The one part losing you the most jobs'],
-  ['Your plan', 'What to fix in the next 30, 60 and 90 days'],
+  ['Your score', 'All 7 parts of how calls reach you, scored out of 100, with your next move in each'],
+  ['Your #1 gap', 'The one part losing you the most jobs, a 15-minute check and a script to copy'],
+  ['Your plan', 'What to fix in the next 30, 60 and 90 days, and how you know each step is done'],
 ];
 
 function shuffled(n: number): number[] {
@@ -440,7 +444,7 @@ export default function CallFlowScore({ trade, hotLeadPromise }: { trade: string
       )}
 
       {screen === 'res' && result && (
-        <Results r={result} first={first} business={biz.trim()} hotLeadPromise={hotLeadPromise} headingRef={headingRef} onRestart={restart} />
+        <Results r={result} answers={answers} first={first} business={biz.trim()} hotLeadPromise={hotLeadPromise} headingRef={headingRef} onRestart={restart} />
       )}
     </div>
   );
@@ -585,6 +589,7 @@ function ExampleReport() {
 
 function Results({
   r,
+  answers,
   first,
   business,
   hotLeadPromise,
@@ -592,6 +597,7 @@ function Results({
   onRestart,
 }: {
   r: QuizResult;
+  answers: Answers;
   first: string;
   business: string;
   hotLeadPromise: string;
@@ -605,6 +611,10 @@ function Results({
   const boxRef = useRef<HTMLTextAreaElement>(null);
   const p = r.weakest;
   const video = C.videos[p.id];
+  const book = PLAYBOOK[p.id];
+  const said = pillarAnswer(p, answers)?.label ?? '';
+  const ctx = { firstName: first, business, trade: answers.trade ?? '' };
+  const template = fill(book.template.text, ctx);
 
   useEffect(() => {
     const raf = requestAnimationFrame(() => setGrown(true));
@@ -628,7 +638,7 @@ function Results({
   }, [fallback]);
 
   async function copyPlan() {
-    const text = planText(business, r);
+    const text = planText({ firstName: first, business }, answers, r);
     try {
       await navigator.clipboard.writeText(text);
       setCopied('Copied. Paste it anywhere.');
@@ -690,6 +700,7 @@ function Results({
             <h1 ref={headingRef} tabIndex={-1} className="display display-md outline-none">
               {personal("{name}, here's where calls slip away.", first)}
             </h1>
+            <p className="lede mt-5 text-[color:var(--tone-muted)]">Each part has one next move, picked from the answer you gave.</p>
             <ul className="mt-10 border-t-2 rule">
               {QUIZ.pillars.map((x) => {
                 const s = r.pillarScores[x.id];
@@ -709,6 +720,9 @@ function Results({
                       />
                     </span>
                     <span className="text-right font-extrabold tabular-nums">{s}</span>
+                    <span className="order-4 col-span-2 md:col-start-2 text-sm md:text-base font-medium leading-snug text-[color:var(--tone-muted)]">
+                      <b className="font-extrabold text-white">Next:</b> {nextStep(x, answers)}
+                    </span>
                   </li>
                 );
               })}
@@ -721,13 +735,40 @@ function Results({
         <article className="tone-orange mx-auto max-w-7xl rounded-[var(--radius-card)] p-7 md:p-14">
           <p className="eyebrow">Your #1 gap · fix this first</p>
           <h2 className="display display-md mt-5">{p.result.headline}</h2>
-          <p className="lede mt-6 max-w-3xl">{p.result.diagnosis}</p>
+          {said && (
+            <p className="mt-6 max-w-3xl text-lg font-bold leading-snug">
+              You told us: &ldquo;{said}&rdquo;
+            </p>
+          )}
+          <p className="lede mt-4 max-w-3xl">{p.result.diagnosis}</p>
 
           {video && (
             <div className="media-card mt-10 aspect-video max-w-3xl">
               <iframe src={video} title={`${p.label} video`} allow="autoplay; fullscreen" allowFullScreen className="absolute inset-0 h-full w-full" />
             </div>
           )}
+
+          <div className="mt-12 grid gap-10 border-t-2 rule pt-10 md:grid-cols-2">
+            <div>
+              <h3 className="eyebrow">Do this today · 15 minutes</h3>
+              <p className="display display-sm mt-4">{fill(book.today.title, ctx)}</p>
+              <ol className="mt-6 space-y-4">
+                {book.today.steps.map((step, k) => (
+                  <li key={step} className="flex gap-3 text-lg font-semibold leading-snug">
+                    <span className="eyebrow pt-1.5 shrink-0">{String(k + 1).padStart(2, '0')}</span>
+                    {fill(step, ctx)}
+                  </li>
+                ))}
+              </ol>
+            </div>
+            <div className="tone-ink rounded-[1.5rem] p-6 md:p-7">
+              <h3 className="eyebrow text-taam-orange">Copy and use</h3>
+              <p className="display display-sm mt-3">{book.template.title}</p>
+              <p className="mt-5 whitespace-pre-wrap rounded-2xl bg-white/[0.07] p-5 text-base font-medium leading-relaxed">{template}</p>
+              {book.template.note && <p className="mt-4 text-sm font-medium leading-relaxed text-[color:var(--tone-muted)]">{fill(book.template.note, ctx)}</p>}
+              <CopyText text={template} label="Copy this" />
+            </div>
+          </div>
 
           <div className="mt-12 grid gap-10 border-t-2 rule pt-10 md:grid-cols-2">
             <div>
@@ -748,14 +789,20 @@ function Results({
           </div>
 
           <ol className="mt-12 grid gap-4 md:grid-cols-3">
-            {p.result.plan.map(([days, title, text]) => (
-              <li key={days} className="tone-ink rounded-[1.5rem] p-6 md:p-7">
+            {p.result.plan.map(([days, title, text], k) => (
+              <li key={days} className="tone-ink flex flex-col rounded-[1.5rem] p-6 md:p-7">
                 <span className="eyebrow text-taam-orange">{days}</span>
                 <h3 className="display display-sm mt-3">{title}</h3>
-                <p className="mt-3 text-base font-medium leading-relaxed text-[color:var(--tone-muted)]">{text}</p>
+                <p className="mt-3 mb-6 text-base font-medium leading-relaxed text-[color:var(--tone-muted)]">{text}</p>
+                <p className="mt-auto border-t-2 rule pt-4 text-base font-semibold leading-snug">
+                  <span className="eyebrow mb-1.5 block text-taam-orange">Done when</span>
+                  {book.done[k]}
+                </p>
               </li>
             ))}
           </ol>
+
+          <Worth gap={p.label.toLowerCase().replace('google', 'Google')} />
 
           <p className="mt-10 max-w-3xl text-base font-bold leading-relaxed">{p.result.taam}</p>
         </article>
@@ -818,5 +865,75 @@ function Results({
         </div>
       </section>
     </>
+  );
+}
+
+/** Copies one piece of text, with a select-and-copy fallback when the clipboard is blocked. */
+function CopyText({ text, label }: { text: string; label: string }) {
+  const [status, setStatus] = useState('');
+  const [manual, setManual] = useState(false);
+  const boxRef = useRef<HTMLTextAreaElement>(null);
+
+  useEffect(() => {
+    if (manual) boxRef.current?.select();
+  }, [manual]);
+
+  async function copy() {
+    try {
+      await navigator.clipboard.writeText(text);
+      setStatus('Copied.');
+    } catch {
+      setManual(true);
+      setStatus('Select the text below and copy it.');
+    }
+  }
+
+  return (
+    <div className="mt-6">
+      <div className="flex flex-wrap items-center gap-4">
+        <button type="button" onClick={copy} className="btn btn-solid">
+          {label}
+        </button>
+        <span role="status" className="text-sm font-bold text-taam-orange">
+          {status}
+        </span>
+      </div>
+      {manual && (
+        <textarea ref={boxRef} readOnly value={text} aria-label="Text to copy" rows={6} className="mt-4 w-full rounded-2xl bg-white/5 p-4 font-mono text-sm leading-relaxed text-white outline-none focus:ring-2 focus:ring-taam-orange" />
+      )}
+    </div>
+  );
+}
+
+/** Their own numbers, not ours: extra booked jobs a month times their average job. */
+function Worth({ gap }: { gap: string }) {
+  const [jobs, setJobs] = useState('4');
+  const [value, setValue] = useState('');
+  const n = Number(jobs);
+  const v = Number(value.replace(/[^\d.]/g, ''));
+  const year = n > 0 && v > 0 ? Math.round(n * v * 12) : 0;
+  const input =
+    'bg-transparent border-0 border-b-2 border-white/60 focus:border-white outline-none px-1 py-1 text-center text-2xl font-extrabold text-white placeholder-white/50 tabular-nums';
+
+  return (
+    <div className="mt-12 border-t-2 rule pt-10">
+      <h3 className="eyebrow">What fixing this is worth · your numbers</h3>
+      <p className="mt-5 max-w-4xl text-xl md:text-2xl font-semibold leading-relaxed">
+        If fixing your {gap} brings in{' '}
+        <label>
+          <span className="sr-only">Extra booked jobs a month</span>
+          <input type="number" inputMode="numeric" min={1} max={200} value={jobs} onChange={(e) => setJobs(e.target.value)} className={`${input} w-20`} />
+        </label>{' '}
+        more booked jobs a month, at{' '}
+        <label className="whitespace-nowrap">
+          <span className="sr-only">Your average job in dollars</span>$
+          <input type="text" inputMode="decimal" placeholder="850" value={value} onChange={(e) => setValue(e.target.value)} className={`${input} w-28`} />
+        </label>{' '}
+        a job, that&apos;s
+      </p>
+      <p className="display display-md mt-4" aria-live="polite">
+        {year ? `$${year.toLocaleString('en-US')} a year` : 'Add your average job'}
+      </p>
+    </div>
   );
 }

@@ -2,7 +2,7 @@
 // Run: node --test --experimental-strip-types scripts/score-quiz.test.ts
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { QUIZ, scoreQuiz, routeLead, computeResult, tierFor, callBrief, cleanAnswers, isComplete } from '../lib/score-quiz.ts';
+import { PLAYBOOK, QUIZ, scoreQuiz, routeLead, computeResult, tierFor, callBrief, cleanAnswers, fill, isComplete, planText } from '../lib/score-quiz.ts';
 
 const ids = QUIZ.pillars.map((p) => p.id);
 const scores = (vals: number[]) => Object.fromEntries(ids.map((id, i) => [id, vals[i]]));
@@ -61,4 +61,26 @@ test('routing', () => {
 test('cleanAnswers drops unknown ids and bad values', () => {
   const clean = cleanAnswers({ revenue: '1.5m+', role: 'ceo', website: '9', google: '2', evil: 'x' });
   assert.deepEqual(clean, { revenue: '1.5m+', google: '2' });
+});
+
+test('playbook: one next move per answer, and no unfilled tokens', () => {
+  const c = { firstName: 'Sam', business: 'Desert Air', trade: 'hvac' };
+  for (const p of QUIZ.pillars) {
+    const book = PLAYBOOK[p.id];
+    assert.equal(book.next.length, p.options.length, p.id);
+    assert.equal(book.done.length, p.result.plan.length, p.id);
+    const all = [...book.next, book.today.title, ...book.today.steps, book.template.title, book.template.text, book.template.note ?? '', ...book.done];
+    for (const s of all) assert.doesNotMatch(fill(s, c), /[{}]/, `${p.id}: ${s}`);
+    for (const s of all) assert.doesNotMatch(fill(s, { firstName: '', business: '', trade: 'other' }), /[{}]/, `${p.id}: ${s}`);
+  }
+});
+
+test('planText uses their answer, name, business and the done-when lines', () => {
+  const answers: Record<string, string> = { revenue: '300-749', team: '2-5', trade: 'plumbing', role: 'owner', timing: 'now' };
+  QUIZ.pillars.forEach((p) => { answers[p.id] = p.id === 'followup' ? '4' : '1'; });
+  const text = planText({ firstName: 'Sam', business: 'Desert Air' }, answers, computeResult(answers));
+  assert.match(text, /You told us: "We don't keep track of open quotes"/);
+  assert.match(text, /it's Sam from Desert Air/);
+  assert.match(text, /Done when: /);
+  assert.doesNotMatch(text, /[{}]|undefined/);
 });

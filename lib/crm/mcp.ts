@@ -12,7 +12,7 @@ const INSTRUCTIONS = `TAAM CRM: TAAM is a Las Vegas marketing agency. Use these 
 make appointment links (a private page where a prospect books a video call with the closer), track whether
 links were opened and booked, manage paid-client onboarding, send branded emails, and manage website
 cold-call leads (add_coldcall_leads to push researched leads in, log_coldcall to record what happened on a call),
-and draft SEO pages for /insights (list_pages first: it covers the whole site and shows rejection notes on pages
+and draft SEO pages for /blog (list_pages first: it covers the whole site and shows rejection notes on pages
 the team turned down; create_page always saves for review, publish only when the user asks).
 House rules: TAAM never offers discounts — never write "discount", "% off", "deal", "save" or "sale" in emails.
 Onboarding is only for clients who have paid. Confirm with the user before deleting anything or sending email.`;

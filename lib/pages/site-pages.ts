@@ -3,7 +3,7 @@ import { FREE_TOOLS } from '@/app/lib/tools';
 import { CAREER_ROLES } from '@/app/lib/careers';
 
 // The pages built by hand in app/ (not in the `pages` table), with the keyword each one targets.
-// list_pages returns these next to the /insights pages, and create_page / update_page refuse a
+// list_pages returns these next to the /blog pages, and create_page / update_page refuse a
 // main keyword one of them already owns, so Claude's duplicate checks see the whole site.
 // Add a row here when you build a new page by hand.
 

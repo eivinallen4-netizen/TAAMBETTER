@@ -405,7 +405,7 @@ export default function PageEditor({ params }: { params: Promise<{ id: string }>
               <div
                 className={`flex min-h-10 items-center rounded-[var(--crm-radius-control)] border border-[var(--crm-field)] bg-[var(--crm-raised)] transition-colors focus-within:border-[var(--crm-brand)] ${fieldBorder('slug')}`}
               >
-                <span className="pl-3 text-sm text-[var(--crm-muted)]">/insights/</span>
+                <span className="pl-3 text-sm text-[var(--crm-muted)]">/blog/</span>
                 <input
                   id="f-slug"
                   value={fields.slug}

@@ -1,7 +1,7 @@
 // A small Markdown → HTML renderer for SEO page bodies. Bodies come from Claude through the MCP
 // tools, so nothing in them is trusted: all text is escaped, raw HTML is shown as text, and links
 // only keep http(s), mailto, tel, site-relative and #anchor targets. Images are dropped (only the
-// TAAM character art goes on the site, never arbitrary pictures). Shared by /insights and the
+// TAAM character art goes on the site, never arbitrary pictures). Shared by /blog and the
 // admin editor's live preview so both render the same thing.
 //
 // Supports: # headings (h2–h4; a lone # becomes h2, the page title is the h1), paragraphs,

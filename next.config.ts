@@ -38,6 +38,22 @@ const nextConfig: NextConfig = {
         destination: "/about",
         permanent: true,
       },
+      // Insights became blog posts; keep the old links (and Google's index) working.
+      {
+        source: "/insights",
+        destination: "/blog",
+        permanent: true,
+      },
+      {
+        source: "/insights/preview/:token",
+        destination: "/blog/preview/:token",
+        permanent: true,
+      },
+      {
+        source: "/insights/:slug",
+        destination: "/blog/:slug",
+        permanent: true,
+      },
     ];
   },
   // Security and SEO headers with performance optimization
@@ -66,7 +82,7 @@ const nextConfig: NextConfig = {
       },
       // Private page previews (/admin/pages) must never be indexed.
       {
-        source: "/insights/preview/:path*",
+        source: "/blog/preview/:path*",
         headers: [{ key: "X-Robots-Tag", value: "noindex, nofollow" }],
       },
       // Cache static images for SEO

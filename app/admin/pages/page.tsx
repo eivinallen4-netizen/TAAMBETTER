@@ -7,7 +7,7 @@ import { PAGE_STATUSES, STATUS_LABEL, type PageStatus } from '@/lib/pages/rules'
 import { SearchInput, SelectInput, Tabs } from '../components/crm-ui';
 import { PageStatusBadge, day } from './ui';
 
-// SEO pages at /insights. Claude's weekly run drafts them over MCP (create_page) into "Needs
+// SEO pages at /blog. Claude's weekly run drafts them over MCP (create_page) into "Needs
 // review"; the team checks each one against its source videos, then publishes or rejects it.
 
 interface PageRow {
@@ -86,7 +86,7 @@ export default function PagesList() {
     <div className="mx-auto max-w-6xl">
       <PageHeader
         title="SEO pages"
-        subtitle="Pages at /insights. Claude drafts them every week from creator videos. Check each one against its sources, then publish it or reject it with a note."
+        subtitle="Pages at /blog. Claude drafts them every week from creator videos. Check each one against its sources, then publish it or reject it with a note."
         actions={
           <>
             <LinkButton href="/pages/activity" variant="secondary">
@@ -143,7 +143,7 @@ export default function PagesList() {
               cell: (p) => (
                 <div className="min-w-0 max-w-[22rem]">
                   <span className="block truncate font-semibold text-[var(--crm-ink)]">{p.title}</span>
-                  <span className="block truncate text-xs text-[var(--crm-muted)]">/insights/{p.slug}</span>
+                  <span className="block truncate text-xs text-[var(--crm-muted)]">/blog/{p.slug}</span>
                   {p.rejection_note && <span className="mt-1 block text-xs text-[var(--crm-bad)]">Rejected: {p.rejection_note}</span>}
                 </div>
               ),

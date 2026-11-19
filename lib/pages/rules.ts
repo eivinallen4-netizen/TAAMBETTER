@@ -1,7 +1,9 @@
-// SEO pages (/insights/[slug]): the field shapes and the guardrails every write goes through.
+// SEO pages (/blog/[slug]): the field shapes and the guardrails every write goes through.
 // Pure and client-safe, so the admin editor shows the exact same warnings live that the server
 // enforces on save, and the MCP tools (lib/crm/operations.ts) and the admin API (app/api/admin/pages)
 // can't disagree. The duplicate slug / keyword checks need the database and live in lib/pages/store.ts.
+
+import { LOCAL_POSTS } from '@/app/blog/local-posts';
 
 export const PAGE_STATUSES = ['draft', 'needs_review', 'published', 'archived'] as const;
 export type PageStatus = (typeof PAGE_STATUSES)[number];
@@ -17,8 +19,8 @@ export const META_TITLE_MAX = 60;
 export const META_DESCRIPTION_MAX = 160;
 export const MIN_BODY_WORDS = 600;
 
-/** /insights/preview/[token] is a route, so no page can take the slug "preview". */
-const RESERVED_SLUGS = new Set(['preview']);
+/** /blog/preview/[token] and the hand-built posts are routes of their own, so no page can take their slugs. */
+const RESERVED_SLUGS = new Set(['preview', ...LOCAL_POSTS.map((p) => p.slug)]);
 
 export interface FaqItem {
   question: string;

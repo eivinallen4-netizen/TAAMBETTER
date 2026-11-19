@@ -27,7 +27,7 @@ export function SnippetPreview({ slug, metaTitle, metaDescription }: { slug: str
         <span className="flex h-7 w-7 items-center justify-center rounded-full bg-[#F46325] text-[10px] font-black text-white">T</span>
         <div className="min-w-0 leading-tight">
           <p className="text-sm text-[#202124]">TAAM</p>
-          <p className="truncate text-xs text-[#4d5156]">https://www.taammarketing.com › insights › {slug || 'your-slug'}</p>
+          <p className="truncate text-xs text-[#4d5156]">https://www.taammarketing.com › blog › {slug || 'your-slug'}</p>
         </div>
       </div>
       <p className="mt-2 text-xl leading-snug text-[#1a0dab]">{cut(metaTitle || 'Meta title', META_TITLE_MAX)}</p>

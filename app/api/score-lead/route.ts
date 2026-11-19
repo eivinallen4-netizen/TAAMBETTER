@@ -180,7 +180,7 @@ async function sendPlanEmail(lead: FinishedLead) {
     preheader: `Your #1 gap is ${r.weakest.label.toLowerCase()}. Here's your 90-day plan.`,
     eyebrow: 'Your Call Flow Score',
     title: `${r.score}/100. ${r.tier.label}.`,
-    body: planText(person.business, r),
+    body: planText(person, lead.answers, r),
     mascot: 'counting',
     cta: book ? { label: QUIZ.config.bookingLabel, url: QUIZ.config.bookingUrl } : undefined,
     footer: 'You got this email because you took the Call Flow Score at taammarketing.com/score.',

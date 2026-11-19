@@ -16,7 +16,7 @@ import {
 } from './rules';
 import { sitePages } from './site-pages';
 
-// SEO pages published at /insights/[slug]. Claude drafts them through the MCP tools (create_page
+// SEO pages published at /blog/[slug]. Claude drafts them through the MCP tools (create_page
 // etc. in lib/crm/operations.ts), the team reviews and publishes them at /admin/pages. Both go
 // through the functions here, so the guardrails (lib/pages/rules.ts + the duplicate checks below)
 // run on every write whichever side it comes from. Pages are never hard-deleted: archive is the
@@ -141,8 +141,8 @@ function toPage(r: Row): Page {
   };
 }
 
-export const publicPageUrl = (slug: string) => `${SITE_URL}/insights/${slug}`;
-export const previewPath = (token: string) => `/insights/preview/${token}`;
+export const publicPageUrl = (slug: string) => `${SITE_URL}/blog/${slug}`;
+export const previewPath = (token: string) => `/blog/preview/${token}`;
 
 export const pageFieldsOf = (p: PageFields): PageFields => Object.fromEntries(PAGE_FIELDS.map((f) => [f, p[f]])) as unknown as PageFields;
 
@@ -162,10 +162,16 @@ export async function getPageByToken(db: Client, token: string): Promise<Page | 
   return r.rows[0] ? toPage(r.rows[0]) : null;
 }
 
-/** Live pages for /insights and the sitemap. */
-export async function listPublishedPages(db: Client): Promise<Pick<Page, 'slug' | 'title' | 'updated_at' | 'published_at'>[]> {
-  const r = await db.execute("SELECT slug, title, updated_at, published_at FROM pages WHERE status = 'published' ORDER BY published_at DESC");
-  return r.rows.map((row) => ({ slug: s(row.slug), title: s(row.title), updated_at: s(row.updated_at), published_at: sOrNull(row.published_at) }));
+/** Live pages for /blog and the sitemap. */
+export async function listPublishedPages(db: Client): Promise<Pick<Page, 'slug' | 'title' | 'meta_description' | 'updated_at' | 'published_at'>[]> {
+  const r = await db.execute("SELECT slug, title, meta_description, updated_at, published_at FROM pages WHERE status = 'published' ORDER BY published_at DESC");
+  return r.rows.map((row) => ({
+    slug: s(row.slug),
+    title: s(row.title),
+    meta_description: s(row.meta_description),
+    updated_at: s(row.updated_at),
+    published_at: sOrNull(row.published_at),
+  }));
 }
 
 export type PageSummary = Omit<Page, 'body' | 'faq' | 'schema_jsonld' | 'preview_token'> & { word_count?: number };
@@ -257,8 +263,8 @@ async function assertValid(db: Client, p: PageFields, excludeId?: string): Promi
 
 function revalidateLive(...slugs: string[]) {
   try {
-    for (const slug of new Set(slugs.filter(Boolean))) revalidatePath(`/insights/${slug}`);
-    revalidatePath('/insights');
+    for (const slug of new Set(slugs.filter(Boolean))) revalidatePath(`/blog/${slug}`);
+    revalidatePath('/blog');
     revalidatePath('/sitemap.xml');
   } catch (err) {
     // Outside a request (scripts, tests) there's nothing to revalidate.

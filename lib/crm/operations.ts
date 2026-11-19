@@ -199,7 +199,7 @@ function fullPage(p: Page, origin: string) {
 }
 
 const pageProps: Record<string, JsonSchema> = {
-  slug: S('URL slug, lowercase-hyphenated; the page lives at /insights/<slug>'),
+  slug: S('URL slug, lowercase-hyphenated; the page lives at /blog/<slug>'),
   title: S('On-page H1 title'),
   meta_title: S(`<title> tag, max ${META_TITLE_MAX} characters`),
   meta_description: S(`Meta description, max ${META_DESCRIPTION_MAX} characters`),
@@ -699,11 +699,11 @@ export const OPERATIONS: Operation[] = [
     },
   },
 
-  // ---------- SEO pages (/insights) ----------
+  // ---------- SEO pages (/blog) ----------
   {
     name: 'list_pages',
     description:
-      'Every page on the site: the /insights SEO pages (any status, with rejection notes on pages the team turned down) AND the hand-built pages (home, about, tools, blog, careers, work), so a duplicate check sees the whole site. Read the rejection notes before suggesting new pages.',
+      'Every page on the site: the /blog SEO pages (any status, with rejection notes on pages the team turned down) AND the hand-built pages (home, about, tools, blog, careers, work), so a duplicate check sees the whole site. Read the rejection notes before suggesting new pages.',
     method: 'GET',
     path: '/pages',
     readOnly: true,
@@ -754,7 +754,7 @@ export const OPERATIONS: Operation[] = [
   },
   {
     name: 'get_page',
-    description: 'One /insights page with every field, its status, word count, preview link and any rejection note.',
+    description: 'One /blog page with every field, its status, word count, preview link and any rejection note.',
     method: 'GET',
     path: '/pages/{slug}',
     readOnly: true,
@@ -765,7 +765,7 @@ export const OPERATIONS: Operation[] = [
   },
   {
     name: 'create_page',
-    description: `Draft a new SEO page at /insights/<slug>. It is ALWAYS saved as "needs review" (never live) for the team to check at /admin/pages. If the slug or main keyword is already used (including by a hand-built page), it is rejected and the existing page is returned so you can update_page it instead. ${PAGE_RULES}`,
+    description: `Draft a new SEO page at /blog/<slug>. It is ALWAYS saved as "needs review" (never live) for the team to check at /admin/pages. If the slug or main keyword is already used (including by a hand-built page), it is rejected and the existing page is returned so you can update_page it instead. ${PAGE_RULES}`,
     method: 'POST',
     path: '/pages',
     input: {
@@ -779,7 +779,7 @@ export const OPERATIONS: Operation[] = [
   },
   {
     name: 'update_page',
-    description: `Change fields on an /insights page (draft or live). Only the fields you send change; a live page updates on the site right away. Send new_slug to change the slug. Same guardrails as create_page: ${PAGE_RULES}`,
+    description: `Change fields on a /blog page (draft or live). Only the fields you send change; a live page updates on the site right away. Send new_slug to change the slug. Same guardrails as create_page: ${PAGE_RULES}`,
     method: 'PATCH',
     path: '/pages/{slug}',
     input: {
@@ -798,7 +798,7 @@ export const OPERATIONS: Operation[] = [
   {
     name: 'publish_page',
     description:
-      'Make an /insights page live and add it to the sitemap. Only call this when the user explicitly asks to publish a page; normally the team publishes from /admin/pages after review.',
+      'Make a /blog page live and add it to the sitemap. Only call this when the user explicitly asks to publish a page; normally the team publishes from /admin/pages after review.',
     method: 'POST',
     path: '/pages/{slug}/publish',
     input: { type: 'object', properties: { slug: S('Page slug') }, required: ['slug'] },
@@ -809,7 +809,7 @@ export const OPERATIONS: Operation[] = [
   },
   {
     name: 'unpublish_page',
-    description: 'Take a live /insights page off the site (back to draft) and out of the sitemap.',
+    description: 'Take a live /blog page off the site (back to draft) and out of the sitemap.',
     method: 'POST',
     path: '/pages/{slug}/unpublish',
     input: { type: 'object', properties: { slug: S('Page slug') }, required: ['slug'] },

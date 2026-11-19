@@ -3,7 +3,8 @@ import PageHero from '@/components/sections/PageHero';
 import Section from '@/components/editorial/Section';
 import { ArticleCard } from './components/ArticleCard';
 import { BLOG_BASE_PATH, SITE_URL } from './constants';
-import { LOCAL_POSTS } from './local-posts';
+import { LOCAL_POSTS, type BlogPost } from './local-posts';
+import { publishedPages } from './data';
 
 export const metadata: Metadata = {
   title: 'Marketing Blog: Video, Social and Lead Generation',
@@ -11,8 +12,16 @@ export const metadata: Metadata = {
   alternates: { canonical: `${SITE_URL}${BLOG_BASE_PATH}` },
 };
 
-export default function BlogIndexPage() {
-  const articles = [...LOCAL_POSTS].sort(
+// Hand-built posts plus every post published from /admin/pages. Publishing or unpublishing one revalidates
+// this page (lib/pages/store.ts).
+export default async function BlogIndexPage() {
+  const written: BlogPost[] = (await publishedPages()).map((p) => ({
+    slug: p.slug,
+    title: p.title,
+    meta_description: p.meta_description,
+    published_at: p.published_at ?? p.updated_at,
+  }));
+  const articles = [...LOCAL_POSTS, ...written].sort(
     (a, b) => new Date(b.published_at).getTime() - new Date(a.published_at).getTime()
   );
 

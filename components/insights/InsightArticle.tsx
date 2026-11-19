@@ -1,9 +1,10 @@
 import type { ReactNode } from 'react';
 import Mascot from '@/components/editorial/Mascot';
+import Beanstalk from './Beanstalk';
 import { renderMarkdown } from '@/lib/pages/markdown';
 import type { FaqItem } from '@/lib/pages/rules';
 
-// One SEO page (/insights/[slug]) in the site's editorial style. The live page, the private
+// One SEO page (/blog/[slug]) in the site's editorial style. The live page, the private
 // preview link and the admin editor's live preview all render through this, so what the team
 // reviews is exactly what goes live.
 
@@ -36,7 +37,7 @@ export default function InsightArticle({ title, lede, body, faq, publishedAt, ct
       <section className="tone-orange relative overflow-clip">
         <div className={`gutter ${wide ? 'pt-32 md:pt-40' : 'pt-12'} pb-[var(--gutter)]`}>
           <div className="flex items-baseline justify-between gap-6 mb-10">
-            <p className="eyebrow">Insights</p>
+            <p className="eyebrow">Blog</p>
             <p className="eyebrow">{date || 'Las Vegas, NV'}</p>
           </div>
           <h1 className={`display ${wide ? 'display-lg' : 'display-md'} max-w-[18ch]`}>{title || 'Untitled page'}</h1>
@@ -48,13 +49,15 @@ export default function InsightArticle({ title, lede, body, faq, publishedAt, ct
       </section>
 
       <section className="tone-ink relative overflow-clip">
-        <article className={`gutter grid gap-x-16 ${wide ? 'lg:grid-cols-12 py-[var(--section-pad)]' : 'py-12'}`}>
+        {/* On wide screens the bottom padding moves onto the columns, so the beanstalk can stand on the section's bottom edge. */}
+        <article className={`gutter grid gap-x-16 ${wide ? 'lg:grid-cols-12 pt-[var(--section-pad)] pb-[var(--section-pad)] xl:pb-0' : 'py-12'}`}>
           <div
-            className={`insight-body space-y-6 text-lg leading-relaxed ${wide ? 'lg:col-span-7' : ''}`}
+            className={`insight-body space-y-6 text-lg leading-relaxed ${wide ? 'lg:col-span-7 xl:pb-[var(--section-pad)]' : ''}`}
             dangerouslySetInnerHTML={{ __html: html }}
           />
+          {wide && <Beanstalk className="hidden xl:flex xl:col-span-2 xl:col-start-8 xl:row-start-1" />}
           {wide && headings.length > 1 && (
-            <nav aria-label="In this article" className="hidden lg:block lg:col-span-4 lg:col-start-9">
+            <nav aria-label="In this article" className="hidden lg:block lg:col-span-4 lg:col-start-9 xl:col-span-3 xl:col-start-10 xl:row-start-1 xl:pb-[var(--section-pad)]">
               <div className="sticky top-28">
                 <p className="eyebrow mb-4 opacity-70">In this article</p>
                 <ol className="border-t-2 rule">

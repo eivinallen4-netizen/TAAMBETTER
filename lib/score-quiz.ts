@@ -361,6 +361,249 @@ export const QUIZ: QuizData = {
   scoreNote: "Your score is weighted toward your weakest area, because a gap in one place loses calls everywhere after it."
 };
 
+// ---------- The playbook: what the results page hands over, per pillar ----------
+
+export interface Playbook {
+  /** One next move per answer, in the same order as the pillar's options (best to worst). */
+  next: string[];
+  /** A 15-minute check the owner can do today. */
+  today: { title: string; steps: string[] };
+  /** Something to copy and use as is. [Brackets] are for them to fill in. */
+  template: { title: string; text: string; note?: string };
+  /** How they know each 30-day block of the plan is finished, in plan order. */
+  done: [string, string, string];
+}
+
+// Tokens: {first}, {business}, {service} and {Service} are filled by fill().
+export const PLAYBOOK: Record<PillarId, Playbook> = {
+  website: {
+    next: [
+      "Keep it. Check your call count each month and test one new headline a quarter.",
+      "Add call tracking this month, so you know how many calls the site brings.",
+      "Test your site on your own phone. Fix load time and the call button before anything else.",
+      "Replace the template with a real page for each main service.",
+      "Get a simple one-page site live with your service, area, reviews and a call button."
+    ],
+    today: {
+      title: "Check your site like a customer",
+      steps: [
+        "Open your website on your phone using mobile data, not Wi-Fi.",
+        "Count the seconds until you can read it. If you get tired of waiting, so do customers.",
+        "Without scrolling, can you see what you do, where you work and a call button?",
+        "Tap the call button. If it doesn't dial, that's your first fix."
+      ]
+    },
+    template: {
+      title: "The first screen of your homepage",
+      text: "{Service} in Las Vegas, Henderson and North Las Vegas\n[Number] five-star Google reviews\n[Call now: your number]\n\nSame-day appointments. You talk to {business}, not a call center.",
+      note: "Put this above everything else on the page, on phone and desktop."
+    },
+    done: [
+      "Every page has a call button and you can count last week's calls.",
+      "No stock photos are left and each main service has its own page.",
+      "You know which three pages bring the most calls."
+    ]
+  },
+  google: {
+    next: [
+      "Keep the weekly reviews going and add job photos every week.",
+      "Ask every finished job for a review the same day, by text.",
+      "Fill in every field on your profile and add 20 real photos.",
+      "Add your services and service areas to your profile, and a website page for each.",
+      "Claim your Google Business Profile today. It's free and takes about 15 minutes."
+    ],
+    today: {
+      title: "Search like a customer",
+      steps: [
+        "Open a private browser window on your phone.",
+        "Search \"{service} near me\" and \"{service} Las Vegas\".",
+        "Write down whether you're in the three map results, and who is.",
+        "Open the top result's profile. Compare its review count, newest review and photo count with yours."
+      ]
+    },
+    template: {
+      title: "Review request text",
+      text: "Hi [customer name], it's {first} from {business}. Thanks for having us out today. Would you leave us a quick Google review? It takes about a minute and helps a lot: [your review link]",
+      note: "Send it the same day, while the job is fresh. Your review link is in your Google Business Profile."
+    },
+    done: [
+      "Every field is filled in and 20 or more photos are up.",
+      "You get at least one new review every week.",
+      "Four weeks of posts are up and every service has a page."
+    ]
+  },
+  video: {
+    next: [
+      "Keep it. Film more of the videos that already bring calls.",
+      "Write a simple plan: three topics a week, on the same days each week.",
+      "Swap one photo post a week for a 30-second job video.",
+      "Restart with one video a week. Film four in one session so you don't run out.",
+      "Film one before-and-after on your next job and post it."
+    ],
+    today: {
+      title: "Film your first one",
+      steps: [
+        "On your next job, film 20 seconds before you start and 20 seconds when you finish. Hold the phone upright.",
+        "Say one sentence: what the problem was and what you did.",
+        "Post it to Instagram and your Google Business Profile today, as is.",
+        "Use the caption below, and save it for the next one."
+      ]
+    },
+    template: {
+      title: "Caption for a job video",
+      text: "[Problem] in [neighborhood]. Here's what we found and how we fixed it.\n\nIf yours is doing the same thing, call {business}: [your number]",
+      note: "Five videos to film first: a before-and-after, meet the crew, the question you get most, what a job costs and why, and a mistake homeowners make."
+    },
+    done: [
+      "You have 20 topics and one person who will be on camera.",
+      "A month of videos is filmed and three a week are going out.",
+      "You can name the three videos that brought calls."
+    ]
+  },
+  leads: {
+    next: [
+      "Keep it. Test one new source each quarter so you never depend on a single one.",
+      "Count calls and booked jobs from your ads for 30 days before spending more.",
+      "Write down your cost per booked job from that source, then test one more.",
+      "Start one source you own, like ads to your own site, next to the referrals.",
+      "Pick one source you can turn up, and test it with a small budget for 30 days."
+    ],
+    today: {
+      title: "Count where your jobs came from",
+      steps: [
+        "List your last 20 booked jobs.",
+        "Next to each, write where it came from: referral, repeat, Google, ads, social or a lead service.",
+        "Circle every source you could pay to get more of next week.",
+        "If nothing is circled, that's the gap. Your plan starts there."
+      ]
+    },
+    template: {
+      title: "One ad, one message",
+      text: "Headline: {Service} in Las Vegas. Same-day appointments.\nText: [Your best proof, like \"400+ five-star reviews\"]. Call {business} or book online in a minute.\nButton: Call now\nSends people to: your page for that one service, not your homepage.",
+      note: "Run one ad for one service first. Add a second only when the first books jobs."
+    },
+    done: [
+      "You know how many calls and booked jobs each source brought.",
+      "One campaign has run for 30 days and you know its cost per call.",
+      "You know your cost per booked job and can turn it up when it's slow."
+    ]
+  },
+  speed: {
+    next: [
+      "Keep it. Check response time weekly so it doesn't slip.",
+      "Cover after hours: add a missed-call text back for nights and weekends.",
+      "Set a five-minute rule and decide who owns new leads at each time of day.",
+      "Turn on an instant text reply to every form and missed call.",
+      "Call your own number after hours today and see what a customer gets."
+    ],
+    today: {
+      title: "Call yourself",
+      steps: [
+        "From a different phone, call your business number after 5 p.m. tonight.",
+        "Note what happens: someone answers, it goes to voicemail, or it rings out.",
+        "Fill out your own website form and time how long it takes for someone to reply.",
+        "Write both times down. That's your starting point."
+      ]
+    },
+    template: {
+      title: "Missed-call text back",
+      text: "Hi, this is {first} at {business}. Sorry we missed your call. What can we help with? Reply here or call us back at [your number] and we'll get you on the schedule.",
+      note: "Most phone systems and CRMs can send this automatically. Until yours does, send it by hand within five minutes."
+    },
+    done: [
+      "Every missed call and form gets a text within a minute.",
+      "Every hour of the week has a name next to it.",
+      "Most new leads hear back within five minutes."
+    ]
+  },
+  followup: {
+    next: [
+      "Keep it. Check monthly how many quotes book after a follow-up.",
+      "Add two more touches, on day 7 and day 14.",
+      "Put follow-up on a schedule so it doesn't depend on memory.",
+      "Text every open quote tomorrow morning. Start with the largest.",
+      "List every open quote from the last 60 days in one sheet."
+    ],
+    today: {
+      title: "Find the open quotes",
+      steps: [
+        "List every quote from the last 60 days that hasn't booked.",
+        "Write the amount next to each and add them up.",
+        "Send the day 1 text below to the five largest.",
+        "Put a reminder on your calendar to call anyone who hasn't replied in three days."
+      ]
+    },
+    template: {
+      title: "Quote follow-up texts",
+      text: "Day 1: Hi [name], it's {first} from {business}. Just making sure you got the quote. Any questions I can answer?\n\nDay 3: Hi [name], we have openings [day] and [day] if you'd like to get this on the schedule.\n\nDay 7: Hi [name], here's a job like yours we finished last week: [photo or video link]. Happy to walk you through the quote by phone.\n\nDay 14: Hi [name], should I keep your quote open or close it out? Either answer is fine.",
+      note: "Stop as soon as they say yes or no."
+    },
+    done: [
+      "Every open quote is on one list with its amount.",
+      "Every new quote gets four touches without anyone having to remember.",
+      "You know what share of quotes book, and it's going up."
+    ]
+  },
+  tracking: {
+    next: [
+      "Keep it. Each month, move budget to the channel with the lowest cost per booked job.",
+      "Add one column: booked or not. Then you know which sources pay.",
+      "Write every answer down in one sheet, with the job amount.",
+      "Start counting calls and forms each week, next to likes and views.",
+      "For your next 10 jobs, write down where each one came from."
+    ],
+    today: {
+      title: "Trace your last 10 jobs",
+      steps: [
+        "Write down your last 10 booked jobs and what each was worth.",
+        "Next to each, write how that customer found you. If you don't know, write \"don't know\".",
+        "Count the \"don't knows\". That's how much of your marketing you can't see.",
+        "Start asking every new caller the question below."
+      ]
+    },
+    template: {
+      title: "Lead tracking sheet",
+      text: "Ask every caller: \"How did you hear about us?\"\n\nSheet columns:\nDate | Name | Source | Booked? | Job amount\n\nSources: Google, website, ad, social, referral, repeat, other",
+      note: "A free Google Sheet is enough to start. Fill it in the same day."
+    },
+    done: [
+      "Every new lead has a source written down.",
+      "Every lead is marked booked or not.",
+      "You've moved budget once based on the numbers."
+    ]
+  }
+};
+
+/** What each trade's customers type into Google. "other" has no entry, so they fill it in. */
+const TRADE_SERVICE: Record<string, string> = {
+  hvac: 'HVAC repair',
+  plumbing: 'plumber',
+  'air-duct': 'air duct cleaning',
+  roofing: 'roofer',
+  pool: 'pool service',
+  landscaping: 'landscaping',
+  'pressure-washing': 'pressure washing',
+  moving: 'movers',
+  cleaning: 'house cleaning',
+};
+
+export interface FillContext {
+  firstName: string;
+  business: string;
+  trade: string;
+}
+
+/** Puts the person's own name, business and trade into playbook copy. Blanks become [brackets] to fill in. */
+export function fill(text: string, c: FillContext): string {
+  const service = TRADE_SERVICE[c.trade] ?? '[your main service]';
+  const cap = service.startsWith('[') || service === 'HVAC repair' ? service : service.charAt(0).toUpperCase() + service.slice(1);
+  return text
+    .replaceAll('{first}', c.firstName.trim() || '[your name]')
+    .replaceAll('{business}', c.business.trim() || '[your business]')
+    .replaceAll('{service}', service)
+    .replaceAll('{Service}', cap);
+}
+
 // ---------- Scoring and routing (keep exactly) ----------
 
 /** Score: 80% weakest pillar + 20% average of all seven. */
@@ -489,16 +732,34 @@ export function answerDetails(answers: Answers, r: QuizResult): string {
   ].join('\n');
 }
 
+/** The next move for one pillar, picked by the answer they gave. */
+export function nextStep(p: Pillar, answers: Answers): string {
+  const raw = answers[p.id];
+  return (typeof raw === 'string' && /^\d+$/.test(raw) && PLAYBOOK[p.id].next[Number(raw)]) || '';
+}
+
 /** The plan as plain text, for "Copy my plan" and the email. */
-export function planText(business: string, r: QuizResult): string {
+export function planText(person: { firstName: string; business: string }, answers: Answers, r: QuizResult): string {
   const p = r.weakest;
+  const book = PLAYBOOK[p.id];
+  const c: FillContext = { firstName: person.firstName, business: person.business, trade: answers.trade ?? '' };
+  const said = pillarAnswer(p, answers)?.label;
   return [
-    `${business ? `${business}: ` : ''}Call Flow Score ${r.score}/100 (${r.tier.label})`,
+    `${person.business ? `${person.business}: ` : ''}Call Flow Score ${r.score}/100 (${r.tier.label})`,
     '',
-    ...QUIZ.pillars.map((x) => `${x.label}: ${r.pillarScores[x.id]}`),
+    'Your next move in each part:',
+    ...QUIZ.pillars.map((x) => `${x.label} (${r.pillarScores[x.id]}): ${nextStep(x, answers)}`),
     '',
     p.result.headline,
+    ...(said ? [`You told us: "${said}"`] : []),
     p.result.diagnosis,
+    '',
+    `Do this today (15 minutes): ${fill(book.today.title, c)}`,
+    ...book.today.steps.map((s, i) => `${i + 1}. ${fill(s, c)}`),
+    '',
+    `Copy and use: ${book.template.title}`,
+    fill(book.template.text, c),
+    ...(book.template.note ? [fill(book.template.note, c)] : []),
     '',
     `What good looks like: ${p.result.good}`,
     '',
@@ -506,7 +767,7 @@ export function planText(business: string, r: QuizResult): string {
     ...p.result.questions.map((q, i) => `${i + 1}. ${q}`),
     '',
     '90-day plan:',
-    ...p.result.plan.map(([d, t, x]) => `${d}, ${t}: ${x}`),
+    ...p.result.plan.flatMap(([d, t, x], i) => [`${d}, ${t}: ${x}`, `   Done when: ${book.done[i]}`]),
     '',
     `TAAM · ${QUIZ.config.phoneDisplay} · taammarketing.com`,
   ].join('\n');
