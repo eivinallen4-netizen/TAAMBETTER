@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
-import { Download, ExternalLink, ImageIcon, Inbox, Link2, PenLine, Plus, Power, QrCode, Send, Trash2, UserRound } from 'lucide-react';
+import { Download, ExternalLink, FileText, ImageIcon, Inbox, Link2, PenLine, Plus, Power, QrCode, Send, Settings2, Trash2, UserRound } from 'lucide-react';
 import QR from 'qrcode';
 import {
   Badge,
@@ -24,6 +24,7 @@ import {
   useToast,
 } from '@taam/crm/client';
 import type { ReviewLink, ReviewRequest } from '@/lib/crm-site/reviews/module';
+import { reviewRequestsText, reviewsFileName } from '@/lib/crm-site/reviews/text';
 
 // Site reviews: make a review link for a client's website, send it, and work through what the
 // client clicked and asked for. Rephrase, add TAAM's own requests, push them to Claude.
@@ -234,6 +235,73 @@ function NewLinkModal({ onClose, onCreated }: { onClose: () => void; onCreated: 
           <Input value={label} onChange={(e) => setLabel(e.target.value)} maxLength={160} />
         </Field>
         <Field label="Client name" hint="Shown to them on the review page.">
+          <Input value={client} onChange={(e) => setClient(e.target.value)} maxLength={160} />
+        </Field>
+        <button type="submit" hidden aria-hidden tabIndex={-1} />
+      </form>
+    </Modal>
+  );
+}
+
+// ---------- Edit a link (site, name, client) ----------
+
+function EditLinkModal({ link, onClose, onSaved }: { link: ReviewLink; onClose: () => void; onSaved: (link: ReviewLink) => void }) {
+  const boot = useBoot();
+  const [site, setSite] = useState(link.site_url);
+  const [label, setLabel] = useState(link.label);
+  const [client, setClient] = useState(link.client_name ?? '');
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState('');
+
+  async function save() {
+    setBusy(true);
+    setError('');
+    try {
+      const { link: saved } = await callOp<{ link: ReviewLink }>(boot, 'update_review_link', {
+        id: link.id,
+        ...(site.trim() !== link.site_url ? { site_url: site.trim() } : {}),
+        ...(label.trim() ? { label: label.trim() } : {}),
+        client_name: client.trim(),
+      });
+      onSaved(saved);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Could not save it');
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  return (
+    <Modal
+      title={`Edit ${link.label}`}
+      description="The client’s link stays the same; it opens the new site from now on."
+      onClose={busy ? () => undefined : onClose}
+      footer={
+        <>
+          <Button onClick={onClose} disabled={busy}>
+            Cancel
+          </Button>
+          <Button variant="primary" onClick={save} busy={busy} busyLabel="Saving…" disabled={!site.trim()}>
+            Save
+          </Button>
+        </>
+      }
+    >
+      <form
+        className="space-y-4"
+        onSubmit={(e) => {
+          e.preventDefault();
+          if (site.trim() && !busy) void save();
+        }}
+      >
+        {error && <Notice>{error}</Notice>}
+        <Field label="Client website" required hint="The page the client starts on, e.g. https://clientsite.com">
+          <Input type="url" inputMode="url" autoComplete="off" spellCheck={false} value={site} onChange={(e) => setSite(e.target.value)} placeholder="https://" required autoFocus />
+        </Field>
+        <Field label="Name">
+          <Input value={label} onChange={(e) => setLabel(e.target.value)} maxLength={160} />
+        </Field>
+        <Field label="Client name" hint="Shown to them on the review page. Blank removes it.">
           <Input value={client} onChange={(e) => setClient(e.target.value)} maxLength={160} />
         </Field>
         <button type="submit" hidden aria-hidden tabIndex={-1} />
@@ -524,6 +592,27 @@ function Requests({ link, onChanged }: { link: ReviewLink | null; onChanged: () 
 
   useEffect(() => setSelected([]), [filter, link]);
 
+  // Copy / Export .txt work on the ticked requests, or every request in view when none are ticked.
+  // Only ticks on requests still in the list count: one can leave the list (marked done) while ticked.
+  const requests = state.data?.requests ?? [];
+  const ticked = requests.filter((r) => selected.includes(r.id));
+  const picked = ticked.length ? ticked : requests;
+  const filterLabel = FILTERS.find((f) => f.key === filter)?.label ?? 'All';
+  const title = `TAAM site review changes: ${link ? link.label : 'every link'} (${filterLabel})`;
+  const text = picked.length ? reviewRequestsText(picked, { title }) : '';
+
+  function exportTxt() {
+    const url = URL.createObjectURL(new Blob([text], { type: 'text/plain;charset=utf-8' }));
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = reviewsFileName(link ? link.label : null);
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+    toast(`Exported ${picked.length} request${picked.length === 1 ? '' : 's'}`);
+  }
+
   const changed = () => {
     reload();
     onChanged();
@@ -532,7 +621,7 @@ function Requests({ link, onChanged }: { link: ReviewLink | null; onChanged: () 
   async function bulk(status: Status, message: string) {
     setBusy(true);
     try {
-      await callOp(boot, 'update_review_requests', { ids: selected, status });
+      await callOp(boot, 'update_review_requests', { ids: ticked.map((r) => r.id), status });
       toast(message);
       setSelected([]);
       changed();
@@ -565,20 +654,26 @@ function Requests({ link, onChanged }: { link: ReviewLink | null; onChanged: () 
                   <input
                     type="checkbox"
                     className="size-4 accent-[var(--crm-brand,#F46325)]"
-                    checked={selected.length === requests.length}
+                    checked={ticked.length === requests.length}
                     onChange={(e) => setSelected(e.target.checked ? requests.map((r) => r.id) : [])}
                   />
-                  {selected.length ? `${selected.length} selected` : `${requests.length} request${requests.length === 1 ? '' : 's'}`}
+                  {ticked.length ? `${ticked.length} selected` : `${requests.length} request${requests.length === 1 ? '' : 's'}`}
                 </label>
-                <Button size="sm" variant="primary" busy={busy} disabled={!selected.length} onClick={() => bulk('queued', `Pushed ${selected.length} to Claude`)}>
+                <Button size="sm" variant="primary" busy={busy} disabled={!ticked.length} onClick={() => bulk('queued', `Pushed ${ticked.length} to Claude`)}>
                   <Send className="size-3.5" aria-hidden />
                   Push to Claude
                 </Button>
-                <Button size="sm" busy={busy} disabled={!selected.length} onClick={() => bulk('new', 'Moved back to review')}>
+                <Button size="sm" busy={busy} disabled={!ticked.length} onClick={() => bulk('new', 'Moved back to review')}>
                   Back to review
                 </Button>
-                <Button size="sm" variant="ghost" busy={busy} disabled={!selected.length} onClick={() => bulk('wont_do', 'Marked won’t do')}>
+                <Button size="sm" variant="ghost" busy={busy} disabled={!ticked.length} onClick={() => bulk('wont_do', 'Marked won’t do')}>
                   Won’t do
+                </Button>
+                <span className="mx-1 hidden h-5 w-px bg-line sm:block" aria-hidden />
+                <CopyButton text={text} label={ticked.length ? `Copy ${ticked.length}` : 'Copy all'} />
+                <Button size="sm" onClick={exportTxt} disabled={!text}>
+                  <FileText className="size-3.5" aria-hidden />
+                  {ticked.length ? `Export ${ticked.length} .txt` : 'Export .txt'}
                 </Button>
               </div>
               {requests.map((r) => (
@@ -609,6 +704,7 @@ function LinkRow({
   onToggle,
   onAdd,
   onQr,
+  onEdit,
 }: {
   link: ReviewLink;
   active: boolean;
@@ -617,6 +713,7 @@ function LinkRow({
   onToggle: () => void;
   onAdd: () => void;
   onQr: () => void;
+  onEdit: () => void;
 }) {
   const c = link.counts;
   return (
@@ -652,6 +749,10 @@ function LinkRow({
           <Plus className="size-3.5" aria-hidden />
           Add request
         </Button>
+        <Button size="sm" variant="ghost" onClick={onEdit} aria-label={`Edit ${link.label}`}>
+          <Settings2 className="size-3.5" aria-hidden />
+          Edit
+        </Button>
         <Button size="sm" variant="ghost" onClick={onToggle} aria-label={link.active ? `Turn off ${link.label}` : `Turn on ${link.label}`}>
           <Power className="size-3.5" aria-hidden />
           {link.active ? 'Turn off' : 'Turn on'}
@@ -667,7 +768,7 @@ function ReviewsScreen() {
   const confirm = useConfirm();
   const state = useOp<LinksResult>('list_review_links');
   const [selectedId, setSelectedId] = useState<number | null>(null);
-  const [modal, setModal] = useState<{ kind: 'new' } | { kind: 'add'; link: ReviewLink } | { kind: 'qr'; url: string; title?: string } | null>(null);
+  const [modal, setModal] = useState<{ kind: 'new' } | { kind: 'add'; link: ReviewLink } | { kind: 'edit'; link: ReviewLink } | { kind: 'qr'; url: string; title?: string } | null>(null);
   // Bumped after a request is added from the modal, so the request list reloads too.
   const [bump, setBump] = useState(0);
   const { reload } = state;
@@ -789,6 +890,7 @@ function ReviewsScreen() {
                       onHost={() => void openAsHost(link)}
                       onToggle={() => void toggle(link)}
                       onAdd={() => setModal({ kind: 'add', link })}
+                      onEdit={() => setModal({ kind: 'edit', link })}
                       onQr={() => setModal({ kind: 'qr', url: link.share_url, title: `QR code for ${link.label}` })}
                     />
                   ))}
@@ -808,6 +910,18 @@ function ReviewsScreen() {
           onCreated={(link) => {
             toast(`${link.label} is ready`);
             setSelectedId(link.id);
+            reload();
+          }}
+        />
+      )}
+      {modal?.kind === 'edit' && (
+        <EditLinkModal
+          link={modal.link}
+          onClose={() => setModal(null)}
+          onSaved={(link) => {
+            setModal(null);
+            toast(`${link.label} saved`);
+            setBump((n) => n + 1);
             reload();
           }}
         />

@@ -1,6 +1,7 @@
 import { z } from 'zod';
-import { defineModule, defineOp } from '@taam/crm/server';
+import { OpError, defineModule, defineOp } from '@taam/crm/server';
 import { reviewApi, reviewsConfig } from './remote';
+import { reviewRequestsText } from './text';
 
 // Site reviews: TAAM makes a review link for a client's website and sends it to them. The
 // client opens it, clicks the things they want changed on their live site, and sends notes.
@@ -43,6 +44,17 @@ export interface ReviewRequest {
   updated_at: string;
 }
 
+/** Lower-case host of an address typed with or without https://, or '' if it isn't one. */
+function hostOf(url: string): string {
+  try {
+    return new URL(/^https?:\/\//i.test(url.trim()) ? url.trim() : `https://${url.trim()}`).host.toLowerCase();
+  } catch {
+    return '';
+  }
+}
+
+const LIMIT_ALL = 500;
+
 const zLinkId = z.number().int().positive().describe('Review link id');
 const zRequestId = z.number().int().positive().describe('Review request id');
 const zStatus = z.enum(STATUSES);
@@ -82,13 +94,27 @@ const operations = [
   }),
   defineOp({
     name: 'update_review_link',
-    description: 'Rename a review link, change its client name, or turn it off/on (active). A link that is off stops working for the client. Returns { link }.',
+    description:
+      'Change a review link: its client website (site_url, e.g. when the site moves to a new domain; the share link stays the same), its name, its client name, or turn it off/on (active). A link that is off stops working for the client. Returns { link }.',
     method: 'PATCH',
     path: '/reviews/links/{id}',
     permission: PERMISSION,
     openWorld: true,
-    input: z.object({ id: zLinkId, label: z.string().trim().max(160).optional(), client_name: z.string().trim().max(160).optional(), active: z.boolean().optional() }),
-    run: async ({ id, ...patch }) => reviewApi<{ link: ReviewLink }>('PATCH', `/links/${id}`, patch),
+    input: z.object({
+      id: zLinkId,
+      site_url: z.string().trim().min(3).max(500).optional().describe('New client website address, e.g. https://clientsite.com'),
+      label: z.string().trim().max(160).optional(),
+      client_name: z.string().trim().max(160).optional(),
+      active: z.boolean().optional(),
+    }),
+    run: async ({ id, site_url, ...patch }) => {
+      const res = await reviewApi<{ link: ReviewLink }>('PATCH', `/links/${id}`, { ...patch, ...(site_url ? { target_url: site_url } : {}) });
+      // An older review app drops target_url without an error; say so instead of reporting a save.
+      if (site_url && hostOf(res.link.site_url) !== hostOf(site_url)) {
+        throw new OpError(502, 'The review app didn’t take the new website address. It needs updating before sites can be changed.');
+      }
+      return res;
+    },
   }),
   defineOp({
     name: 'open_review_as_host',
@@ -120,6 +146,56 @@ const operations = [
       if (link_id) q.set('link_id', String(link_id));
       if (limit) q.set('limit', String(limit));
       return reviewApi<{ requests: ReviewRequest[] }>('GET', `/requests?${q}`);
+    },
+  }),
+  defineOp({
+    name: 'list_all_site_reviews',
+    description:
+      'Every site review at once, to look over all of them: each review link (client site, share link, on/off, counts by status) and every request in any status. ' +
+      'format "text" (default) gives `text`: a plain-text list grouped by site (page, element clicked, the change, the client’s own words, photos, the reply), ready to read or paste. ' +
+      'format "json" gives the requests as data nested under each link (without the element HTML; use get_review_request for that). ' +
+      `Keeps the newest ${LIMIT_ALL} when there are more (\`truncated\` and \`total\` say so). To work the pushed queue use list_review_requests. Filter with status (default "all") or link_id.`,
+    method: 'GET',
+    path: '/reviews/all',
+    permission: PERMISSION,
+    readOnly: true,
+    input: z.object({
+      status: z.enum([...STATUSES, 'all']).optional().describe('Default "all"'),
+      link_id: zLinkId.optional().describe('Only this review link'),
+      format: z.enum(['text', 'json']).optional().describe('Default "text"'),
+    }),
+    run: async ({ status, link_id, format }) => {
+      const st = status ?? 'all';
+      const q = new URLSearchParams({ status: st, limit: String(LIMIT_ALL), newest: '1' });
+      if (link_id) q.set('link_id', String(link_id));
+      const [{ links }, { requests }] = await Promise.all([
+        reviewApi<{ links: ReviewLink[] }>('GET', '/links'),
+        reviewApi<{ requests: ReviewRequest[] }>('GET', `/requests?${q}`),
+      ]);
+      if (link_id && !links.some((l) => l.id === link_id)) throw new OpError(404, 'Review link not found');
+      const shown = link_id ? links.filter((l) => l.id === link_id) : links;
+      const total = shown.reduce((n, l) => n + (l.counts ? (st === 'all' ? l.counts.total : l.counts[st]) : 0), 0);
+      const summary = {
+        status: st,
+        count: requests.length,
+        total: Math.max(total, requests.length),
+        truncated: total > requests.length,
+      };
+      const linkInfo = (l: ReviewLink) => ({ id: l.id, label: l.label, client_name: l.client_name, site_url: l.site_url, share_url: l.share_url, active: l.active, counts: l.counts });
+      if (format === 'json') {
+        return {
+          ...summary,
+          links: shown.map((l) => ({
+            ...linkInfo(l),
+            requests: requests
+              .filter((r) => r.link_id === l.id)
+              .map(({ element, link_label: _label, site_url: _site, ...r }) => ({ ...r, element: element ? { selector: element.selector, text: element.text } : null })),
+          })),
+        };
+      }
+      const cut = summary.truncated ? `\n(Showing the newest ${requests.length} of ${summary.total}. Filter by status or link_id to see the rest.)\n` : '';
+      const text = requests.length ? reviewRequestsText(requests) : 'No site review requests match.\n';
+      return { ...summary, links: shown.map(linkInfo), text: text + cut };
     },
   }),
   defineOp({
