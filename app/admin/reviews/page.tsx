@@ -23,7 +23,7 @@ import {
   useOp,
   useToast,
 } from '@taam/crm/client';
-import type { ReviewLink, ReviewRequest } from '@/lib/crm-site/reviews/module';
+import type { ReviewLink, ReviewRequest, ReviewVersion } from '@/lib/crm-site/reviews/module';
 import { reviewRequestsText, reviewsFileName } from '@/lib/crm-site/reviews/text';
 
 // Site reviews: make a review link for a client's website, send it, and work through what the
@@ -443,6 +443,7 @@ function RequestCard({
             </span>
           )}
           <span>{when(r.created_at)}</span>
+          {r.version && <Badge tone="neutral">Version {r.version.number}</Badge>}
           {showSite && r.link_label && <span className="font-semibold text-ink">{r.link_label}</span>}
           {page ? (
             <a href={page} target="_blank" rel="noopener noreferrer" className="font-mono hover:text-ink">
@@ -578,6 +579,56 @@ function RequestCard({
   );
 }
 
+// ---------- Versions of one link ----------
+
+// One chip per round of changes that went live on the client site (recorded by Claude with the
+// site repo's git commit after it deploys). Picking one shows what was asked for and what got done.
+function VersionBar({ linkId, picked, onPick }: { linkId: number; picked: ReviewVersion | null; onPick: (v: ReviewVersion | null) => void }) {
+  const input = useMemo(() => ({ id: linkId }), [linkId]);
+  const state = useOp<{ versions: ReviewVersion[] }>('list_review_versions', input);
+  const versions = state.data?.versions ?? [];
+  if (versions.length === 0) return null;
+  const commit = picked?.commit_sha ? picked.commit_sha.slice(0, 7) : '';
+  const commitUrl = safeHref(picked?.commit_url ?? null);
+  return (
+    <div className="space-y-2">
+      <div className="flex flex-wrap items-center gap-2" role="tablist" aria-label="Versions">
+        <span className="text-xs font-bold text-muted">Versions</span>
+        <button type="button" role="tab" aria-selected={!picked} className={CHIP(!picked)} onClick={() => onPick(null)}>
+          Current
+        </button>
+        {versions.map((v) => (
+          <button key={v.id} type="button" role="tab" aria-selected={picked?.id === v.id} className={CHIP(picked?.id === v.id)} onClick={() => onPick(v)}>
+            Version {v.number}
+          </button>
+        ))}
+      </div>
+      {picked && (
+        <div className="rounded-control border border-line px-3 py-2 text-sm">
+          <p className="flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-muted">
+            <span className="font-bold text-ink">Version {picked.number}</span>
+            <span>Live {when(picked.created_at)}</span>
+            {picked.counts && (
+              <span>
+                {picked.counts.done} done{picked.counts.wont_do ? ` · ${picked.counts.wont_do} won’t do` : ''}
+              </span>
+            )}
+            {commit &&
+              (commitUrl ? (
+                <a href={commitUrl} target="_blank" rel="noopener noreferrer" className="font-mono hover:text-ink">
+                  {commit}
+                </a>
+              ) : (
+                <span className="font-mono">{commit}</span>
+              ))}
+          </p>
+          {picked.note && <p className="mt-1 text-ink">{picked.note}</p>}
+        </div>
+      )}
+    </div>
+  );
+}
+
 // ---------- Requests list (one link, or every link) ----------
 
 function Requests({ link, onChanged }: { link: ReviewLink | null; onChanged: () => void }) {
@@ -586,18 +637,25 @@ function Requests({ link, onChanged }: { link: ReviewLink | null; onChanged: () 
   const [filter, setFilter] = useState<Status | 'all'>('new');
   const [selected, setSelected] = useState<number[]>([]);
   const [busy, setBusy] = useState(false);
-  const input = useMemo(() => ({ status: filter, ...(link ? { link_id: link.id } : {}) }), [filter, link]);
+  // A picked version shows everything finished in that round, whatever its status.
+  const [version, setVersion] = useState<ReviewVersion | null>(null);
+  const linkId = link?.id ?? null;
+  useEffect(() => setVersion(null), [linkId]);
+  const input = useMemo(
+    () => (version && link ? { status: 'all' as const, link_id: link.id, version_id: version.id } : { status: filter, ...(link ? { link_id: link.id } : {}) }),
+    [filter, link, version],
+  );
   const state = useOp<{ requests: ReviewRequest[] }>('list_review_requests', input);
   const { reload } = state;
 
-  useEffect(() => setSelected([]), [filter, link]);
+  useEffect(() => setSelected([]), [filter, link, version]);
 
   // Copy / Export .txt work on the ticked requests, or every request in view when none are ticked.
   // Only ticks on requests still in the list count: one can leave the list (marked done) while ticked.
   const requests = state.data?.requests ?? [];
   const ticked = requests.filter((r) => selected.includes(r.id));
   const picked = ticked.length ? ticked : requests;
-  const filterLabel = FILTERS.find((f) => f.key === filter)?.label ?? 'All';
+  const filterLabel = version ? `Version ${version.number}` : (FILTERS.find((f) => f.key === filter)?.label ?? 'All');
   const title = `TAAM site review changes: ${link ? link.label : 'every link'} (${filterLabel})`;
   const text = picked.length ? reviewRequestsText(picked, { title }) : '';
 
@@ -634,18 +692,21 @@ function Requests({ link, onChanged }: { link: ReviewLink | null; onChanged: () 
 
   return (
     <div className="space-y-3">
-      <div className="flex flex-wrap gap-2" role="tablist" aria-label="Filter requests">
-        {FILTERS.map((f) => (
-          <button key={f.key} type="button" role="tab" aria-selected={filter === f.key} className={CHIP(filter === f.key)} onClick={() => setFilter(f.key)}>
-            {f.label}
-          </button>
-        ))}
-      </div>
+      {link && <VersionBar linkId={link.id} picked={version} onPick={setVersion} />}
+      {!version && (
+        <div className="flex flex-wrap gap-2" role="tablist" aria-label="Filter requests">
+          {FILTERS.map((f) => (
+            <button key={f.key} type="button" role="tab" aria-selected={filter === f.key} className={CHIP(filter === f.key)} onClick={() => setFilter(f.key)}>
+              {f.label}
+            </button>
+          ))}
+        </div>
+      )}
       <Loaded state={state} skeleton="cards">
         {({ requests }) =>
           requests.length === 0 ? (
-            <Empty title={filter === 'new' ? 'Nothing waiting for review' : 'Nothing here'} icon={Inbox} compact>
-              {filter === 'new' ? 'When a client sends changes from their review link, they show up here.' : 'Try another filter.'}
+            <Empty title={version ? 'No requests in this version' : filter === 'new' ? 'Nothing waiting for review' : 'Nothing here'} icon={Inbox} compact>
+              {version ? 'Nothing was filed under it.' : filter === 'new' ? 'When a client sends changes from their review link, they show up here.' : 'Try another filter.'}
             </Empty>
           ) : (
             <div className="space-y-3">

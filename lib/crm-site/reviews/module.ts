@@ -42,6 +42,22 @@ export interface ReviewRequest {
   photos: { id: string; url: string; filename: string; mime: string; size: number; width: number | null; height: number | null }[];
   created_at: string;
   updated_at: string;
+  /** The version (round of site changes) this request was finished in. Null until it ships. */
+  version?: { id: number; number: number } | null;
+}
+
+/** One round of changes to a client's site, tied to the git commit that put it live. */
+export interface ReviewVersion {
+  id: number;
+  link_id: number;
+  /** 1, 2, 3… per review link. */
+  number: number;
+  commit_sha: string | null;
+  commit_url: string | null;
+  /** Short summary of the round. The client reads it on their review link. */
+  note: string | null;
+  created_at: string;
+  counts: { done: number; wont_do: number; total: number } | null;
 }
 
 /** Lower-case host of an address typed with or without https://, or '' if it isn't one. */
@@ -57,6 +73,7 @@ const LIMIT_ALL = 500;
 
 const zLinkId = z.number().int().positive().describe('Review link id');
 const zRequestId = z.number().int().positive().describe('Review request id');
+const zVersionId = z.number().int().positive().describe('Review version id');
 const zStatus = z.enum(STATUSES);
 
 const operations = [
@@ -139,11 +156,13 @@ const operations = [
     input: z.object({
       status: z.enum([...STATUSES, 'all']).optional().describe('Default "queued". Use "all" for everything.'),
       link_id: zLinkId.optional().describe('Only this review link'),
+      version_id: zVersionId.optional().describe('Only requests finished in this version (use with status "all")'),
       limit: z.number().int().min(1).max(500).optional(),
     }),
-    run: async ({ status, link_id, limit }) => {
+    run: async ({ status, link_id, version_id, limit }) => {
       const q = new URLSearchParams({ status: status ?? 'queued' });
       if (link_id) q.set('link_id', String(link_id));
+      if (version_id) q.set('version_id', String(version_id));
       if (limit) q.set('limit', String(limit));
       return reviewApi<{ requests: ReviewRequest[] }>('GET', `/requests?${q}`);
     },
@@ -239,6 +258,39 @@ const operations = [
       push: z.boolean().optional().describe('Push straight to Claude'),
     }),
     run: async (input) => reviewApi<{ request: ReviewRequest }>('POST', '/requests', input),
+  }),
+  defineOp({
+    name: 'list_review_versions',
+    description:
+      'The versions of one review link, newest first. A version is one round of changes to the client site, tied to the git commit that put it live: its number (1, 2, 3…), commit, date, the note the client reads, and how many requests it finished. To see what was asked for and what got completed in a version, call list_review_requests with status "all" and its version_id.',
+    method: 'GET',
+    path: '/reviews/links/{id}/versions',
+    permission: PERMISSION,
+    readOnly: true,
+    input: z.object({ id: zLinkId }),
+    run: async ({ id }) => reviewApi<{ versions: ReviewVersion[] }>('GET', `/links/${id}/versions`),
+  }),
+  defineOp({
+    name: 'create_review_version',
+    description:
+      'Record a new version of a client site after a round of review changes is live. Workflow for Claude: once the site repo is committed and deployed, call this once per review link with the commit hash (`git rev-parse HEAD` in the site repo), the commit page on GitHub if there is one, a one-sentence plain summary for the client (no mention of Claude, code, commits or deploys), and the ids of every request finished in this round (done or wont_do). Those requests then show under this version on the client’s review link and in Site reviews. Returns { version }.',
+    method: 'POST',
+    path: '/reviews/links/{id}/versions',
+    permission: PERMISSION,
+    openWorld: true,
+    input: z.object({
+      id: zLinkId,
+      commit_sha: z
+        .string()
+        .trim()
+        .regex(/^[0-9a-f]{7,40}$/i, 'A git commit hash, 7 to 40 hex characters')
+        .optional()
+        .describe('Commit of the client site repo that carries this round of changes'),
+      commit_url: z.string().trim().url().max(500).optional().describe('Link to that commit, e.g. on GitHub. Only the team sees it.'),
+      note: z.string().trim().max(500).optional().describe('One plain sentence about this round, shown to the client, e.g. "Updated the homepage headline and team photos."'),
+      request_ids: z.array(zRequestId).max(500).optional().describe('Requests finished in this round. They must belong to this link.'),
+    }),
+    run: async ({ id, ...body }) => reviewApi<{ version: ReviewVersion }>('POST', `/links/${id}/versions`, body),
   }),
   defineOp({
     name: 'delete_review_request',

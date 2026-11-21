@@ -23,7 +23,8 @@ const oneLine = (s: string) => s.replace(/\s+/g, ' ').trim();
 const indent = (s: string) => s.trim().split(/\r?\n/).join('\n  ');
 
 function requestText(r: ReviewRequest): string {
-  const lines = [`#${r.id} · ${STATUS_LABEL[r.status] ?? r.status} · ${r.author === 'host' ? 'TAAM' : 'Client'} · ${stamp(r.created_at)}`];
+  const version = r.version ? ` · Version ${r.version.number}` : '';
+  const lines = [`#${r.id} · ${STATUS_LABEL[r.status] ?? r.status}${version} · ${r.author === 'host' ? 'TAAM' : 'Client'} · ${stamp(r.created_at)}`];
   lines.push(`Page: ${r.page_url || r.page_path}`);
   if (r.element?.text || r.element?.selector) {
     const text = r.element.text ? `“${oneLine(r.element.text).slice(0, 200)}”` : '';
